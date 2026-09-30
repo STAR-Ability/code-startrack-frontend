@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { getLocale, localizedMetadata } from "@/lib/i18n/server";
+import { LocaleProvider } from "@/components/layout/locale-provider";
+import { AppHeader } from "@/components/layout/app-header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -12,18 +14,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "码练星轨 | codeStartrack",
-  description: "编程训练 + Agent 辅助",
-};
+export const generateMetadata = () => localizedMetadata("home");
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const locale = await getLocale();
   return (
     <html
-      lang="zh-CN"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <LocaleProvider initialLocale={locale}>
+          <AppHeader />
+          {children}
+        </LocaleProvider>
+      </body>
     </html>
   );
 }

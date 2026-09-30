@@ -10,7 +10,7 @@ test("serves the root placeholder without browser errors", async ({ page }) => {
   const response = await page.goto("/");
 
   expect(response?.status()).toBe(200);
-  await expect(page).toHaveTitle("码练星轨 | codeStartrack");
+  await expect(page).toHaveTitle("码练星轨 | 只读 Demo");
   await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
   await expect(
     page.getByRole("heading", { level: 1, name: "码练星轨" }),

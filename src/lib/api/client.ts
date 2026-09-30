@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ApiReadError, type ReadOperation } from "./errors";
-import { profileSchema } from "./schemas";
+import { profileSchema, recommendationsSchema } from "./schemas";
 
 const gatewayError = z.object({
   error: z.object({
@@ -62,4 +62,8 @@ async function read<T>(
 
 export function readProfile(signal?: AbortSignal) {
   return read("profile", profileSchema, signal);
+}
+
+export function readRecommendation(signal?: AbortSignal) {
+  return read("recommendation", recommendationsSchema, signal);
 }

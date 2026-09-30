@@ -21,7 +21,11 @@ test("profile uses the actual gateway and locale changes preserve the loaded dat
 }) => {
   await page.goto("/dashboard");
   await expect(page.getByText("已通过题目", { exact: true })).toBeVisible();
-  await expect(page.locator("dd")).toHaveText(["0", "0", "0", "0", "0"]);
+  await expect(
+    page
+      .getByRole("region", { name: /训练画像|Training profile/ })
+      .locator("dd"),
+  ).toHaveText(["0", "0", "0", "0", "0"]);
   await page.getByRole("button", { name: "English", exact: true }).click();
   await expect(page).toHaveTitle(
     "Training profile and recommendation | codeStartrack",
@@ -33,8 +37,12 @@ test("profile uses the actual gateway and locale changes preserve the loaded dat
     window.dispatchEvent(new Event("focus"));
     window.dispatchEvent(new Event("online"));
   });
-  expect(await calls()).toEqual([
-    expect.objectContaining({ method: "GET", path: "/api/users/1/profile" }),
+  await expect(
+    page.getByRole("link", { name: "Open on Codeforces" }),
+  ).toBeVisible();
+  expect((await calls()).map((call) => call.path)).toEqual([
+    "/api/users/1/profile",
+    "/api/users/1/recommendations?limit=1",
   ]);
   expect(
     await page.evaluate(
@@ -51,12 +59,24 @@ test("profile 404 has no fake zeros or account recovery and retries only its GET
   await expect(
     page.getByRole("button", { name: "重试加载画像" }),
   ).toBeVisible();
-  await expect(page.locator("dd")).toHaveCount(0);
+  await expect(
+    page
+      .getByRole("region", { name: /训练画像|Training profile/ })
+      .locator("dd"),
+  ).toHaveCount(0);
   expect(await calls()).toHaveLength(1);
   await setMode("success");
   await page.getByRole("button", { name: "重试加载画像" }).click();
-  await expect(page.locator("dd")).toHaveCount(5);
+  await expect(
+    page
+      .getByRole("region", { name: /训练画像|Training profile/ })
+      .locator("dd"),
+  ).toHaveCount(5);
+  await expect(
+    page.getByRole("link", { name: "在 Codeforces 打开题目" }),
+  ).toBeVisible();
   expect((await calls()).map((call) => call.path)).toEqual([
     "/api/users/1/profile",
+    "/api/users/1/recommendations?limit=1",
   ]);
 });

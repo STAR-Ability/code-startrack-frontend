@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import type { UseQueryResult } from "@tanstack/react-query";
 import { CircleAlertIcon, RotateCcwIcon } from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,15 +14,15 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { readProfile } from "@/lib/api/client";
+import type { TrainingProfile } from "@/lib/api/schemas";
 import { ApiReadError } from "@/lib/api/errors";
 import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
 
-export function ProfileSection({ userId }: { userId: number }) {
-  const query = useQuery({
-    queryKey: ["training", userId, "profile"],
-    queryFn: ({ signal }) => readProfile(signal),
-  });
+export function ProfileSection({
+  query,
+}: {
+  query: UseQueryResult<TrainingProfile, Error>;
+}) {
   const { t, locale } = useLocale();
   const profile = query.data;
   const showRetry =

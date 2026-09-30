@@ -30,6 +30,7 @@ process.on("SIGINT", () => stop());
 try {
   for (const [index, upstreamPort] of [3210, 3211].entries()) {
     let mode = "success";
+    let operations = {};
     let calls = [];
     const origin = `http://127.0.0.1:${upstreamPort}`;
     const server = createServer(async (request, response) => {
@@ -40,8 +41,10 @@ try {
       // Test control stays outside the Next app and its forwarded request log.
       if (request.url === "/__control") {
         if (request.method === "POST") {
-          mode = JSON.parse(body).mode;
-          calls = [];
+          const settings = JSON.parse(body);
+          mode = settings.mode ?? "success";
+          operations = settings.operations ?? {};
+          if (!settings.preserveCalls) calls = [];
         }
         response.end(JSON.stringify({ mode, calls }));
         return;
@@ -56,29 +59,35 @@ try {
         response.writeHead(405).end();
         return;
       }
-      if (mode === "network") {
+      const currentMode =
+        operations[
+          request.url === "/api/users/1/profile" ? "profile" : "recommendation"
+        ] ?? mode;
+      if (currentMode === "delay")
+        await new Promise((resolve) => setTimeout(resolve, 800));
+      if (currentMode === "network") {
         request.socket.destroy();
         return;
       }
-      if (mode === "timeout") return;
-      if (mode === "body-timeout") {
+      if (currentMode === "timeout") return;
+      if (currentMode === "body-timeout") {
         response.write('{"userId":');
         return;
       }
-      if (mode === "redirect") {
+      if (currentMode === "redirect") {
         response.writeHead(307, { Location: `${origin}/must-not-follow` });
         response.end(
           JSON.stringify({ error: "unrecognized_error", message: origin }),
         );
         return;
       }
-      if (mode === "http-error" || mode === "non-json-error") {
+      if (currentMode === "http-error" || currentMode === "non-json-error") {
         response.writeHead(404, {
           "Set-Cookie": "private=value",
           "X-Backend": origin,
         });
         response.end(
-          mode === "http-error"
+          currentMode === "http-error"
             ? JSON.stringify({
                 error: "account_not_found",
                 message: `private learner at ${origin}`,
@@ -87,7 +96,7 @@ try {
         );
         return;
       }
-      if (mode === "invalid-json") {
+      if (currentMode === "invalid-json") {
         response.end("not JSON");
         return;
       }
@@ -96,14 +105,24 @@ try {
           JSON.stringify({
             ...profileFixture,
             totalSolved: index,
-            ...(mode === "invalid-payload" ? { userId: 2 } : {}),
+            ...(currentMode === "invalid-payload" ? { userId: 2 } : {}),
           }),
         );
       } else if (request.url === "/api/users/1/recommendations?limit=1") {
         response.end(
           JSON.stringify({
             ...recommendationsFixture,
-            ...(mode === "empty" ? { recommendations: [] } : {}),
+            ...(currentMode === "empty" ? { recommendations: [] } : {}),
+            ...(currentMode === "invalid-url"
+              ? {
+                  recommendations: [
+                    {
+                      ...recommendationsFixture.recommendations[0],
+                      url: "javascript:alert(1)",
+                    },
+                  ],
+                }
+              : {}),
           }),
         );
       } else {

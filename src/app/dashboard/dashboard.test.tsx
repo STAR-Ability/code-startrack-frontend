@@ -2,7 +2,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { LocaleProvider } from "@/components/layout/locale-provider";
 import { Dashboard } from "./dashboard";
-import { profileFixture } from "../../../tests/api-fixtures.mjs";
+import {
+  profileFixture,
+  recommendationsFixture,
+} from "../../../tests/api-fixtures.mjs";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/dashboard" }));
 afterEach(() => vi.unstubAllGlobals());
@@ -15,6 +18,16 @@ function renderDashboard(locale: "en" | "zh-CN" = "en") {
   );
 }
 
+function mockProfile(
+  fetcher: (url: string, options?: RequestInit) => Promise<Response>,
+) {
+  vi.stubGlobal("fetch", (url: string, options?: RequestInit) =>
+    url.endsWith("/recommendation")
+      ? Promise.resolve(Response.json(recommendationsFixture))
+      : fetcher(url, options),
+  );
+}
+
 test("shows real metrics, zero activity and the profile timestamp", async () => {
   const fetcher = vi.fn().mockResolvedValue(
     Response.json({
@@ -23,16 +36,17 @@ test("shows real metrics, zero activity and the profile timestamp", async () => 
       averageDifficulty: 1234.56,
     }),
   );
-  vi.stubGlobal("fetch", fetcher);
+  mockProfile(fetcher);
   renderDashboard();
   expect(await screen.findByText("42")).toBeVisible();
   expect(screen.getByText("1,234.6")).toBeVisible();
   expect(screen.getAllByText("0")).toHaveLength(3);
   expect(screen.getByText(/Average difficulty includes only/)).toBeVisible();
-  expect(screen.getByText(/UTC/)).toHaveAttribute(
-    "dateTime",
-    profileFixture.updatedAt,
-  );
+  expect(
+    screen
+      .getByRole("region", { name: "Training profile" })
+      .querySelector("time"),
+  ).toHaveAttribute("dateTime", profileFixture.updatedAt);
   expect(
     screen.getByText("Connected account details are unavailable."),
   ).toBeVisible();
@@ -67,7 +81,7 @@ test.each(["configuration", "http", "transport", "invalid_payload", "timeout"])(
         ),
       )
       .mockResolvedValue(Response.json(profileFixture));
-    vi.stubGlobal("fetch", fetcher);
+    mockProfile(fetcher);
     renderDashboard();
     const retry = await screen.findByRole("button", { name: "Retry profile" });
     expect(screen.queryByText("0")).not.toBeInTheDocument();

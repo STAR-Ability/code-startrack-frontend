@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ArrowLeftIcon } from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
 import { buttonVariants } from "@/components/ui/button";
-import { ProfileSection } from "./profile-section";
+import { TrainingResults } from "./training-results";
 
 export function Dashboard({ userId }: { userId: number }) {
   const [client] = useState(
@@ -55,7 +55,7 @@ export function Dashboard({ userId }: { userId: number }) {
         </div>
       </div>
       <QueryClientProvider client={client}>
-        <ProfileSection userId={userId} />
+        <TrainingResults userId={userId} />
       </QueryClientProvider>
     </main>
   );

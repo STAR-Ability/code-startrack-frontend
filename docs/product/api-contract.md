@@ -117,6 +117,23 @@ These are frontend-owned categories, not backend wire codes. The private client 
 
 Upstream reads omit credentials and carry only `Accept: application/json` as an application-selected header, with no body or inbound header passthrough. Reads and gateway success/error responses use `no-store`. There is no automatic retry, polling, build/import request, generic proxy, write client or repair operation. The browser API path is same-origin Next.js, so backend browser CORS and HTTPS-browser-to-HTTP-backend mixed content are not dependencies. Container/server egress and live response contracts still require V01-08/09 verification; server-to-server HTTP remains HTTP.
 
+## Frontend error presentation (V01-02)
+
+This is a proposed presentation mapping for the already implemented V01-01 frontend error model, not a change to backend wire errors or the gateway. Use the operation and category, with strings from the [bilingual inventory](design-system.md#v01-02-bilingual-copy-inventory). Never expose raw backend text, exception details, hosts, environment names or machine identifiers as UI copy.
+
+| Normalized category / state                                             | Profile copy                                      | Recommendation copy                               | Recovery                                                                                                                                                                |
+| ----------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `timeout`                                                               | `profile.timeout`                                 | `recommendation.timeout`                          | User-triggered Retry of only the failed GET.                                                                                                                            |
+| `configuration`, `transport`, `http`, `invalid_json`, `invalid_payload` | `profile.error`                                   | `recommendation.error`                            | Same operation-specific Retry; configuration/data repair stays outside this UI. No binding/sync recovery.                                                               |
+| `invalid_request`, `method_not_allowed`, unexpected frontend failure    | `profile.error`                                   | `recommendation.error`                            | Fail visibly; a Retry must still use the approved fixed GET. These represent implementation/configuration faults, not user input forms or permission to change methods. |
+| `aborted` after navigation/unmount or superseded work                   | No new error announcement for the abandoned view. | No new error announcement for the abandoned view. | No automatic retry. If the still-active operation actually fails with this category, use its generic error and scoped Retry.                                            |
+| Successful E2 with `recommendations: []`                                | Keep the successful profile.                      | `recommendation.empty`                            | No error Retry or invented candidate; a future explicit page visit can read again.                                                                                      |
+| Successful E1 with zero metrics                                         | Render the validated zero values.                 | Normal initial recommendation read may follow.    | No account absence or need to sync is inferred.                                                                                                                         |
+
+Any upstream 404, including the allowed `account_not_found` identifier, still maps to the failed operation's generic copy. It cannot select “no account connected,” “user missing,” or “no candidates” as a proven cause. Unknown categories use generic operation copy, not serialized debug data. If old successful data remains visible, pair the error with `data.previous` and the original timestamp.
+
+Initial reads may sequence E1 then the first E2. Once E2 has been attempted, retrying E1 never repeats E2, and retrying E2 never repeats E1. Successful empty data is not an error. Locale changes do not add a backend parameter/header, change learner identity or trigger backend reads; raw reason/title/tag text remains as supplied. No API, schema, gateway status, retry transport policy or E3/E4/E5 activation changes in V01-02.
+
 ## Existing endpoint inventory
 
 E1–E5 are the only documented application endpoints. Preserve methods and paths without adding a version prefix.
@@ -304,7 +321,7 @@ The backend may be able to retain `POST /api/accounts` and change validation/uni
 
 No frontend workaround is authorized: no extra internal users for one learner, browser merging of separate users' profiles, constructed account IDs, hardcoded account rows, direct database inserts, swallowed 409 responses, or browser-local handles represented as backend-bound accounts.
 
-## V0.1 orchestration
+## Deferred account-connection orchestration
 
 | Frontend operation       | Documented call / prerequisite                                                                                                            | Meaning                                                                                                                        |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |

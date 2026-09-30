@@ -82,7 +82,7 @@ The flow uses the approved Demo user 1 and server-only runtime `BACKEND_BASE_URL
 
 Do not work around E3 by creating extra codeStartrack users for one learner, merging their profiles in the browser, constructing account IDs, hardcoding account records, writing database rows from the frontend, hiding 409, or treating browser-local names as backend-bound accounts.
 
-## Current V0.1 first-run demo requirements
+## First-run connection requirements (deferred execution)
 
 | ID     | Requirement and acceptance evidence                                                                                                                                                                                                                                                      |
 | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -121,7 +121,7 @@ E1 already documents user-level aggregation across connected accounts; E2 is als
 | Operator catalogue synchronization      | A, C, D                   | E5 populates a shared source catalogue required by E2; its 200 body schema is absent.                                          | Operational prerequisite, not a user onboarding step or public CTA. Owner/setup and payload need G-06.                                                               |
 | Multiple same-platform accounts (MA-01) | **BLOCKED_BY_API** / B, D | E3's one-account-per-user-per-platform rule and 409 conflict with the approved target.                                         | G-09 requires a backend contract change; G-02 account discovery and G-08 deduplication also need definition. Never simulate success for a second Codeforces binding. |
 
-## Operation flow
+## Account-connection operation flow (deferred execution)
 
 ```text
 IDLE → CONNECTING_ACCOUNT → SYNCING_DATA → BUILDING_PROFILE
@@ -132,7 +132,7 @@ These are frontend operation labels, not backend job states. CONNECTING_ACCOUNT 
 
 Errors belong to the failed operation: account not found, account conflict, external platform unavailable, synchronization failure, profile unavailable, or recommendation unavailable. These are UI categories, not invented wire error identifiers. Preserve the documented status codes and confirmed `error` values. If recommendation loading fails, the successful profile can remain visible with a separate recommendation error; do not claim full READY success or erase the profile.
 
-## Primary acceptance scenario
+## First-run connection acceptance scenario (deferred execution)
 
 Current first-run prerequisites: the approved `DEMO_USER_ID = 1`, a reachable backend configured by server-only runtime `BACKEND_BASE_URL`, no conflicting existing Codeforces binding for that Demo user/account, and operator-managed catalogue setup. This scenario exercises one Codeforces account, not MA-01. The fixed identity is a temporary Demo assumption, not a claim of a new provisioning API.
 
@@ -154,7 +154,7 @@ No internal completion event, judge verdict, hint interaction, or coach role swi
 
 ## Approved V0.1 product decisions
 
-The user resolved P-01–P-05 on 2026-09-30 for the current read-only phase. Recording these explicit decisions is prerequisite documentation, not execution of V01-02 or later UI Issues. V01-02 remains unstarted and will refine final bilingual wording and locale-persistence details within these decisions.
+The user resolved P-01–P-05 on 2026-09-30 for the current read-only phase. Those user-approved decisions remain resolved. V01-02 now supplies concrete bilingual copy and locale details for product-owner review; these refinements must not be described as separately user-approved before that review. No UI is implemented by this documentation task.
 
 | ID   | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -165,6 +165,32 @@ The user resolved P-01–P-05 on 2026-09-30 for the current read-only phase. Rec
 | P-05 | **RESOLVED** — Use the exact [white/neutral-first semantic palette](design-system.md#p-05--v01-color-selection-resolved): white background/card, foreground/primary `#111827`, white primary text, hover `#1F2937`, muted `#F8FAFC`, muted text `#64748B`, border `#E5E7EB`, accent `#EFF6FF` with `#1D4ED8` text, and `#2563EB` only for focus, links and limited active emphasis. Apply consistently in later UI Issues, with no theme changes in V01-01. |
 
 Backend status G-01–G-09 and remaining ambiguities are detailed in [API contract](api-contract.md#v01-backend-and-api-gaps). G-01 is resolved for the Demo. MA-01 remains **BLOCKED_BY_API** under G-09; account discovery and cross-account deduplication need G-02/08. Future judging/team capabilities are not V0.1 blockers.
+
+## V01-02 implementation details for review
+
+Status: documentation prepared under [V01-02 / Issue #6](https://github.com/STAR-Ability/code-startrack-frontend/issues/6), following merged V01-01 PR #5. P-01–P-05 above are already user-approved; the following concrete wording/persistence details are proposed for acceptance in the committed documentation or Issue #6; no PR is required under the current workflow. V01-03 and later implementation must use the accepted record, not silently reopen those five decisions.
+
+### Read-only entry and recovery
+
+- `/` explains the shared read-only Demo and current Codeforces data source, then links to `/dashboard` in the same tab. `/dashboard` also works when opened directly. Navigation never requires account lookup, a handle, binding or synchronization. Provide a quiet return-to-entry link; no new product route is added.
+- Omit handle forms, disabled submission forms, fake connected-account rows and unavailable connector tiles in this phase. State that account details are unavailable; do not turn unknown into an empty account collection. Retain the approved many-accounts/one-learner target and backend-blocked work in the deferred sections below.
+- Initial dashboard loading reads E1, then starts E2 once after E1 first succeeds. An initial E1 failure leaves E2 unrequested. Retrying E1 repeats E1 only; its first success may then permit the never-attempted initial E2 read. Once E2 has been attempted, an E1 retry must not repeat/invalidate E2. An E2 retry repeats only E2 and preserves the profile. No bind/sync/catalogue recovery or automatic retries/polling/focus/reconnect reads.
+- A valid empty recommendation list is successful empty data, with no error-retry CTA or fabricated alternative. Zero profile metrics remain zero, with no inferred absence of accounts. A 404, invalid payload or transport error stays a failed operation. Preserve last successfully loaded data on a later failure, clearly labeled as previously loaded, with its original timestamps.
+- This slice needs no successful-state refresh button. If a later explicit task adds one, it must define its GET behavior separately from failure retry. The earlier planning sentence that automatically rechecked E2 after a profile refresh is superseded by the operation-specific rule above; no hidden second operation is attached to Retry.
+- A usable supplied external problem URL opens only on explicit activation in a new tab, with `noopener noreferrer` and a visible/accessible new-tab notice. Missing/invalid URLs leave the card visible with an unavailable action. No source-site prefetch, tracking submission, completion claim or synthetic URL is added.
+
+### Locale selection and persistence
+
+- Supported values are exactly `zh-CN` and `en`, on the existing `/` and `/dashboard` routes. A missing/invalid preference resolves to `zh-CN`, irrespective of browser language. Do not add locale-prefixed routes, automatic language redirects or backend locale parameters.
+- Show a compact, keyboard-operable language control with the autonyms `简体中文` and `English`. Switching changes the current presentation in place, preserving pathname, query/hash, scroll, focused control and loaded data. Locale is a presentation preference, not learner identity or a server-state query key; changing it must not trigger E1/E2 reads.
+- Persist only the validated locale in a host-only frontend cookie named `codestartrack_locale`, with `Path=/`, `SameSite=Lax` and `Max-Age=31536000`; set `Secure` on HTTPS. It contains no account, identity, backend URL or authentication data. It is browser-writable (not HttpOnly), so changing a language needs no new API route, Server Action or backend write. Do not forward this or any other browser cookie upstream.
+- On a full page request, use the same resolved cookie value for server-rendered copy, `<html lang>`, initial client locale, title and description. A fresh checkout with no cookie remains Chinese. Next.js's installed async `cookies()` API may make these pages dynamic; this does not authorize backend fetching in layouts or metadata. Do not make the initial client render disagree with the server.
+- If browser persistence is unavailable, keep the selected language in memory for the current app visit and announce that it could not be saved. A full reload may return to the valid saved preference or `zh-CN`; do not claim persistence succeeded. No user session, local account storage, cross-tab synchronization or language-detection service is introduced.
+- Update visible copy, accessible names, document language and route-specific metadata together after a switch. A frontend refresh used to reconcile server-rendered locale must preserve the client query/cache boundary and perform no backend reads. This is a behavior requirement for V01-03/04 integration, not a new data endpoint.
+- Use matching dictionary keys from the [copy inventory](design-system.md#v01-02-bilingual-copy-inventory). Missing-key fallback is the Chinese string, never a raw key, empty label or fabricated backend text; parity checks must catch missing English keys before acceptance. Do not automatically translate backend titles, tags, platform identifiers or recommendation reasons.
+- Format counts as locale-aware integers and average difficulty with at most one decimal place; rounding is presentation only. Format timestamps with explicit offsets in UTC, labeled `UTC`, consistently across server/browser. For accepted timestamps without an offset, retain the supplied calendar/time values and label the timezone as unspecified; do not invent a timezone or compare those values as absolute freshness evidence. `updatedAt` and `generatedAt` remain separate; neither is last synchronization time.
+
+The full bilingual inventory and metadata strings are in [Design Direction](design-system.md#v01-02-bilingual-copy-inventory); state-to-copy and retry rules are in [Page Structure](page-structure.md#current-read-only-page-behavior-v01-02) and the [presentation mapping](api-contract.md#frontend-error-presentation-v01-02). Exact P-05 token values remain unchanged. Backend G-02–G-09 gaps and future mutation-recovery decisions remain open; this documentation update neither resolves them nor implements V01-03.
 
 ## Non-functional requirements
 

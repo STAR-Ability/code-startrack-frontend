@@ -67,6 +67,79 @@ For later implementation, map `--primary-hover` into Tailwind's semantic `--colo
 
 No gradients, neon, cyberpunk effects or colorful dashboard-card palette. No theme switcher or dark-theme redesign is required. P-05 is **RESOLVED**. Blue must remain a limited accent; do not make primary buttons blue or create a blue SaaS/admin-dashboard appearance. Routine layout/copy refinement in later Issues must preserve these decisions and does not reopen the palette.
 
+## V01-02 bilingual copy inventory
+
+Status: complete wording proposal for product-owner review in V01-02; P-01–P-05 remain resolved. Use these stable keys when V01-03–06 implement dictionaries and their consumers. This table is documentation, not a runtime dictionary or permission to implement UI now. Braced placeholders must match in both locales; interpolate plain text, never HTML. The shared Demo is not presented as the visitor's own connected account.
+
+| Key                                    | zh-CN                                                                              | en                                                                                                                                     |
+| -------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `brand.name`                           | 码练星轨                                                                           | codeStartrack                                                                                                                          |
+| `language.label`                       | 语言                                                                               | Language                                                                                                                               |
+| `language.zhCN`                        | 简体中文                                                                           | 简体中文                                                                                                                               |
+| `language.en`                          | English                                                                            | English                                                                                                                                |
+| `language.changed`                     | 语言已切换为{language}。                                                           | Language changed to {language}.                                                                                                        |
+| `language.notSaved`                    | 语言已切换，但浏览器未保存偏好；重新打开页面后可能恢复原来的语言。                 | Language changed, but your browser could not save the preference. Reopening the page may restore the previous language.                |
+| `navigation.home`                      | 返回首页                                                                           | Back to home                                                                                                                           |
+| `navigation.skip`                      | 跳至主要内容                                                                       | Skip to main content                                                                                                                   |
+| `demo.label`                           | 只读 Demo                                                                          | Read-only demo                                                                                                                         |
+| `demo.learner`                         | 示例学习者                                                                         | Demo learner                                                                                                                           |
+| `demo.context`                         | 当前展示共享示例学习者的数据。                                                     | This demo shows a shared learner's data.                                                                                               |
+| `entry.title`                          | 训练画像与题目推荐                                                                 | Training profile and recommendation                                                                                                    |
+| `entry.description`                    | 以 Codeforces 训练数据为起点，查看统一的学习画像与一道推荐题目。                   | Explore one training profile and one recommended problem, starting with Codeforces training data.                                      |
+| `entry.openDemo`                       | 查看只读 Demo                                                                      | View read-only demo                                                                                                                    |
+| `entry.readOnly`                       | 当前演示仅供查看，暂不开放账号绑定与同步。                                         | This demo is read-only. Account connection and synchronization are unavailable.                                                        |
+| `source.label`                         | 数据来源                                                                           | Data source                                                                                                                            |
+| `accounts.unavailable`                 | 已连接账号详情暂不可用。                                                           | Connected account details are unavailable.                                                                                             |
+| `profile.title`                        | 训练画像                                                                           | Training profile                                                                                                                       |
+| `profile.loading`                      | 正在加载训练画像…                                                                  | Loading training profile…                                                                                                              |
+| `profile.error`                        | 暂时无法加载训练画像。请稍后重试。                                                 | Could not load the training profile. Please try again later.                                                                           |
+| `profile.timeout`                      | 加载训练画像超时，请重试。                                                         | Loading the training profile timed out. Please try again.                                                                              |
+| `profile.retry`                        | 重试加载画像                                                                       | Retry profile                                                                                                                          |
+| `profile.totalSolved`                  | 已通过题目                                                                         | Solved problems                                                                                                                        |
+| `profile.averageDifficulty`            | 平均难度                                                                           | Average difficulty                                                                                                                     |
+| `profile.maxDifficulty`                | 最高已通过难度                                                                     | Highest solved difficulty                                                                                                              |
+| `profile.last7Days`                    | 近 7 天提交数                                                                      | Submissions in the last 7 days                                                                                                         |
+| `profile.last30Days`                   | 近 30 天提交数                                                                     | Submissions in the last 30 days                                                                                                        |
+| `profile.updatedAt`                    | 画像更新时间                                                                       | Profile updated                                                                                                                        |
+| `profile.difficultyNote`               | 平均难度仅统计有难度评分的已通过题目；当前评分来自 Codeforces。                    | Average difficulty includes only solved problems with a difficulty rating. Current ratings come from Codeforces.                       |
+| `data.previous`                        | 仍显示上次成功加载的数据。                                                         | Showing the last successfully loaded data.                                                                                             |
+| `recommendation.title`                 | 推荐题目                                                                           | Recommended problem                                                                                                                    |
+| `recommendation.waiting`               | 画像加载成功后将显示推荐题目。                                                     | Recommendations will appear after the profile loads.                                                                                   |
+| `recommendation.loading`               | 正在加载推荐题目…                                                                  | Loading recommendation…                                                                                                                |
+| `recommendation.error`                 | 暂时无法加载推荐题目。请稍后重试。                                                 | Could not load the recommendation. Please try again later.                                                                             |
+| `recommendation.timeout`               | 加载推荐题目超时，请重试。                                                         | Loading the recommendation timed out. Please try again.                                                                                |
+| `recommendation.retry`                 | 重试加载推荐                                                                       | Retry recommendation                                                                                                                   |
+| `recommendation.empty`                 | 暂时没有可展示的推荐题目。                                                         | No recommendation is available right now.                                                                                              |
+| `recommendation.placeholder`           | 当前推荐为早期占位结果，尚不代表经过验证的个性化分析。                             | Recommendations are early placeholders and do not represent validated personalized analysis.                                           |
+| `recommendation.reason`                | 推荐说明                                                                           | Recommendation note                                                                                                                    |
+| `recommendation.reasonUnavailable`     | 暂无推荐说明。                                                                     | No recommendation note is available.                                                                                                   |
+| `recommendation.originalText`          | 推荐说明保留原文。                                                                 | Recommendation notes are shown in their original language.                                                                             |
+| `recommendation.platform`              | 题目来源                                                                           | Problem source                                                                                                                         |
+| `recommendation.externalId`            | 来源题号                                                                           | Source problem ID                                                                                                                      |
+| `recommendation.difficulty`            | 题目难度                                                                           | Problem difficulty                                                                                                                     |
+| `recommendation.difficultyUnavailable` | 难度暂无数据                                                                       | Difficulty unavailable                                                                                                                 |
+| `recommendation.tags`                  | 标签                                                                               | Tags                                                                                                                                   |
+| `recommendation.generatedAt`           | 推荐生成时间                                                                       | Recommendation generated                                                                                                               |
+| `recommendation.openExternal`          | 在 {platform} 打开题目                                                             | Open on {platform}                                                                                                                     |
+| `recommendation.newTab`                | 将在新标签页打开                                                                   | Opens in a new tab                                                                                                                     |
+| `recommendation.linkUnavailable`       | 题目链接暂不可用                                                                   | Problem link unavailable                                                                                                               |
+| `time.utc`                             | UTC                                                                                | UTC                                                                                                                                    |
+| `time.zoneUnknown`                     | 时区未提供                                                                         | Time zone not provided                                                                                                                 |
+| `metadata.homeTitle`                   | 码练星轨 \| 只读 Demo                                                              | codeStartrack \| Read-only Demo                                                                                                        |
+| `metadata.dashboardTitle`              | 训练画像与推荐 \| 码练星轨                                                         | Training profile and recommendation \| codeStartrack                                                                                   |
+| `metadata.description`                 | 查看示例学习者的训练画像和一道推荐题目。当前仅支持只读浏览，推荐仍为早期占位结果。 | Explore a demo learner's training profile and one recommended problem. This demo is read-only; recommendations are early placeholders. |
+
+Presentation rules:
+
+- The entry uses `entry.title`, `entry.description`, `demo.context`, `entry.readOnly` and the one `entry.openDemo` action. Keep `source.label` plus `Codeforces` quiet. Do not display the deferred form/progress copy below or unsupported connector tiles.
+- The dashboard uses `demo.learner`/`demo.context`, one profile and one recommendation. `accounts.unavailable` is context, not an error requiring a Retry/Connect button. Never display a guessed handle or “0 accounts.”
+- `recommendation.placeholder` is persistent visible text close to the recommendation note and CTA in both locales, including mobile. It must not be hidden in a tooltip, dismissed, reduced to an icon or replaced by an AI-confidence badge. Retain it in the recommendation region's pending/empty/error states as applicable; do not invent a reason when none is available.
+- Preserve supplied backend reason/title/tag text as plain text. Use `recommendation.reasonUnavailable` for an empty/whitespace-only reason; show `recommendation.originalText` when a reason is displayed. A missing/empty title falls back to the supplied external ID. Missing/null difficulty uses its unavailable label; missing/empty tags omit the tags row. Do not add fictional fallback tags or infer that missing difficulty proves “unrated.”
+- `recommendation.openExternal` uses `Codeforces` for the known `codeforces` label, otherwise the supplied platform string as plain source metadata; this does not enable another connector. Pair it with the visible `recommendation.newTab` notice and an accessible association. A missing/invalid URL uses the visible unavailable label with no navigable `href`; keep the rest of the card.
+- Use operation-specific retry labels. During a retry show the same operation's loading text, prevent duplicate activation and announce meaningful state changes without stealing focus. Last successful data may remain visible only with `data.previous` and the current operation error; never silently present a failed refresh as fresh success.
+- Root metadata uses `metadata.homeTitle`; the later dashboard uses `metadata.dashboardTitle`. Both use the locale-matched description. Metadata must never claim an implemented Agent, personalized recommendation quality or account synchronization. No backend data is needed to generate it.
+- Reuse the exact P-05 semantic tokens, Base UI/Nova, fonts and visible focus. The copy needs no new visual preset, status-card color system or UI library. Automatically use the installed shadcn Skill and relevant shadcn MCP when the later UI Issues begin.
+
 ## Visual personality and hierarchy
 
 Use generous whitespace around the content, clear headings, compact supporting metadata and a small number of high-signal metrics. Keep borders/shadows subtle so the next recommended problem is easy to identify. The result should feel like a focused developer SaaS product, not a school administration system or a source-platform analytics plugin.
@@ -75,7 +148,7 @@ Avoid heavy gradients, neon/cyberpunk treatments, excessive glassmorphism, color
 
 Source names and connector icons are metadata. Do not recolor or rename the entire interface for a connected platform. The learner's identity, goals, profile structure and recommendation experience remain the same as connectors are added.
 
-## `/` — Connected accounts surface
+## Deferred `/` account-connection design
 
 Lead with codeStartrack branding and a concise explanation that supported programming-platform histories contribute to one training profile. Use a Connected Accounts / Connect Training Account surface, not a platform-mode selector.
 
@@ -114,17 +187,17 @@ Keep rows compact and group them cleanly if useful; grouping is presentation, ne
 
 Each row should accommodate platform, public username, connection status, that account's sync state, last sync time when known, and a per-account re-sync action when supported. The underlying account identity is the real backend `account_id`, not a guessed ID, just a platform name, or a browser-local handle. Retain source/account provenance without introducing account dashboards or separate ability panels.
 
-### Currently implementable interaction
+### Documented backend capability (execution deferred)
 
 The unchanged E3 allows one Codeforces account for Demo user 1 and may return 409 when a binding already exists. The first connection and E4 sync are supported; Connect another account is **BLOCKED_BY_API** until G-09 is resolved. If shown, present it as unavailable with a clear explanation; never make it usable or display a fake successful second row.
 
 Only display real known account information. E3/E4 expose current-operation data, but connected-account listing, ID recovery, status inspection, unbind/replace/remove remain undocumented (G-02). Per-account re-sync can use E4 when a real account ID is known; returning status/recovery must not be fabricated. Do not use multiple internal users, frontend profile merging or local account-name lists to emulate the blocked capability.
 
-Only the first Codeforces account connection is currently actionable under E3. Future connectors may be omitted; if later approved for display, label them clearly **Coming soon**, keep them secondary, and prevent them from appearing usable. Do not let unavailable connectors compete with the primary connection action.
+Only the first Codeforces account connection is supported by the documented E3 contract; it remains inactive under the current read-only policy. Future connectors may be omitted; if later approved for display, label them clearly **Coming soon**, keep them secondary, and prevent them from appearing usable. Do not let unavailable connectors compete with the primary connection action.
 
 Place the public-data/privacy explanation near the input: request only the public identifier supported by the backend, never platform passwords, cookies, API secrets, or browser session data. A binding error belongs to this account operation and must not look like failure of the learner's entire profile.
 
-## Analysis progress
+## Deferred binding/synchronization progress
 
 ```text
 Connecting account
@@ -146,14 +219,14 @@ Use this information order while giving the recommendation the strongest action 
 ```text
 User identity
   → connected accounts / contributing data sources
-  → Your Training Profile
+  → Training profile
   → concise summary and recent activity
   → one primary recommended problem
   → Why this problem
   → Open on the source platform
 ```
 
-Display the profile as the codeStartrack learner's profile. Contributing account labels may repeat a platform, such as two Codeforces usernames after backend support exists, but they are quiet context. Do not split the profile into source-specific or account-specific ability panels. The current data-source label may say Codeforces; the profile heading should say **Your Training Profile**.
+Display the profile as the codeStartrack learner's profile. Contributing account labels may repeat a platform, such as two Codeforces usernames after backend support exists, but they are quiet context. Do not split the profile into source-specific or account-specific ability panels. The current data-source label may say Codeforces; the profile heading should say **Training profile**.
 
 Prefer solved problems, average difficulty, maximum solved difficulty and recent activity. Recent activity counts submissions over 7 and 30 days; solved count is a different metric. Average difficulty excludes unrated problems. Profile update time is not account last-sync time or recommendation generation time.
 
@@ -173,9 +246,9 @@ Show:
 - a concise notice that current recommendation behavior is a placeholder;
 - the primary external CTA, for example **Open on Codeforces**.
 
-Use the backend's `url`; do not invent a new destination from platform strings. An empty title may fall back to the provided external problem ID. Null difficulty stays unavailable/unrated and absent tags need no replacement. Do not turn a recommendation `score` into a proven confidence or learner-ability score.
+Use the backend's `url`; do not invent a new destination from platform strings. An empty title may fall back to the provided external problem ID. Null difficulty stays unavailable; it does not prove the problem is unrated. Absent tags need no replacement. Do not turn a recommendation `score` into a proven confidence or learner-ability score.
 
-The API's current hardcoded reasons may make personal claims that are not backed by an implemented algorithm. Display the limitation prominently enough to prevent those claims from being read as verified analysis; do not add stronger AI/ability marketing. P-03 is resolved: the recommendation must visibly disclose its early placeholder behavior. V01-02 will refine equivalent zh-CN/en wording without reopening that requirement.
+The API's current hardcoded reasons may make personal claims that are not backed by an implemented algorithm. Display the limitation prominently enough to prevent those claims from being read as verified analysis; do not add stronger AI/ability marketing. P-03 is resolved: the recommendation must visibly disclose its early placeholder behavior. The V01-02 inventory above supplies equivalent zh-CN/en wording for review without reopening that requirement.
 
 The same source metadata and CTA pattern can later accommodate additional connectors. Future source-specific labels do not require a different profile or product mode, and no unsupported source is available now.
 
@@ -197,7 +270,7 @@ Desktop uses centered content, a comfortable maximum width, concise metrics and 
 
 Preserve semantic headings/landmarks, keyboard navigation, visible focus, associated form labels, accessible errors, icon accessible names, adequate contrast and non-color status cues. Announce meaningful operation-state changes without repeatedly stealing focus. Keep text readable at zoom and with longer localized labels; use system CJK fallback for Chinese.
 
-P-04 is resolved: zh-CN is the default, en uses the same routes, and external problems open in a new tab with an accessible notice and `noopener noreferrer`. Later copy, locale-persistence and layout details must preserve the approved two-page model and P-05 white/neutral-first tokens. They do not imply a new app flow.
+P-04 is resolved: zh-CN is the default, en uses the same routes, and external problems open in a new tab with an accessible notice and `noopener noreferrer`. The V01-02 copy and locale-persistence proposal, and later layout details, preserve the approved two-page model and P-05 white/neutral-first tokens. They do not imply a new app flow.
 
 ## Future / Post-V0.1
 

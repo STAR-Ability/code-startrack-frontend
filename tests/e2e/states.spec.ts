@@ -6,7 +6,7 @@ test("delayed reads show distinct states and issue only E1 then E2", async ({
   page,
 }) => {
   await configureUpstream({ profile: "delay", recommendation: "delay" });
-  await page.goto("/dashboard");
+  await page.goto("/practice");
   await expect(page.getByText("正在加载训练画像…")).toBeVisible();
   await expect(page.getByText("画像加载成功后将显示推荐题目。")).toBeVisible();
   await expect(page.locator("dd")).toHaveCount(0);
@@ -14,7 +14,9 @@ test("delayed reads show distinct states and issue only E1 then E2", async ({
     .poll(async () => (await upstreamCalls()).map((call) => call.path))
     .toEqual(["/api/users/1/profile"]);
   await expect(page.getByText("正在加载推荐题目…")).toBeVisible();
-  await expect(page.locator("dd")).toHaveCount(5);
+  await expect(
+    page.getByText(/训练画像已就绪|Your training profile is ready/),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "在 Codeforces 打开题目" }),
   ).toBeVisible();
@@ -44,7 +46,7 @@ for (const operation of ["profile", "recommendation"] as const) {
         },
       ]);
       await configureUpstream({ [operation]: mode });
-      await page.goto("/dashboard");
+      await page.goto("/practice");
       const region = page.getByRole("region", {
         name:
           operation === "profile" ? "Training profile" : "Recommended problem",
@@ -59,7 +61,9 @@ for (const operation of ["profile", "recommendation"] as const) {
         await expect(page.locator("dd")).toHaveCount(0);
         expect(await upstreamCalls()).toHaveLength(1);
       } else {
-        await expect(page.locator("dd")).toHaveCount(5);
+        await expect(
+          page.getByText(/训练画像已就绪|Your training profile is ready/),
+        ).toBeVisible();
         await expect(page.getByText(/early placeholders/)).toBeVisible();
         expect(await upstreamCalls()).toHaveLength(2);
       }
@@ -73,7 +77,7 @@ for (const operation of ["profile", "recommendation"] as const) {
 test("missing runtime configuration is an error without any upstream call", async ({
   page,
 }) => {
-  const response = await page.goto("http://127.0.0.1:3102/dashboard");
+  const response = await page.goto("http://127.0.0.1:3102/practice");
   expect(response?.status()).toBe(200);
   await expect(
     page.getByRole("button", { name: "重试加载画像" }),
@@ -90,7 +94,7 @@ test("missing runtime configuration is an error without any upstream call", asyn
 
 test("retry cannot duplicate an in-flight request", async ({ page }) => {
   await configureUpstream({ recommendation: "http-error" });
-  await page.goto("/dashboard");
+  await page.goto("/practice");
   const retry = page.getByRole("button", { name: "重试加载推荐" });
   await expect(retry).toBeVisible();
   await configureUpstream({ recommendation: "delay" }, true);
@@ -117,9 +121,7 @@ test("locale preference survives navigation and reload without additional reads 
   await expect(
     page.getByRole("link", { name: "Open on Codeforces" }),
   ).toBeVisible();
-  await expect(page).toHaveTitle(
-    "Training profile and recommendation | codeStartrack",
-  );
+  await expect(page).toHaveTitle("Practice | codeStartrack");
   await page.getByRole("button", { name: "简体中文", exact: true }).click();
   await expect(
     page.getByRole("link", { name: "在 Codeforces 打开题目" }),

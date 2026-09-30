@@ -28,9 +28,13 @@ export function LocaleProvider({
     document.documentElement.lang = locale;
     const title = translate(
       locale,
-      pathname === "/dashboard"
-        ? "metadata.dashboardTitle"
-        : "metadata.homeTitle",
+      pathname === "/profile"
+        ? "metadata.profileTitle"
+        : pathname === "/practice"
+          ? "metadata.practiceTitle"
+          : pathname === "/dashboard"
+            ? "metadata.dashboardTitle"
+            : "metadata.homeTitle",
     );
     const description = translate(locale, "metadata.description");
     function syncMetadata() {

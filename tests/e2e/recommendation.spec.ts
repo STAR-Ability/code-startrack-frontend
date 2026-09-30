@@ -25,7 +25,7 @@ test("renders a source link without prefetch and opens it only on explicit activ
       body: "<title>Synthetic problem</title>",
     });
   });
-  await page.goto("/dashboard");
+  await page.goto("/practice");
   const link = page.getByRole("link", { name: "在 Codeforces 打开题目" });
   await expect(link).toBeVisible();
   await expect(link).toHaveAccessibleDescription("将在新标签页打开");
@@ -48,13 +48,11 @@ test("recommendation failure retains the profile and retries E2 alone", async ({
   page,
 }) => {
   await setMode("http-error");
-  await page.goto("/dashboard");
+  await page.goto("/practice");
   await expect(
     page.getByRole("button", { name: "重试加载推荐" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("region", { name: "训练画像" }).locator("dd"),
-  ).toHaveCount(5);
+  await expect(page.getByText("训练画像已就绪")).toBeVisible();
   await setMode("success", true);
   await page.getByRole("button", { name: "重试加载推荐" }).click();
   await expect(
@@ -71,7 +69,7 @@ test("empty and invalid-link recommendations remain distinct from errors", async
   page,
 }) => {
   await setMode("empty");
-  await page.goto("/dashboard");
+  await page.goto("/practice");
   await expect(page.getByText("暂时没有可展示的推荐题目。")).toBeVisible();
   await expect(page.getByRole("button", { name: "重试加载推荐" })).toHaveCount(
     0,

@@ -1,19 +1,22 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { LocaleProvider } from "@/components/layout/locale-provider";
-import { Dashboard } from "./dashboard";
+import { TrainingPage } from "./training-page";
+import { TrainingQueryProvider } from "./query-provider";
 import {
   profileFixture,
   recommendationsFixture,
 } from "../../../tests/api-fixtures.mjs";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/dashboard" }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/profile" }));
 afterEach(() => vi.unstubAllGlobals());
 
-function renderDashboard(locale: "en" | "zh-CN" = "en") {
+function renderProfile(locale: "en" | "zh-CN" = "en") {
   return render(
     <LocaleProvider initialLocale={locale}>
-      <Dashboard userId={1} />
+      <TrainingQueryProvider>
+        <TrainingPage userId={1} view="profile" />
+      </TrainingQueryProvider>
     </LocaleProvider>,
   );
 }
@@ -37,10 +40,12 @@ test("shows real metrics, zero activity and the profile timestamp", async () => 
     }),
   );
   mockProfile(fetcher);
-  renderDashboard();
+  renderProfile();
   expect(await screen.findByText("42")).toBeVisible();
   expect(screen.getByText("1,234.6")).toBeVisible();
-  expect(screen.getAllByText("0")).toHaveLength(3);
+  expect(
+    [...document.querySelectorAll("dd")].map((element) => element.textContent),
+  ).toEqual(["42", "1,234.6", "0", "0", "0"]);
   expect(screen.getByText(/Average difficulty includes only/)).toBeVisible();
   expect(
     screen
@@ -61,7 +66,7 @@ test("pending profile does not fabricate zero metrics", () => {
     "fetch",
     vi.fn(() => new Promise(() => {})),
   );
-  renderDashboard("zh-CN");
+  renderProfile("zh-CN");
   expect(screen.getByText("正在加载训练画像…")).toBeVisible();
   expect(screen.queryByText("0")).not.toBeInTheDocument();
 });
@@ -82,7 +87,7 @@ test.each(["configuration", "http", "transport", "invalid_payload", "timeout"])(
       )
       .mockResolvedValue(Response.json(profileFixture));
     mockProfile(fetcher);
-    renderDashboard();
+    renderProfile();
     const retry = await screen.findByRole("button", { name: "Retry profile" });
     expect(screen.queryByText("0")).not.toBeInTheDocument();
     expect(screen.queryByText(/sensitive backend/)).not.toBeInTheDocument();
@@ -90,7 +95,13 @@ test.each(["configuration", "http", "transport", "invalid_payload", "timeout"])(
       expect(screen.getByText(/timed out/)).toBeVisible();
     expect(fetcher).toHaveBeenCalledTimes(1);
     fireEvent.click(retry);
-    await waitFor(() => expect(screen.getAllByText("0")).toHaveLength(5));
+    await waitFor(() =>
+      expect(
+        [...document.querySelectorAll("dd")].map(
+          (element) => element.textContent,
+        ),
+      ).toEqual(["0", "0", "0", "0", "0"]),
+    );
     expect(fetcher).toHaveBeenCalledTimes(2);
   },
 );

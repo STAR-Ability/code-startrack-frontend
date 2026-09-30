@@ -31,7 +31,7 @@ test("entry navigates by keyboard without account actions, prefetch or non-GET t
   await open.focus();
   expect(apiReads).toEqual([]);
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL("/dashboard");
+  await expect(page).toHaveURL("/practice");
   await expect(
     page.getByRole("link", { name: "在 Codeforces 打开题目" }),
   ).toBeVisible();
@@ -39,7 +39,10 @@ test("entry navigates by keyboard without account actions, prefetch or non-GET t
     "/api/training/profile",
     "/api/training/recommendation",
   ]);
-  await page.getByRole("link", { name: "返回首页" }).click();
+  await page
+    .getByRole("navigation")
+    .getByRole("link", { name: "首页", exact: true })
+    .click();
   await expect(open).toBeVisible();
   expect(apiReads).toHaveLength(2);
   expect(violations).toEqual([]);

@@ -13,7 +13,10 @@ test("serves the read-only entry without browser errors", async ({ page }) => {
   await expect(page).toHaveTitle("码练星轨 | 只读 Demo");
   await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
   await expect(
-    page.getByRole("heading", { level: 1, name: "训练画像与题目推荐" }),
+    page.getByRole("heading", {
+      level: 1,
+      name: /你的每一道代码，\s*都留下成长轨迹。/,
+    }),
   ).toBeVisible();
   await expect(page.getByText("codeStartrack", { exact: true })).toBeVisible();
   await expect(page.getByRole("main")).toBeInViewport();

@@ -1,28 +1,37 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-
 import Home from "@/app/page";
 import { LocaleProvider } from "@/components/layout/locale-provider";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
 
-test("offers read-only Demo navigation with honest account context", () => {
+test("separates illustrative marketing from the read-only learner routes", () => {
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
   render(
     <LocaleProvider initialLocale="zh-CN">
       <Home />
     </LocaleProvider>,
   );
-
-  expect(screen.getByRole("main")).toBeInTheDocument();
-  expect(
-    screen.getByRole("heading", { level: 1, name: "训练画像与题目推荐" }),
-  ).toBeVisible();
-  expect(screen.getByText("只读 Demo")).toBeVisible();
+  expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+    "你的每一道代码，都留下成长轨迹。",
+  );
   expect(screen.getByRole("link", { name: "查看只读 Demo" })).toHaveAttribute(
     "href",
-    "/dashboard",
+    "/practice",
   );
-  expect(screen.getByText("已连接账号详情暂不可用。")).toBeVisible();
+  expect(screen.getByRole("link", { name: "查看个人画像" })).toHaveAttribute(
+    "href",
+    "/profile",
+  );
+  expect(
+    screen.getAllByText("交互示意 · 非真实学习者数据").length,
+  ).toBeGreaterThan(0);
   expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
-  expect(screen.queryByRole("button")).not.toBeInTheDocument();
+  vi.unstubAllGlobals();
 });

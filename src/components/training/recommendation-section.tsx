@@ -5,6 +5,7 @@ import {
   CircleAlertIcon,
   ExternalLinkIcon,
   InfoIcon,
+  SearchIcon,
   RotateCcwIcon,
 } from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
@@ -18,7 +19,13 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import { Empty, EmptyHeader, EmptyDescription } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyDescription,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiReadError } from "@/lib/api/errors";
 import type { TrainingRecommendations } from "@/lib/api/schemas";
@@ -46,7 +53,10 @@ export function RecommendationSection({
       aria-labelledby="recommendation-title"
       aria-busy={query.isFetching}
     >
-      <Card className="[--card-spacing:--spacing(6)]">
+      <Card
+        interaction="lift"
+        className="[--card-spacing:--spacing(6)] sm:[--card-spacing:--spacing(8)]"
+      >
         <CardHeader>
           <CardTitle>
             <h2 id="recommendation-title">{t("recommendation.title")}</h2>
@@ -100,7 +110,13 @@ export function RecommendationSection({
           {batch && !problem && (
             <Empty>
               <EmptyHeader>
-                <EmptyDescription>{t("recommendation.empty")}</EmptyDescription>
+                <EmptyMedia variant="icon">
+                  <SearchIcon aria-hidden="true" />
+                </EmptyMedia>
+                <EmptyTitle>{t("recommendation.empty")}</EmptyTitle>
+                <EmptyDescription>
+                  {t("recommendation.emptyNext")}
+                </EmptyDescription>
               </EmptyHeader>
             </Empty>
           )}
@@ -110,7 +126,7 @@ export function RecommendationSection({
                 <p className="text-sm text-muted-foreground">
                   {t("recommendation.platform")} · {platform}
                 </p>
-                <h3 className="text-2xl font-semibold tracking-tight">
+                <h3 className="py-2 text-3xl font-semibold tracking-tight sm:text-4xl">
                   {problem.title?.trim()
                     ? problem.title
                     : problem.externalProblemId}
@@ -140,7 +156,7 @@ export function RecommendationSection({
                   ))}
                 </ul>
               )}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3 rounded-xl border bg-muted/70 p-5">
                 <h4 className="text-sm font-medium">
                   {t("recommendation.reason")}
                 </h4>

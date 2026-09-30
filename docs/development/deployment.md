@@ -26,7 +26,7 @@ docker compose ps
 docker compose logs --tail=50 frontend
 ```
 
-Open the configured frontend URL. `/` performs no training read; entering `/dashboard` requests E1 and then E2 through the two fixed gateway routes for Demo learner 1. No account binding, synchronization or catalogue preparation occurs.
+Open the configured frontend URL. `/` performs no training read; `/profile` reads E1, and `/practice` reads E1 then E2 through the fixed gateway routes for Demo learner 1. Navigation within the workspace reuses loaded data. The legacy `/dashboard` redirects to `/practice`. No account binding, synchronization or catalogue preparation occurs.
 
 ## Health and runtime changes
 

@@ -39,33 +39,37 @@ test.each(["profile", "recommendation"] as const)(
     const client = new QueryClient({
       defaultOptions: { queries: { retry: false, staleTime: Infinity } },
     });
-    render(
+    const renderView = (view: "profile" | "practice") => (
       <LocaleProvider initialLocale="en">
         <QueryClientProvider client={client}>
-          <TrainingResults userId={1} />
+          <TrainingResults userId={1} view={view} />
         </QueryClientProvider>
-      </LocaleProvider>,
+      </LocaleProvider>
     );
+    const result = render(renderView("practice"));
     await screen.findByRole("link", { name: "Open on Codeforces" });
     failed = true;
     await act(() =>
       client.refetchQueries({ queryKey: ["training", 1, operation] }),
     );
+    result.rerender(
+      renderView(operation === "profile" ? "profile" : "practice"),
+    );
     expect(
       await screen.findByText("Showing the last successfully loaded data."),
     ).toBeVisible();
+    expect(client.getQueryData(["training", 1, "profile"])).toEqual(
+      profileFixture,
+    );
     expect(
-      screen.getByRole("link", { name: "Open on Codeforces" }),
-    ).toBeVisible();
+      client.getQueryData(["training", 1, "recommendation", { limit: 1 }]),
+    ).toBeDefined();
+    const timestamp =
+      operation === "profile"
+        ? profileFixture.updatedAt
+        : recommendationsFixture.generatedAt;
     expect(
-      document.querySelector(
-        'time[datetime="' + profileFixture.updatedAt + '"]',
-      ),
-    ).toBeVisible();
-    expect(
-      document.querySelector(
-        'time[datetime="' + recommendationsFixture.generatedAt + '"]',
-      ),
+      document.querySelector('time[datetime="' + timestamp + '"]'),
     ).toBeVisible();
     failed = false;
     fireEvent.click(screen.getByRole("button", { name: `Retry ${operation}` }));
@@ -74,6 +78,10 @@ test.each(["profile", "recommendation"] as const)(
         screen.queryByText("Showing the last successfully loaded data."),
       ).not.toBeInTheDocument(),
     );
+    result.rerender(renderView("practice"));
+    expect(
+      await screen.findByRole("link", { name: "Open on Codeforces" }),
+    ).toBeVisible();
     expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
       "/api/training/profile",
       "/api/training/recommendation",

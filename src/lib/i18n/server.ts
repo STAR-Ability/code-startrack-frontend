@@ -7,7 +7,9 @@ export async function getLocale() {
   return resolveLocale((await cookies()).get(LOCALE_COOKIE)?.value);
 }
 
-export async function localizedMetadata(page: "home" | "dashboard") {
+export async function localizedMetadata(
+  page: "home" | "dashboard" | "profile" | "practice",
+) {
   const locale = await getLocale();
   return {
     title: translate(locale, `metadata.${page}Title`),

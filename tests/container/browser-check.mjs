@@ -192,7 +192,7 @@ try {
       request.failure()?.errorText === "net::ERR_ABORTED" &&
       request.resourceType() === "fetch" &&
       url.origin === origin &&
-      url.pathname === "/dashboard" &&
+      ["/practice", "/profile"].includes(url.pathname) &&
       url.searchParams.has("_rsc")
     ) {
       cancelledNavigations.push(url.pathname);
@@ -226,11 +226,13 @@ try {
   await expect(
     page.getByRole("link", { name: "Open on Codeforces" }),
   ).toBeVisible();
-  await expect(page).toHaveURL(`${origin}/dashboard`);
+  await expect(page).toHaveURL(`${origin}/practice`);
   assert.equal(
     await page.evaluate(() => window.containerNavigationMarker),
     true,
   );
+  await page.getByRole("link", { name: "View training context" }).click();
+  await expect(page).toHaveURL(`${origin}/profile`);
   await expect(page.locator("dd").first()).toHaveText(String(expectedSolved));
   for (const result of await Promise.all([profile, recommendation])) {
     assert.equal(result.status(), 200);

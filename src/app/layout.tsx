@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { getLocale, localizedMetadata } from "@/lib/i18n/server";
 import { LocaleProvider } from "@/components/layout/locale-provider";
-import { AppHeader } from "@/components/layout/app-header";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,10 +24,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <LocaleProvider initialLocale={locale}>
-          <AppHeader />
-          {children}
-        </LocaleProvider>
+        <LocaleProvider initialLocale={locale}>{children}</LocaleProvider>
       </body>
     </html>
   );

@@ -20,7 +20,9 @@ test("switches locale in place and persists server-rendered language without API
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page).toHaveTitle("codeStartrack | Read-only Demo");
   await expect(
-    page.getByRole("heading", { name: "Training profile and recommendation" }),
+    page.getByRole("heading", {
+      name: /Every line of code,\s*a step in your story\./,
+    }),
   ).toBeVisible();
   const preference = (await context.cookies()).find(
     (cookie) => cookie.name === "codestartrack_locale",
@@ -77,13 +79,14 @@ test("memory-only locale remains consistent through client navigation", async ({
     page.getByRole("link", { name: "Open on Codeforces" }),
   ).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page).toHaveTitle(
-    "Training profile and recommendation | codeStartrack",
-  );
+  await expect(page).toHaveTitle("Practice | codeStartrack");
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
     "content",
     /^Explore a demo learner/,
   );
-  await page.getByRole("link", { name: "Back to home" }).click();
+  await page
+    .getByRole("navigation")
+    .getByRole("link", { name: "Home", exact: true })
+    .click();
   await expect(page).toHaveTitle("codeStartrack | Read-only Demo");
 });

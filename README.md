@@ -2,7 +2,7 @@
 
 **码练星轨 (codeStartrack)** V0.1: one unified training profile and one source-aware recommendation for a shared Demo learner.
 
-`/` explains the read-only Demo and opens `/dashboard`. The dashboard shows supported metrics and one recommendation, with the backend’s early-placeholder limitation visible. Account binding/synchronization, account discovery and multiple-account support remain deferred or API-blocked.
+`/` presents the product with clearly labeled interactive illustrations. `/profile` shows the shared learner’s unified metrics; `/practice` focuses on one recommendation with the backend’s early-placeholder limitation visible. `/dashboard` redirects to `/practice`. Account binding/synchronization, account discovery and multiple-account support remain deferred or API-blocked.
 
 ## Requirements
 
@@ -35,7 +35,7 @@ The Next.js server selects `DEMO_USER_ID = 1` from `src/lib/api/config.server.ts
 
 The browser never contacts the backend directly. Both routes use request-time, uncached server reads, an 8-second timeout covering headers/body, no automatic retries and no redirects. They do not accept user/destination/query/body overrides or forward browser credentials. POST/PUT/PATCH/DELETE/HEAD are rejected locally; OPTIONS is local only. Never send these methods to the live backend, and never activate binding, synchronization or catalogue operations (E3/E4/E5).
 
-Missing configuration fails locally with a safe 500 error and no upstream request. See [the frontend gateway contract](docs/product/api-contract.md#implemented-frontend-get-boundary-v01-01) for data validation and error categories. The dashboard calls these same-origin routes only; the entry never fetches training data.
+Missing configuration fails locally with a safe 500 error and no upstream request. See [the frontend gateway contract](docs/product/api-contract.md#implemented-frontend-get-boundary-v01-01) for data validation and error categories. The workspace calls these same-origin routes only; the landing page never fetches training data.
 
 Build independently of a backend value, even if this machine has a local live configuration:
 
@@ -109,7 +109,7 @@ Unit tests live beside source files as `*.test.ts(x)` and run in jsdom with Test
 
 ```text
 src/
-  app/                 Read-only entry, dashboard, API routes, global styles
+  app/                 Landing, profile/practice, API routes, global styles
   components/layout/   Locale context and compact language/header control
   lib/i18n/            Bilingual messages, locale and formatting helpers
   components/ui/       Existing shadcn Base UI / Nova primitives
@@ -121,7 +121,7 @@ tests/
 
 `src/lib/api/` now contains the private GET client/runtime configuration/gateway handlers and separate browser-safe schemas/error types. Only the two explicit route handlers may invoke this private client. Add query helpers under `src/lib/query/`, shared chart helpers under `src/lib/charts/`, and hooks, types, layout, or feature components only when real consumers require them. Keep route-specific code alongside its route.
 
-The approved data/form/chart libraries are already installed: TanStack Query, Zod, React Hook Form with Zod resolvers, and Apache ECharts. The Query provider is scoped to `/dashboard`, with user-scoped cache keys and automatic retry/polling/focus/reconnect refetch disabled. Form and chart libraries remain unused.
+The approved data/form/chart libraries are already installed: TanStack Query, Zod, React Hook Form with Zod resolvers, and Apache ECharts. The Query provider is shared by `/profile` and `/practice`, with user-scoped cache keys and automatic retry/polling/focus/reconnect refetch disabled. Form and chart libraries remain unused.
 
 Preserve strict TypeScript, Server Components by default, Tailwind CSS, Lucide React, and the existing shadcn Base UI / Nova configuration. Chinese (`zh-CN`) is the default, with English on the same routes. A host-only `codestartrack_locale` cookie stores only the presentation preference; switching does not refetch training data.
 

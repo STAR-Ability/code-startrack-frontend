@@ -1,5 +1,24 @@
 # codeStartrack V0.1 Design Direction
 
+## Approved UI redesign — 2026-09-30
+
+The user-approved [UI redesign](../../prompts/codestartrack-ui-redesign.md)
+supersedes the historical two-page presentation below. The implemented routes are
+`/` (brand landing), `/profile` (unified profile) and `/practice` (one recommendation).
+`/dashboard` redirects to `/practice` for existing links. The profile page reads E1
+only; practice reads E1 then E2, reusing successful data within a shared workspace
+cache. Retries remain scoped to the failed operation. No backend contract changes.
+
+The landing page makes no learner requests. Its interactive cards, journey and
+problem stack are explicitly labeled illustrations from `src/lib/demo/preview.ts`.
+Future connectors and queues remain unavailable. Optional login opens an honest
+unavailable dialog with a demo link; there are no credentials, authentication calls
+or fake sessions. Both locales, visible focus, reduced-motion support and the
+existing white/neutral palette, fonts, radius scale and Base UI/Nova remain intact.
+See the [execution record](../../.agent/plans/ui-redesign.md) for decisions and checks.
+Older dashboard descriptions below record the pre-redesign slice and do not
+supersede this amendment. All API, read-only and deferred-capability limits remain.
+
 ## Current read-only execution decisions
 
 The user's later gateway/read-only instructions govern current implementation. Browser API requests go only to the Next.js application: `GET /api/training/profile` and `GET /api/training/recommendation` forward server-side to `GET /api/users/1/profile` and `GET /api/users/1/recommendations?limit=1`. Use one `DEMO_USER_ID = 1` and server-only runtime `BACKEND_BASE_URL`; never expose the backend through `NEXT_PUBLIC_*`. No POST, PUT, PATCH, DELETE, HEAD or OPTIONS may reach the live backend. E3/E4/E5 and the binding/synchronization flows described below remain deferred specifications, not current executable work.

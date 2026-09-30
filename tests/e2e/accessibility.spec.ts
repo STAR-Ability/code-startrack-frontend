@@ -54,7 +54,22 @@ for (const locale of ["zh-CN", "en"]) {
       )
       .toContain("rgb(37, 99, 235)");
     await page.screenshot({
-      path: testInfo.outputPath(`dashboard-${locale}.png`),
+      path: testInfo.outputPath(`practice-${locale}.png`),
+      fullPage: true,
+    });
+    await checkTextZoom(page);
+    await page.setViewportSize(viewport);
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "";
+    });
+    await page
+      .getByRole("link", {
+        name: locale === "en" ? "View training context" : "查看训练画像",
+      })
+      .click();
+    await expect(page.locator("dd")).toHaveCount(5);
+    await page.screenshot({
+      path: testInfo.outputPath(`profile-${locale}.png`),
       fullPage: true,
     });
     await checkTextZoom(page);
@@ -73,7 +88,9 @@ async function checkTextZoom(page: Page) {
       ),
     ).toBe(true);
     const clipped = await page
-      .locator("h1, h2, h3, p, a, [data-slot=badge]")
+      .locator(
+        "h1, h2, h3, p, a, button, dt, dd, [data-slot=badge], [data-slot=card-title]",
+      )
       .evaluateAll((elements) =>
         elements
           .filter((element) => {

@@ -1,19 +1,14 @@
-import {
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, test, vi } from "vitest";
 import { LocaleProvider } from "@/components/layout/locale-provider";
-import { Dashboard } from "./dashboard";
+import { TrainingPage } from "./training-page";
+import { TrainingQueryProvider } from "./query-provider";
 import {
   profileFixture,
   recommendationsFixture,
 } from "../../../tests/api-fixtures.mjs";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/dashboard" }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/practice" }));
 afterEach(() => vi.unstubAllGlobals());
 const problem = recommendationsFixture.recommendations[0];
 
@@ -26,7 +21,9 @@ function renderWithRecommendation(payload: unknown) {
   vi.stubGlobal("fetch", fetcher);
   render(
     <LocaleProvider initialLocale="en">
-      <Dashboard userId={1} />
+      <TrainingQueryProvider>
+        <TrainingPage userId={1} view="practice" />
+      </TrainingQueryProvider>
     </LocaleProvider>,
   );
   return fetcher;
@@ -89,9 +86,7 @@ test("empty results retain profile and disclosure without error retry", async ()
   expect(
     await screen.findByText("No recommendation is available right now."),
   ).toBeVisible();
-  expect(
-    screen.getByRole("region", { name: "Training profile" }),
-  ).toBeVisible();
+  expect(screen.getByText("Your training profile is ready")).toBeVisible();
   expect(screen.getByText(/early placeholders/)).toBeVisible();
   expect(
     screen.queryByRole("button", { name: "Retry recommendation" }),
@@ -125,7 +120,9 @@ test("E2 waits for profile success and its retry never repeats E1", async () => 
   vi.stubGlobal("fetch", fetcher);
   render(
     <LocaleProvider initialLocale="en">
-      <Dashboard userId={1} />
+      <TrainingQueryProvider>
+        <TrainingPage userId={1} view="practice" />
+      </TrainingQueryProvider>
     </LocaleProvider>,
   );
   expect(
@@ -136,11 +133,7 @@ test("E2 waits for profile success and its retry never repeats E1", async () => 
   const retry = await screen.findByRole("button", {
     name: "Retry recommendation",
   });
-  expect(
-    within(
-      screen.getByRole("region", { name: "Training profile" }),
-    ).getAllByText("0"),
-  ).toHaveLength(5);
+  expect(screen.getByText("Your training profile is ready")).toBeVisible();
   fireEvent.click(retry);
   await waitFor(() =>
     expect(

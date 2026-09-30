@@ -2,7 +2,7 @@
 
 Frontend engineering foundation for **码练星轨 (codeStartrack)**: programming practice + Agent assistance.
 
-The root route is a minimal branded placeholder. Product flows and backend integration are not implemented by this bootstrap.
+The root route remains a minimal branded placeholder. V01-01 adds a server-only GET gateway for the existing Demo profile and recommendation; product UI is not implemented yet.
 
 ## Requirements
 
@@ -18,9 +18,32 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open <http://localhost:3000>. No environment variables, credentials, or backend service are required for the bootstrap.
+Open <http://localhost:3000>. The placeholder, build and tests need no live backend. The two gateway reads require server-side runtime configuration as described below.
 
 The existing Geist fonts use `next/font/google`: the first development compilation and production builds require access to Google Fonts. Next.js serves the downloaded fonts locally to browsers.
+
+## Read-only backend setup
+
+Create `.env.local` from `.env.example` only if no local file exists, then set `BACKEND_BASE_URL` to the intended absolute HTTP(S) backend origin. Preserve unrelated local settings. No credentials, path, query or fragment are accepted; one trailing slash is allowed. Keep the value server-only and restart the server after changing its environment. Do not use a `NEXT_PUBLIC_*` backend variable, a source-code fallback or `next.config` environment mapping. `.env.local` remains ignored; the committed example contains only `BACKEND_BASE_URL=`.
+
+The Next.js server selects `DEMO_USER_ID = 1` from `src/lib/api/config.server.ts`:
+
+| Browser request on the Next.js origin | Only allowed upstream request              |
+| ------------------------------------- | ------------------------------------------ |
+| `GET /api/training/profile`           | `GET /api/users/1/profile`                 |
+| `GET /api/training/recommendation`    | `GET /api/users/1/recommendations?limit=1` |
+
+The browser never contacts the backend directly. Both routes use request-time, uncached server reads, an 8-second timeout covering headers/body, no automatic retries and no redirects. They do not accept user/destination/query/body overrides or forward browser credentials. POST/PUT/PATCH/DELETE/HEAD are rejected locally; OPTIONS is local only. Never send these methods to the live backend, and never activate binding, synchronization or catalogue operations (E3/E4/E5).
+
+Missing configuration fails locally with a safe 500 error and no upstream request. See [the frontend gateway contract](docs/product/api-contract.md#implemented-frontend-get-boundary-v01-01) for data validation and error categories. These technical routes do not add a dashboard or other product UI.
+
+Build independently of a backend value, even if this machine has a local live configuration:
+
+```bash
+BACKEND_BASE_URL= pnpm build
+```
+
+Use `pnpm start` for the production server and set `BACKEND_BASE_URL` in that server process's runtime environment. The same build can target another backend after restart without rebuilding browser JavaScript. Docker standalone output, Compose, container health and `node server.js` belong to V01-08; they are not implemented yet. Compose's future `.env` must explicitly inject the variable into the container rather than relying on Next.js's local `.env.local` behavior.
 
 ## Commands
 
@@ -60,7 +83,7 @@ pnpm build
 pnpm test:e2e
 ```
 
-Playwright starts and stops its own production server on `127.0.0.1:3100`; keep that port available. Rebuild before testing application changes. Smoke tests cover desktop and mobile Chromium, page metadata, the default Chinese document language, responsive width, and browser errors. Failures retain traces in `test-results/` and an HTML report in `playwright-report/`.
+Playwright starts and stops two production instances of the same build on `127.0.0.1:3100/3101`, with isolated synthetic upstreams on `127.0.0.1:3210/3211`; keep those four ports available. Explicit runtime environment values prevent the harness from using any local live backend configuration. Rebuild before testing application changes. Smoke tests cover desktop and mobile Chromium, page metadata, the default Chinese document language, responsive width, and browser errors. Desktop gateway tests exercise actual Next.js dispatch, both runtime destinations, same-origin browser reads, zero-forwarding negative requests, redirects/errors/timeouts and host isolation. A throwaway app checks that Next.js compilation rejects a Client Component importing the private backend client; it does not alter the production build. Failures retain traces in `test-results/` and an HTML report in `playwright-report/`.
 
 If your shell uses an HTTP proxy, exclude loopback addresses from proxying so Playwright can detect its local server. Preserve any existing exclusions:
 
@@ -83,7 +106,7 @@ tests/
   e2e/                 Playwright browser tests
 ```
 
-Create `src/lib/api/` when documented backend integration begins. Add query helpers under `src/lib/query/`, shared chart helpers under `src/lib/charts/`, and hooks, types, layout, or feature components only when real consumers require them. Keep route-specific code alongside its route.
+`src/lib/api/` now contains the private GET client/runtime configuration/gateway handlers and separate browser-safe schemas/error types. Only the two explicit route handlers may invoke this private client. Add query helpers under `src/lib/query/`, shared chart helpers under `src/lib/charts/`, and hooks, types, layout, or feature components only when real consumers require them. Keep route-specific code alongside its route.
 
 The approved data/form/chart libraries are already installed: TanStack Query, Zod, React Hook Form with Zod resolvers, and Apache ECharts. The static root page does not need a provider. Introduce `QueryClientProvider` at the first client-query boundary; form and chart libraries need no app-wide provider.
 

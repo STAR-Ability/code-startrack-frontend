@@ -70,6 +70,53 @@ The source repeats the same example for unrelated statuses:
 
 This preserves the source shape but does not establish the correct code for every error case. Do not invent a `code`/`details` envelope or new identifiers. **TODO: Backend API required** — G-03: accurate per-case errors and field requiredness. UI categories such as account conflict or profile unavailable are frontend concepts, not assumed wire values. A 404 alone cannot distinguish every cause listed below.
 
+## Implemented frontend GET boundary (V01-01)
+
+The two frontend-owned routes are `GET /api/training/profile` and `GET /api/training/recommendation`. They forward only the fixed E1/E2 operations in the current read-only decision above. They are technical Next.js routes, not additions to the backend E1–E5 inventory. `DEMO_USER_ID = 1` is centralized in server configuration; private runtime `BACKEND_BASE_URL` is validated when a read is requested, never required at import/build time. The backend origin must be absolute HTTP(S), without credentials/path/query/fragment; a trailing slash is normalized. No browser-controlled proxy destination, learner ID or limit exists.
+
+Success returns the validated consumed fields under their existing wire names, without a new envelope. Unknown extra fields are accepted and stripped; `skills`, `score` and undisplayed fields are not forwarded. Required profile counts/difficulty are nonnegative int32 values; average difficulty is a finite nonnegative number. IDs must be numeric safe integers, and the returned learner must match the configured Demo identity. Zero counts remain zero. Datetimes retain their original text, accepting usable ISO date-time values with arbitrary fractional precision, offsets or no explicit offset; no timezone is inferred or rewritten. This tolerance is frontend parsing policy, not a new backend timestamp guarantee (G-03).
+
+Recommendation source/internal IDs, platform and reason are required. Empty lists/titles, null difficulty and empty tags remain valid. Missing title/difficulty/tags/URL stays absent. An invalid supplied URL becomes `null` so the later UI disables its action; only an absolute supplied HTTP(S) URL without credentials is usable, and no URL is constructed from IDs. Absent metadata tolerance is a defensive frontend policy rather than proof that backend omission is guaranteed. No default metrics, successful mock data, confidence score or ability analysis is manufactured.
+
+Frontend failure shape:
+
+```ts
+type ApiErrorResponse = {
+  error: {
+    operation: "profile" | "recommendation";
+    category:
+      | "configuration"
+      | "invalid_request"
+      | "method_not_allowed"
+      | "transport"
+      | "aborted"
+      | "timeout"
+      | "http"
+      | "invalid_json"
+      | "invalid_payload";
+    status: number;
+    upstreamStatus?: number;
+    backendError?: "account_not_found";
+  };
+};
+```
+
+These are frontend-owned categories, not backend wire codes. The private client recognizes the documented `{ error, message }` shape and discards raw human-readable messages. Only the documented `account_not_found` identifier may be serialized; unknown identifiers, raw bodies/messages, stack traces, URLs, environment values and upstream headers are never forwarded or logged. A 404 still does not prove any particular account/recovery state.
+
+| Condition                                                 | Gateway status                                                                 |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Unexpected query/body/method-override input               | 400, zero upstream calls                                                       |
+| Unsupported methods, including explicit HEAD              | 405, zero upstream calls; framework method failures and HEAD have no JSON body |
+| Local OPTIONS                                             | 204 with `Allow: GET, OPTIONS`, zero upstream calls                            |
+| Missing or invalid server configuration                   | 500, zero upstream calls                                                       |
+| Network failure or caller cancellation                    | 502 (`transport` or `aborted`)                                                 |
+| Invalid success JSON or consumed-field validation failure | 502 (`invalid_json` or `invalid_payload`)                                      |
+| 8-second timeout, including stalled response bodies       | 504                                                                            |
+| Upstream HTTP 4xx/5xx                                     | Preserve status, even with empty/non-JSON bodies                               |
+| Upstream redirect/other non-success status                | 502; retain `upstreamStatus`, never follow redirects                           |
+
+Upstream reads omit credentials and carry only `Accept: application/json` as an application-selected header, with no body or inbound header passthrough. Reads and gateway success/error responses use `no-store`. There is no automatic retry, polling, build/import request, generic proxy, write client or repair operation. The browser API path is same-origin Next.js, so backend browser CORS and HTTPS-browser-to-HTTP-backend mixed content are not dependencies. Container/server egress and live response contracts still require V01-08/09 verification; server-to-server HTTP remains HTTP.
+
 ## Existing endpoint inventory
 
 E1–E5 are the only documented application endpoints. Preserve methods and paths without adding a version prefix.

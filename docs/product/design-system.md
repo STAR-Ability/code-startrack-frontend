@@ -69,7 +69,7 @@ No gradients, neon, cyberpunk effects or colorful dashboard-card palette. No the
 
 ## V01-02 bilingual copy inventory
 
-Status: complete wording proposal for product-owner review in V01-02; P-01–P-05 remain resolved. Use these stable keys when V01-03–06 implement dictionaries and their consumers. This table is documentation, not a runtime dictionary or permission to implement UI now. Braced placeholders must match in both locales; interpolate plain text, never HTML. The shared Demo is not presented as the visitor's own connected account.
+Status: accepted for implementation under the user’s 2026-09-30 delegation, recorded in the execution plan; P-01–P-05 remain resolved. Use these stable keys when V01-03–06 implement dictionaries and their consumers. This table defines the runtime dictionary implemented in V01-03 and consumed in V01-04–06. Braced placeholders must match in both locales; interpolate plain text, never HTML. The shared Demo is not presented as the visitor's own connected account.
 
 | Key                                    | zh-CN                                                                              | en                                                                                                                                     |
 | -------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
@@ -248,7 +248,7 @@ Show:
 
 Use the backend's `url`; do not invent a new destination from platform strings. An empty title may fall back to the provided external problem ID. Null difficulty stays unavailable; it does not prove the problem is unrated. Absent tags need no replacement. Do not turn a recommendation `score` into a proven confidence or learner-ability score.
 
-The API's current hardcoded reasons may make personal claims that are not backed by an implemented algorithm. Display the limitation prominently enough to prevent those claims from being read as verified analysis; do not add stronger AI/ability marketing. P-03 is resolved: the recommendation must visibly disclose its early placeholder behavior. The V01-02 inventory above supplies equivalent zh-CN/en wording for review without reopening that requirement.
+The API's current hardcoded reasons may make personal claims that are not backed by an implemented algorithm. Display the limitation prominently enough to prevent those claims from being read as verified analysis; do not add stronger AI/ability marketing. P-03 is resolved: the recommendation must visibly disclose its early placeholder behavior. The V01-02 inventory above supplies equivalent zh-CN/en accepted wording without reopening that requirement.
 
 The same source metadata and CTA pattern can later accommodate additional connectors. Future source-specific labels do not require a different profile or product mode, and no unsupported source is available now.
 

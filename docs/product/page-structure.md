@@ -25,7 +25,7 @@ A future connector extends the connected-account surface and backend ingestion. 
 
 ## Current read-only page behavior (V01-02)
 
-Use the [bilingual copy inventory](design-system.md#v01-02-bilingual-copy-inventory) and [locale/persistence proposal](product-requirements.md#locale-selection-and-persistence). These details are ready for product-owner review; no product page has been implemented by V01-02. Current behavior takes precedence over the explicitly deferred account-connection sections retained below.
+Use the [bilingual copy inventory](design-system.md#v01-02-bilingual-copy-inventory) and [locale/persistence proposal](product-requirements.md#locale-selection-and-persistence). These details are accepted under the user’s 2026-09-30 delegation; implementation follows in V01-03–06. Current behavior takes precedence over the explicitly deferred account-connection sections retained below.
 
 | Surface / state                        | Visible behavior and permitted action                                                                                                                                                                                                                                                                                                                  |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

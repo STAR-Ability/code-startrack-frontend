@@ -154,7 +154,7 @@ No internal completion event, judge verdict, hint interaction, or coach role swi
 
 ## Approved V0.1 product decisions
 
-The user resolved P-01–P-05 on 2026-09-30 for the current read-only phase. Those user-approved decisions remain resolved. V01-02 now supplies concrete bilingual copy and locale details for product-owner review; these refinements must not be described as separately user-approved before that review. No UI is implemented by this documentation task.
+The user resolved P-01–P-05 on 2026-09-30 for the current read-only phase. Those user-approved decisions remain resolved. V01-02 supplies the concrete bilingual copy and locale details below. On 2026-09-30 the user delegated project-aligned implementation decisions to Codex and required recording the actions. Under that authorization, the existing proposal is accepted as the implementation baseline without changing P-01–P-05. UI implementation follows in V01-03–06.
 
 | ID   | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | ---- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -166,9 +166,9 @@ The user resolved P-01–P-05 on 2026-09-30 for the current read-only phase. Tho
 
 Backend status G-01–G-09 and remaining ambiguities are detailed in [API contract](api-contract.md#v01-backend-and-api-gaps). G-01 is resolved for the Demo. MA-01 remains **BLOCKED_BY_API** under G-09; account discovery and cross-account deduplication need G-02/08. Future judging/team capabilities are not V0.1 blockers.
 
-## V01-02 implementation details for review
+## V01-02 accepted implementation details
 
-Status: documentation prepared under [V01-02 / Issue #6](https://github.com/STAR-Ability/code-startrack-frontend/issues/6), following merged V01-01 PR #5. P-01–P-05 above are already user-approved; the following concrete wording/persistence details are proposed for acceptance in the committed documentation or Issue #6; no PR is required under the current workflow. V01-03 and later implementation must use the accepted record, not silently reopen those five decisions.
+Status: accepted under the user’s 2026-09-30 delegation, recorded in the execution plan. The existing 55-key bilingual inventory, read-only states, operation-specific retry, locale cookie and timestamp presentation are the V01-03–06 implementation baseline. P-01–P-05 remain unchanged. No PR or separate Issue comment is required.
 
 ### Read-only entry and recovery
 

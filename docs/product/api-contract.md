@@ -119,7 +119,7 @@ Upstream reads omit credentials and carry only `Accept: application/json` as an 
 
 ## Frontend error presentation (V01-02)
 
-This is a proposed presentation mapping for the already implemented V01-01 frontend error model, not a change to backend wire errors or the gateway. Use the operation and category, with strings from the [bilingual inventory](design-system.md#v01-02-bilingual-copy-inventory). Never expose raw backend text, exception details, hosts, environment names or machine identifiers as UI copy.
+This is the accepted presentation mapping (under the user’s 2026-09-30 delegation) for the already implemented V01-01 frontend error model, not a change to backend wire errors or the gateway. Use the operation and category, with strings from the [bilingual inventory](design-system.md#v01-02-bilingual-copy-inventory). Never expose raw backend text, exception details, hosts, environment names or machine identifiers as UI copy.
 
 | Normalized category / state                                             | Profile copy                                      | Recommendation copy                               | Recovery                                                                                                                                                                |
 | ----------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

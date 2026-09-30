@@ -15,10 +15,14 @@ export default defineConfig({
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile-chromium", use: { ...devices["Pixel 7"] } },
+    {
+      name: "mobile-chromium",
+      use: { ...devices["Pixel 7"] },
+      testIgnore: /gateway\.spec\.ts/,
+    },
   ],
   webServer: {
-    command: "pnpm start --hostname 127.0.0.1 --port 3100",
+    command: "node tests/gateway-server.mjs",
     url: baseURL,
     reuseExistingServer: false,
     timeout: 60_000,

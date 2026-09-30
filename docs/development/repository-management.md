@@ -10,6 +10,20 @@
 
 ---
 
+## Current V0.1 workflow override — 2026-09-30
+
+The user explicitly replaced the task-branch/PR workflow for current V0.1 development. This section takes precedence over branch, PR and merge requirements elsewhere in this document and in older prompts. The general workflow below remains the default outside this V0.1 exception.
+
+- Work directly on `dev`; do not create feature/task branches or PRs for V0.1.
+- Inspect the complete working tree, including tracked and untracked files, before establishing the baseline. Include legitimate scaffold, documentation, configuration and source files. Exclude `.env.local`, other private env files, secrets, dependencies, build output, caches, test artifacts and temporary/unrelated files. The neutral `.env.example` remains legitimate configuration.
+- For each completed stage/Issue, run all required checks/tests, review the full diff (including new files), commit only that stage's changes with a clear Conventional Commit, and immediately push to `origin/dev` before beginning the next stage. Keep unfinished work out of completed-stage commits.
+- Preserve existing user changes. Never modify or push directly to `main`, force push, run `git reset --hard` or run `git clean`. Do not bypass repository protection or disable CI if a push is rejected; report the exact blocker.
+- CI runs on pushes to `dev` as well as the existing PR/manual triggers. Product decisions and API gaps retain their documented status; removing PRs does not claim that pending decisions have been accepted.
+
+Baseline audit: `origin/dev` at `9704000f81ff8c670b0a229c641f444e1e582ff8` already contains the legitimate scaffold baseline (former PR #3) and V01-01 (former PR #5). All 87 project files are tracked; no additional untracked project files need integration. The six in-progress V01-02 documents are kept separate from this workflow/baseline update. Ignored local env, dependency, build/test output and scratch files remain local. No empty baseline commit or history rewrite is needed. The workflow update was validated with lint, formatting, type checking, all 103 unit tests, a production build without backend configuration and all 17 offline E2E tests; the full diff was reviewed before its direct push. No live backend request was needed.
+
+---
+
 ## 1. Branch Model
 
 The repository has two long-lived branches:

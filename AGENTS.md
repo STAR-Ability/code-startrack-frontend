@@ -1,5 +1,3 @@
-
-
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
@@ -360,13 +358,16 @@ docs/development/repository-management.md
 
 Key rules:
 
-- do not push directly to `main`;
-- do not push directly to `dev`;
-- create normal task branches from `dev`;
+- for current V0.1 development, work directly on `dev`; do not create task branches or PRs;
+- inspect tracked and untracked files; commit legitimate project files while excluding secrets, local env files, dependencies, build output and temporary artifacts;
+- after each completed V0.1 stage/Issue, run its required checks/tests, review the full diff, make a scoped Conventional Commit and immediately push to `origin/dev` before starting the next stage;
+- preserve unfinished work separately; do not mix stages in a commit;
+- never modify or push directly to `main`, force push, or use destructive reset/clean operations;
 - keep work scoped to the active Issue;
 - do not perform broad unrelated refactors;
-- normal task PRs target `dev`;
-- release PRs target `main`.
+- outside this explicit V0.1 exception, the normal task-branch/PR workflow in repository management still applies.
+
+The user's 2026-09-30 direct-`dev` instruction supersedes earlier V0.1 branch/PR requirements in repository documents and prompts. It does not relax quality checks, live-backend GET-only restrictions or Issue scope.
 
 ---
 

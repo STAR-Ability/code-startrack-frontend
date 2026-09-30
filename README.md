@@ -24,7 +24,7 @@ The existing Geist fonts use `next/font/google`: the first development compilati
 
 ## Read-only backend setup
 
-Create `.env.local` from `.env.example` only if no local file exists, then set `BACKEND_BASE_URL` to the intended absolute HTTP(S) backend origin. Preserve unrelated local settings. No credentials, path, query or fragment are accepted; one trailing slash is allowed. Keep the value server-only and restart the server after changing its environment. Do not use a `NEXT_PUBLIC_*` backend variable, a source-code fallback or `next.config` environment mapping. `.env.local` remains ignored; the committed example contains only `BACKEND_BASE_URL=`.
+Create `.env.local` from `.env.example` only if no local file exists, then set `BACKEND_BASE_URL` to the intended absolute HTTP(S) backend origin. Preserve unrelated local settings. No credentials, path, query or fragment are accepted; one trailing slash is allowed. Keep the value server-only and restart the server after changing its environment. Do not use a `NEXT_PUBLIC_*` backend variable, a source-code fallback or `next.config` environment mapping. `.env.local` remains ignored; the committed example leaves the backend empty and supplies neutral Compose defaults.
 
 The Next.js server selects `DEMO_USER_ID = 1` from `src/lib/api/config.server.ts`:
 
@@ -43,22 +43,33 @@ Build independently of a backend value, even if this machine has a local live co
 BACKEND_BASE_URL= pnpm build
 ```
 
-Use `pnpm start` for the production server and set `BACKEND_BASE_URL` in that server process's runtime environment. The same build can target another backend after restart without rebuilding browser JavaScript. Docker standalone output, Compose, container health and `node server.js` belong to V01-08; they are not implemented yet. Compose's future `.env` must explicitly inject the variable into the container rather than relying on Next.js's local `.env.local` behavior.
+Use `pnpm start` to copy static assets beside the local standalone server and start it with Node; set `BACKEND_BASE_URL` in that server process's runtime environment. The same build can target another backend after restart without rebuilding browser JavaScript. For Docker, use the production standalone server and explicit Compose runtime configuration described in [deployment instructions](docs/development/deployment.md).
+
+## Production with Docker Compose
+
+Docker Engine and Compose v2+ are required. Create an ignored `.env` from `.env.example` if no `.env` exists, set its server-only `BACKEND_BASE_URL`, then run:
+
+```bash
+docker compose up -d
+```
+
+This builds the image on first use and starts the non-root standalone Node server at <http://localhost:3000>. `.env.local` is not Compose input. A later backend change takes effect with `docker compose up -d` without rebuilding browser JavaScript. `/api/health` reports frontend liveness only. See [deployment and rollback](docs/development/deployment.md) for host ports, TLS entry points, immutable images, and isolated container verification. Live deployment acceptance remains gated by operator readiness in V01-09.
 
 ## Commands
 
-| Command             | Purpose                                                                     |
-| ------------------- | --------------------------------------------------------------------------- |
-| `pnpm dev`          | Start the Next.js development server                                        |
-| `pnpm build`        | Create the production build                                                 |
-| `pnpm start`        | Serve an existing production build                                          |
-| `pnpm lint`         | Run ESLint with no warnings allowed                                         |
-| `pnpm format`       | Format source, tests, configuration, workflows, README, and execution plans |
-| `pnpm format:check` | Check the same formatting scope without writing                             |
-| `pnpm typecheck`    | Generate Next.js route types, then run strict TypeScript checking           |
-| `pnpm test`         | Run Vitest once                                                             |
-| `pnpm test:watch`   | Run Vitest in watch mode                                                    |
-| `pnpm test:e2e`     | Run Playwright against the production build                                 |
+| Command               | Purpose                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `pnpm dev`            | Start the Next.js development server                                                  |
+| `pnpm build`          | Create the production build                                                           |
+| `pnpm start`          | Serve an existing production build                                                    |
+| `pnpm lint`           | Run ESLint with no warnings allowed                                                   |
+| `pnpm format`         | Format source, tests, configuration, workflows, README, and execution plans           |
+| `pnpm format:check`   | Check the same formatting scope without writing                                       |
+| `pnpm typecheck`      | Generate Next.js route types, then run strict TypeScript checking                     |
+| `pnpm test`           | Run Vitest once                                                                       |
+| `pnpm test:watch`     | Run Vitest in watch mode                                                              |
+| `pnpm test:e2e`       | Run Playwright against the production build                                           |
+| `pnpm test:container` | Build and verify production containers against isolated fixtures and trusted test TLS |
 
 Formatting intentionally leaves imported product/development prose and installed agent skills untouched. Generated output and lockfiles are excluded.
 

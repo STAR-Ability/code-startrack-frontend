@@ -10,9 +10,9 @@ test("delayed reads show distinct states and issue only E1 then E2", async ({
   await expect(page.getByText("正在加载训练画像…")).toBeVisible();
   await expect(page.getByText("画像加载成功后将显示推荐题目。")).toBeVisible();
   await expect(page.locator("dd")).toHaveCount(0);
-  expect((await upstreamCalls()).map((call) => call.path)).toEqual([
-    "/api/users/1/profile",
-  ]);
+  await expect
+    .poll(async () => (await upstreamCalls()).map((call) => call.path))
+    .toEqual(["/api/users/1/profile"]);
   await expect(page.getByText("正在加载推荐题目…")).toBeVisible();
   await expect(page.locator("dd")).toHaveCount(5);
   await expect(

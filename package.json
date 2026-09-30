@@ -5,14 +5,15 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node scripts/start.mjs",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write \"**/*.{ts,tsx,mts,js,mjs,cjs,json,css,yml,yaml}\" README.md .agent/plans",
     "format:check": "prettier --check \"**/*.{ts,tsx,mts,js,mjs,cjs,json,css,yml,yaml}\" README.md .agent/plans",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:container": "node tests/container/verify.mjs"
   },
   "engines": {
     "node": ">=24 <25"

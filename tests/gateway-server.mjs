@@ -2,6 +2,7 @@
 // upstream; an ignored local .env file can never select the live backend here.
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
+import { cp } from "node:fs/promises";
 
 import { profileFixture, recommendationsFixture } from "./api-fixtures.mts";
 
@@ -28,6 +29,10 @@ process.on("SIGTERM", () => stop());
 process.on("SIGINT", () => stop());
 
 try {
+  await cp(".next/static", ".next/standalone/.next/static", {
+    recursive: true,
+  });
+  await cp("public", ".next/standalone/public", { recursive: true });
   for (const [index, upstreamPort] of [3210, 3211, 3212].entries()) {
     let mode = "success";
     let operations = {};
@@ -155,18 +160,15 @@ try {
       [
         "--import",
         new URL("./read-only-network-guard.mjs", import.meta.url).href,
-        "node_modules/next/dist/bin/next",
-        "start",
-        "--hostname",
-        "127.0.0.1",
-        "--port",
-        String(3100 + index),
+        ".next/standalone/server.js",
       ],
       {
         stdio: "inherit",
         env: {
           ...process.env,
           NODE_ENV: "production",
+          HOSTNAME: "127.0.0.1",
+          PORT: String(3100 + index),
           BACKEND_BASE_URL: index === 2 ? "" : origin,
         },
       },

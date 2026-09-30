@@ -67,6 +67,19 @@ test.describe("actual Next.js GET gateway", () => {
     await control(upstream, "success");
   });
 
+  test("frontend health is independent of backend availability and configuration", async ({
+    request,
+  }) => {
+    await control(upstream, "network");
+    for (const origin of [frontend, "http://127.0.0.1:3102"]) {
+      const health = await request.get(`${origin}/api/health`);
+      expect(health.status()).toBe(200);
+      expect(await health.json()).toEqual({ status: "ok" });
+      expect(health.headers()["cache-control"]).toBe("no-store");
+    }
+    expect((await control(upstream)).calls).toEqual([]);
+  });
+
   test("browser stays on Next.js; only exact GETs reach the upstream without CORS headers", async ({
     page,
   }) => {

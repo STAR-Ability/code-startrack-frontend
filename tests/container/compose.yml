@@ -1,0 +1,30 @@
+# Test-only merge with the root Compose file. No service can reach the Internet.
+services:
+  fixture-a:
+    image: node:24-alpine
+    command: ["node", "/fixtures/container/upstream.mjs"]
+    environment:
+      SOLVED_COUNT: "31"
+    volumes:
+      - ./tests:/fixtures:ro
+  fixture-b:
+    image: node:24-alpine
+    command: ["node", "/fixtures/container/upstream.mjs"]
+    environment:
+      SOLVED_COUNT: "47"
+    volumes:
+      - ./tests:/fixtures:ro
+  browser-check:
+    profiles: [verify]
+    image: codestartrack-browser-check:local
+    build:
+      context: ./tests/container
+      dockerfile: Dockerfile
+    init: true
+    shm_size: 1gb
+    environment:
+      EXPECTED_SOLVED: ${EXPECTED_SOLVED:-31}
+      EXPECTED_FIXTURE: ${EXPECTED_FIXTURE:-fixture-a}
+networks:
+  default:
+    internal: true

@@ -1,0 +1,20 @@
+# Only production build inputs enter the context. In particular, never send
+# .env files, Git metadata, dependencies, tests, build output or local skills.
+**
+!Dockerfile
+!.dockerignore
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!next.config.ts
+!postcss.config.mjs
+!tsconfig.json
+!public/
+!public/**
+!src/
+!src/**
+**/*.test.*
+**/.env*
+**/*.pem
+**/*.key
+**/.DS_Store

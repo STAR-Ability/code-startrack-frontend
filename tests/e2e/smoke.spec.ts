@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("serves the root placeholder without browser errors", async ({ page }) => {
+test("serves the read-only entry without browser errors", async ({ page }) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => {
@@ -13,7 +13,7 @@ test("serves the root placeholder without browser errors", async ({ page }) => {
   await expect(page).toHaveTitle("码练星轨 | 只读 Demo");
   await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
   await expect(
-    page.getByRole("heading", { level: 1, name: "码练星轨" }),
+    page.getByRole("heading", { level: 1, name: "训练画像与题目推荐" }),
   ).toBeVisible();
   await expect(page.getByText("codeStartrack", { exact: true })).toBeVisible();
   await expect(page.getByRole("main")).toBeInViewport();

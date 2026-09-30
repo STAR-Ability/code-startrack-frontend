@@ -18,7 +18,7 @@ test("switches locale in place and persists server-rendered language without API
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page).toHaveTitle("codeStartrack | Read-only Demo");
   await expect(
-    page.getByRole("heading", { name: "codeStartrack" }),
+    page.getByRole("heading", { name: "Training profile and recommendation" }),
   ).toBeVisible();
   const preference = (await context.cookies()).find(
     (cookie) => cookie.name === "codestartrack_locale",

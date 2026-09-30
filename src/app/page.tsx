@@ -1,5 +1,5 @@
-import { BrandPlaceholder } from "@/components/layout/brand-placeholder";
+import { DemoEntry } from "./demo-entry";
 
 export default function Home() {
-  return <BrandPlaceholder />;
+  return <DemoEntry />;
 }

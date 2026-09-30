@@ -1,6 +1,9 @@
 FROM node:24-alpine AS dependencies
 WORKDIR /app
-RUN npm install --global pnpm@12.8.1
+RUN npm config set registry https://registry.npmmirror.com \
+    && npm install --global pnpm@12.8.1 --no-audit --no-fund \
+    && pnpm config set registry https://registry.npmmirror.com
+
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 

@@ -13,6 +13,7 @@ export default defineConfig({
   use: {
     baseURL,
     trace: "retain-on-failure",
+    serviceWorkers: "block",
   },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },

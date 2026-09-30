@@ -21,7 +21,7 @@ export function DemoEntry() {
           <EyeIcon data-icon="inline-start" aria-hidden="true" />
           {t("demo.label")}
         </Badge>
-        <h1 className="max-w-xl text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
+        <h1 className="max-w-xl text-4xl leading-tight font-semibold tracking-tight wrap-anywhere sm:text-5xl">
           {t("entry.title")}
         </h1>
         <p className="max-w-xl text-base leading-relaxed text-muted-foreground">

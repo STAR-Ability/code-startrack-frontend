@@ -1,0 +1,57 @@
+import { expect, test as base } from "@playwright/test";
+
+export const test = base.extend({
+  context: async ({ context }, provideContext) => {
+    const violations: string[] = [];
+    const browserErrors: string[] = [];
+    await context.route("**/*", async (route) => {
+      const request = route.request();
+      const url = new URL(request.url());
+      if (
+        !/^http:\/\/127\.0\.0\.1:310[0-2]$/.test(url.origin) ||
+        request.method() !== "GET"
+      ) {
+        violations.push(`${request.method()} ${url.origin}${url.pathname}`);
+        return route.abort();
+      }
+      return route.continue();
+    });
+    context.on("page", (page) => {
+      page.on("pageerror", (error) => browserErrors.push(error.message));
+      page.on("console", (message) => {
+        if (
+          message.type() === "error" &&
+          !message.text().startsWith("Failed to load resource:")
+        )
+          browserErrors.push(message.text());
+      });
+    });
+    await provideContext(context);
+    expect(violations, "Unexpected browser egress").toEqual([]);
+    expect(browserErrors, "Browser runtime/hydration errors").toEqual([]);
+  },
+});
+
+export { expect };
+
+export async function configureUpstream(
+  operations: { profile?: string; recommendation?: string },
+  preserveCalls = false,
+) {
+  await fetch("http://127.0.0.1:3210/__control", {
+    method: "POST",
+    body: JSON.stringify({ operations, preserveCalls }),
+  });
+}
+
+export async function upstreamCalls() {
+  const { calls } = await (
+    await fetch("http://127.0.0.1:3210/__control")
+  ).json();
+  return calls as {
+    method: string;
+    path: string;
+    headers: Record<string, string>;
+    body: string;
+  }[];
+}

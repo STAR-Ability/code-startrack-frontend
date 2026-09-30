@@ -31,6 +31,9 @@ const buttonVariants = cva(
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
       },
+      wrap: {
+        true: "h-auto min-h-9 max-w-full py-2 text-center wrap-anywhere whitespace-normal",
+      },
     },
     defaultVariants: {
       variant: "default",
@@ -43,12 +46,13 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  wrap,
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size, wrap, className }))}
       {...props}
     />
   );

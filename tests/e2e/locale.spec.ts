@@ -1,4 +1,6 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, configureUpstream } from "./fixtures";
+
+test.beforeEach(() => configureUpstream({}));
 
 test("switches locale in place and persists server-rendered language without API traffic", async ({
   page,
@@ -56,4 +58,32 @@ test("invalid cookies default to Chinese and blocked persistence is announced", 
   await expect(page.getByRole("status")).toContainText("could not save");
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
+});
+
+test("memory-only locale remains consistent through client navigation", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.evaluate(() =>
+    Object.defineProperty(document, "cookie", {
+      configurable: true,
+      get: () => "",
+      set: () => {},
+    }),
+  );
+  await page.getByRole("button", { name: "English", exact: true }).click();
+  await page.getByRole("link", { name: "View read-only demo" }).click();
+  await expect(
+    page.getByRole("link", { name: "Open on Codeforces" }),
+  ).toBeVisible();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page).toHaveTitle(
+    "Training profile and recommendation | codeStartrack",
+  );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    /^Explore a demo learner/,
+  );
+  await page.getByRole("link", { name: "Back to home" }).click();
+  await expect(page).toHaveTitle("codeStartrack | Read-only Demo");
 });

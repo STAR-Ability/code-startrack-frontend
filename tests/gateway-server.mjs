@@ -28,7 +28,7 @@ process.on("SIGTERM", () => stop());
 process.on("SIGINT", () => stop());
 
 try {
-  for (const [index, upstreamPort] of [3210, 3211].entries()) {
+  for (const [index, upstreamPort] of [3210, 3211, 3212].entries()) {
     let mode = "success";
     let operations = {};
     let calls = [];
@@ -112,6 +112,22 @@ try {
         response.end(
           JSON.stringify({
             ...recommendationsFixture,
+            ...(currentMode === "invalid-payload"
+              ? { generatedAt: "invalid" }
+              : {}),
+            ...(currentMode === "rich"
+              ? {
+                  recommendations: [
+                    {
+                      ...recommendationsFixture.recommendations[0],
+                      title: "Synthetic practice problem",
+                      difficulty: 1300,
+                      tags: ["arrays", "longtag".repeat(25)],
+                      reason: "Original backend note. ".repeat(12),
+                    },
+                  ],
+                }
+              : {}),
             ...(currentMode === "empty" ? { recommendations: [] } : {}),
             ...(currentMode === "invalid-url"
               ? {
@@ -137,6 +153,8 @@ try {
     const child = spawn(
       process.execPath,
       [
+        "--import",
+        new URL("./read-only-network-guard.mjs", import.meta.url).href,
         "node_modules/next/dist/bin/next",
         "start",
         "--hostname",
@@ -149,7 +167,7 @@ try {
         env: {
           ...process.env,
           NODE_ENV: "production",
-          BACKEND_BASE_URL: origin,
+          BACKEND_BASE_URL: index === 2 ? "" : origin,
         },
       },
     );

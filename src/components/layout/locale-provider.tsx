@@ -26,15 +26,32 @@ export function LocaleProvider({
 
   useEffect(() => {
     document.documentElement.lang = locale;
-    document.title = translate(
+    const title = translate(
       locale,
       pathname === "/dashboard"
         ? "metadata.dashboardTitle"
         : "metadata.homeTitle",
     );
-    document
-      .querySelector('meta[name="description"]')
-      ?.setAttribute("content", translate(locale, "metadata.description"));
+    const description = translate(locale, "metadata.description");
+    function syncMetadata() {
+      if (document.title !== title) document.title = title;
+      const meta = document.querySelector('meta[name="description"]');
+      if (meta && meta.getAttribute("content") !== description) {
+        meta.setAttribute("content", description);
+      }
+    }
+    syncMetadata();
+    // Next may stream cookie-derived metadata after navigation. When cookies
+    // are blocked, the in-memory preference must still own the visible metadata.
+    const observer = new MutationObserver(syncMetadata);
+    observer.observe(document.head, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["content"],
+    });
+    return () => observer.disconnect();
   }, [locale, pathname]);
 
   function setLocale(next: Locale) {

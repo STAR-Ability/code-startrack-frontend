@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("serves the read-only entry without browser errors", async ({ page }) => {
   const browserErrors: string[] = [];

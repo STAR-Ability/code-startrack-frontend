@@ -132,8 +132,10 @@ export function RecommendationSection({
                   aria-label={t("recommendation.tags")}
                 >
                   {tags.map((tag, index) => (
-                    <li key={`${index}-${tag}`}>
-                      <Badge variant="secondary">{tag}</Badge>
+                    <li key={`${index}-${tag}`} className="max-w-full">
+                      <Badge variant="secondary" wrap>
+                        {tag}
+                      </Badge>
                     </li>
                   ))}
                 </ul>
@@ -161,18 +163,20 @@ export function RecommendationSection({
                     rel="noopener noreferrer"
                     aria-describedby="new-tab-notice"
                     className={cn(
-                      buttonVariants({ size: "lg" }),
+                      buttonVariants({ size: "lg", wrap: true }),
                       "w-full sm:w-auto",
                     )}
                   >
-                    {t("recommendation.openExternal", { platform })}
+                    <span className="min-w-0">
+                      {t("recommendation.openExternal", { platform })}
+                    </span>
                     <ExternalLinkIcon
                       data-icon="inline-end"
                       aria-hidden="true"
                     />
                   </a>
                 ) : (
-                  <Button size="lg" className="w-full sm:w-auto" disabled>
+                  <Button size="lg" wrap className="w-full sm:w-auto" disabled>
                     {t("recommendation.linkUnavailable")}
                   </Button>
                 )}

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test("entry navigates by keyboard without account actions, prefetch or non-GET traffic", async ({
   page,

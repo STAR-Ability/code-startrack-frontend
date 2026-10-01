@@ -82,31 +82,39 @@ async function checkTextZoom(page: Page) {
     await page.evaluate((scale) => {
       document.documentElement.style.fontSize = scale;
     }, textScale);
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBe(true);
-    const clipped = await page
-      .locator(
-        "h1, h2, h3, p, a, button, dt, dd, [data-slot=badge], [data-slot=card-title]",
+    // Viewport changes can leave card transforms in a short CSS transition.
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       )
-      .evaluateAll((elements) =>
-        elements
-          .filter((element) => {
-            const rect = element.getBoundingClientRect();
-            const style = getComputedStyle(element);
-            if (style.position === "absolute" || !rect.width || rect.width <= 1)
-              return false;
-            return (
-              rect.right > innerWidth + 1 ||
-              rect.left < -1 ||
-              (element.clientWidth > 0 &&
-                element.scrollWidth > element.clientWidth + 1)
-            );
-          })
-          .map((element) => element.textContent),
-      );
-    expect(clipped, `Clipped content at ${textScale}`).toEqual([]);
+      .toBe(true);
+    const clipped = () =>
+      page
+        .locator(
+          "h1, h2, h3, p, a, button, dt, dd, [data-slot=badge], [data-slot=card-title]",
+        )
+        .evaluateAll((elements) =>
+          elements
+            .filter((element) => {
+              const rect = element.getBoundingClientRect();
+              const style = getComputedStyle(element);
+              if (
+                style.position === "absolute" ||
+                !rect.width ||
+                rect.width <= 1
+              )
+                return false;
+              return (
+                rect.right > innerWidth + 1 ||
+                rect.left < -1 ||
+                (element.clientWidth > 0 &&
+                  element.scrollWidth > element.clientWidth + 1)
+              );
+            })
+            .map((element) => element.textContent),
+        );
+    await expect
+      .poll(clipped, { message: `Clipped content at ${textScale}` })
+      .toEqual([]);
   }
 }

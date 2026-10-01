@@ -37,17 +37,13 @@ export function ProductPreview() {
       className="product-preview scroll-mt-36"
       ref={preview}
       onPointerMove={(event) => {
-        if (
-          event.pointerType !== "mouse" ||
-          matchMedia("(prefers-reduced-motion: reduce)").matches
-        )
-          return;
+        if (event.pointerType !== "mouse") return;
         const rect = event.currentTarget.getBoundingClientRect();
         const x = (event.clientX - rect.left) / rect.width;
         const y = (event.clientY - rect.top) / rect.height;
         const style = event.currentTarget.style;
-        style.setProperty("--tilt-x", `${(0.5 - y) * 3}deg`);
-        style.setProperty("--tilt-y", `${(x - 0.5) * 3}deg`);
+        style.setProperty("--tilt-x", `${(0.5 - y) * 10}deg`);
+        style.setProperty("--tilt-y", `${(x - 0.5) * 10}deg`);
         style.setProperty("--spot-x", `${x * 100}%`);
         style.setProperty("--spot-y", `${y * 100}%`);
       }}

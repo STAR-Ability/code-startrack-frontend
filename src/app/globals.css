@@ -451,13 +451,13 @@
     transform: rotate(2deg);
   }
   .stack-card:nth-child(3) {
-    transform: rotate(-1deg) translateX(12px);
+    transform: rotate(-1deg) translateX(20px);
   }
   .problem-stack:hover .stack-card {
     transform: none;
   }
   .marquee-track {
-    animation: marquee-drift 14s ease-in-out infinite alternate;
+    animation: marquee-drift 5s ease-in-out infinite alternate;
   }
 }
 @media (min-width: 1024px) {
@@ -483,16 +483,14 @@
     grid-column: span 2;
   }
 }
-@media (prefers-reduced-motion: no-preference) {
-  .landing-section[data-revealed] {
-    animation: section-enter 500ms ease-out both;
-  }
-  .group\/button:hover [data-icon="inline-end"] {
-    transform: translate(1px, -1px);
-  }
-  .group\/button [data-icon="inline-end"] {
-    transition: transform 200ms;
-  }
+.landing-section[data-revealed] {
+  animation: section-enter 200ms ease-out both;
+}
+.group\/button:hover [data-icon="inline-end"] {
+  transform: translate(5px, -5px);
+}
+.group\/button [data-icon="inline-end"] {
+  transition: transform 200ms;
 }
 @keyframes draw-path {
   from {
@@ -516,21 +514,5 @@
   }
   to {
     transform: translateX(12px);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
-  .preview-cards,
-  .preview-profile,
-  .preview-problem,
-  .stack-card,
-  .metric-card dd {
-    transform: none !important;
   }
 }

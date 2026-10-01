@@ -58,7 +58,7 @@ for (const route of ["/", "/profile", "/practice"]) {
   });
 }
 
-test("preview and journey work by keyboard with no learner reads and respect reduced motion", async ({
+test("preview and journey work by keyboard with no learner reads and keep animations enabled", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -70,6 +70,7 @@ test("preview and journey work by keyboard with no learner reads and respect red
     "交互示意",
   );
   await page.keyboard.press("Escape");
+  await expect(page.locator("[data-slot=popover-content]")).toHaveCount(0);
   const milestone = page.getByRole("button", { name: "graphs", exact: true });
   await milestone.focus();
   await page.keyboard.press("Enter");
@@ -81,12 +82,40 @@ test("preview and journey work by keyboard with no learner reads and respect red
     await page
       .locator(".marquee-track")
       .evaluate((el) => getComputedStyle(el).animationName),
-  ).toBe("none");
+  ).toBe((page.viewportSize()?.width ?? 0) >= 640 ? "marquee-drift" : "none");
   expect(
     await page
       .locator(".preview-cards")
       .evaluate((el) => getComputedStyle(el).transform),
-  ).toBe("none");
+  ).not.toBe("none");
+  await expect(page.locator(".orbit-path")).toHaveCSS(
+    "animation-name",
+    "draw-path",
+  );
+  expect(
+    await preview.evaluate((el) => getComputedStyle(el).transitionDuration),
+  ).not.toBe("0s");
+  const productPreview = page.locator("#product-preview");
+  await productPreview.dispatchEvent("pointermove", {
+    pointerType: "mouse",
+    clientX: 0,
+    clientY: 0,
+  });
+  expect(
+    await productPreview.evaluate((el) =>
+      el.style.getPropertyValue("--tilt-x"),
+    ),
+  ).not.toBe("");
+  await productPreview.dispatchEvent("pointerout", { pointerType: "mouse" });
+  expect(
+    await productPreview.evaluate((el) =>
+      el.style.getPropertyValue("--tilt-x"),
+    ),
+  ).toBe("");
+  const section = page.locator(".landing-section").first();
+  await section.scrollIntoViewIfNeeded();
+  await expect(section).toHaveAttribute("data-revealed", "true");
+  await expect(section).toHaveCSS("animation-name", "section-enter");
   expect(await upstreamCalls()).toEqual([]);
 });
 

@@ -303,7 +303,7 @@ export function LandingPage() {
           </p>
           <div className="mx-auto mt-8 flex max-w-lg flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/practice"
+              href="/demo"
               prefetch={false}
               className={buttonVariants({ size: "lg", wrap: true })}
             >
@@ -332,7 +332,7 @@ export function LandingPage() {
       </main>
       <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 border-t px-5 py-6 text-xs text-muted-foreground sm:px-8">
         <p>{t("landing.footer")}</p>
-        <p>V0.1 · {t("demo.label")}</p>
+        <p>V0.11 · {t("demo.label")}</p>
       </footer>
     </>
   );

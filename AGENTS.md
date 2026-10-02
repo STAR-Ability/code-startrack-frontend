@@ -38,6 +38,12 @@ Do not reintroduce the old name `codeStartrail`.
 
 ## 2. Primary Repository Sources
 
+Current V0.11 integration supersedes historical V0.1 API assumptions below.
+Use `docs/product/api-contract.md`, `prompts/前端api文档.md` and
+`prompts/前端需要知道的数据库.md` for the active contract. The app is statically
+exported; browser requests use `/api/v1/**` through a same-origin proxy.
+Validate mutations only against the isolated local fixture, never the live backend.
+
 Before implementing product-facing work, use the repository sources in the following order:
 
 1. The explicit current task / Issue.

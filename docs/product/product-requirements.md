@@ -1,3 +1,5 @@
+> Historical V0.1 source. For the active V0.11 frontend, see [the V0.11 contract](../../prompts/前端api文档.md) and [current integration decisions](api-contract.md). Account-scoped V0.11 behavior supersedes fixed-user and unified-profile assumptions below.
+
 # codeStartrack Product Requirements
 
 ## Approved UI redesign — 2026-09-30

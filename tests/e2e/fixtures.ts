@@ -1,5 +1,4 @@
 import { expect, test as base } from "@playwright/test";
-
 export const test = base.extend({
   context: async ({ context }, provideContext) => {
     const violations: string[] = [];
@@ -8,10 +7,18 @@ export const test = base.extend({
       const request = route.request();
       const url = new URL(request.url());
       if (
-        !/^http:\/\/127\.0\.0\.1:310[0-2]$/.test(url.origin) ||
-        request.method() !== "GET"
+        url.origin !== "http://127.0.0.1:3100" ||
+        (!["GET", "HEAD"].includes(request.method()) &&
+          !url.pathname.startsWith("/api/v1/"))
       ) {
         violations.push(`${request.method()} ${url.origin}${url.pathname}`);
+        return route.abort();
+      }
+      if (
+        url.pathname.startsWith("/api/") &&
+        !url.pathname.startsWith("/api/v1/")
+      ) {
+        violations.push(url.pathname);
         return route.abort();
       }
       return route.continue();
@@ -28,30 +35,28 @@ export const test = base.extend({
     });
     await provideContext(context);
     expect(violations, "Unexpected browser egress").toEqual([]);
-    expect(browserErrors, "Browser runtime/hydration errors").toEqual([]);
+    expect(browserErrors, "Runtime/hydration errors").toEqual([]);
   },
 });
-
 export { expect };
-
 export async function configureUpstream(
-  operations: { profile?: string; recommendation?: string },
+  config: Record<string, unknown> = {},
   preserveCalls = false,
 ) {
   await fetch("http://127.0.0.1:3210/__control", {
     method: "POST",
-    body: JSON.stringify({ operations, preserveCalls }),
+    body: JSON.stringify({ ...config, preserveCalls }),
   });
 }
-
 export async function upstreamCalls() {
-  const { calls } = await (
-    await fetch("http://127.0.0.1:3210/__control")
-  ).json();
-  return calls as {
-    method: string;
-    path: string;
-    headers: Record<string, string>;
-    body: string;
-  }[];
+  return (
+    (await (await fetch("http://127.0.0.1:3210/__control")).json()) as {
+      calls: {
+        method: string;
+        path: string;
+        body?: Record<string, unknown>;
+        headers: Record<string, string>;
+      }[];
+    }
+  ).calls;
 }

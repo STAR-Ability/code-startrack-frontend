@@ -1,4 +1,16 @@
 import { spawn } from "node:child_process";
+import { createMockBackend } from "../tests/mock-backend.mjs";
+
+// Bind before starting Next: an occupied fixture port must fail, not be reused.
+const backend = createMockBackend();
+await new Promise((resolve, reject) => {
+  backend.once("error", reject);
+  backend.listen(3210, "127.0.0.1", resolve);
+});
+function closeBackend() {
+  backend.closeAllConnections();
+  backend.close();
+}
 
 // Explicitly override .env.local; this preview must never select a live backend.
 const child = spawn(
@@ -12,16 +24,18 @@ const child = spawn(
   ],
   {
     stdio: "inherit",
-    env: { ...process.env, BACKEND_BASE_URL: "" },
+    env: { ...process.env, BACKEND_BASE_URL: "http://127.0.0.1:3210" },
   },
 );
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, () => child.kill(signal));
 }
 child.on("error", (error) => {
+  closeBackend();
   console.error(error.message);
   process.exitCode = 1;
 });
 child.on("exit", (code) => {
+  closeBackend();
   process.exitCode = code ?? 1;
 });

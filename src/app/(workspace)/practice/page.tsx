@@ -1,8 +1,9 @@
-import { TrainingPage } from "@/components/training/training-page";
-import { DEMO_USER_ID } from "@/lib/api/config.server";
-import { localizedMetadata } from "@/lib/i18n/server";
-
-export const generateMetadata = () => localizedMetadata("practice");
-export default function PracticePage() {
-  return <TrainingPage userId={DEMO_USER_ID} view="practice" />;
+import { PracticeExperience } from "@/components/workspace/practice-experience";
+import { WorkspacePage } from "@/components/workspace/workspace-page";
+export default function Page() {
+  return (
+    <WorkspacePage title="nav.practice" publicContent>
+      <PracticeExperience />
+    </WorkspacePage>
+  );
 }

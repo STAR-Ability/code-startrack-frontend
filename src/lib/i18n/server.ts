@@ -1,18 +1,15 @@
 import "server-only";
+import { translate } from "./locale";
 
-import { cookies } from "next/headers";
-import { LOCALE_COOKIE, resolveLocale, translate } from "./locale";
-
+// Static HTML defaults to zh-CN. The client restores the saved display preference.
 export async function getLocale() {
-  return resolveLocale((await cookies()).get(LOCALE_COOKIE)?.value);
+  return "zh-CN" as const;
 }
-
 export async function localizedMetadata(
   page: "home" | "dashboard" | "profile" | "practice",
 ) {
-  const locale = await getLocale();
   return {
-    title: translate(locale, `metadata.${page}Title`),
-    description: translate(locale, "metadata.description"),
+    title: translate("zh-CN", `metadata.${page}Title`),
+    description: translate("zh-CN", "metadata.description"),
   };
 }

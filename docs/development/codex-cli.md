@@ -1,6 +1,6 @@
 # Codex CLI environment
 
-Audited on 2026-10-02. This setup is for codeStartrack V0.1, not a generic starter.
+Audited on 2026-10-02. This setup is for codeStartrack V0.11, not a generic starter.
 
 ## Local audit and architecture
 
@@ -14,21 +14,24 @@ Tailwind 4, shadcn Base UI/Nova, TanStack Query, Zod and React Hook Form. Existi
 ESLint, Prettier, Vitest and Playwright/CI provide the quality gates. Node types
 were still on major 20, conflicting with Vitest 5; they now match Node 24.
 
-- `src/app`: route composition, layouts and server-only GET gateway handlers.
-- `src/components/{ui,layout,landing,training}`: primitives, shell and features.
+- `src/app`: statically exported App Router pages and layouts.
+- `src/components/{ui,layout,landing,workspace,auth}`: primitives, shell and features.
 - `src/lib/api`: backend boundary, validation and error mapping.
 - `src/lib/i18n`: zh-CN/en strings and locale handling.
 - `tests/e2e`: browser flows and accessibility checks using guarded fixtures.
-- `tests/gateway-server.mjs`: synthetic loopback upstreams and standalone servers.
+- `tests/gateway-server.mjs`: static export server/proxy on 3100 and synthetic backend on 3210.
 - `docs/product`: approved scope and API reality; `docs/development`: workflow.
 - `.agent/plans`: execution plans; `.agents/skills`: discoverable project Skills.
 - `.codex/config.toml`: project MCP configuration. No CodeGraph index exists.
 
-The current implementation is the read-only V0.1 `/practice` and `/profile`
-experience, not the future `/training`/judge/Agent loop. No API or product behavior
-is changed by this environment task. The old branch/PR flow in the AI guide was
-aligned with the direct-`dev` override. The malformed Next agent-rules markers in
-AGENTS were repaired without removing the Next instructions.
+The current implementation is V0.11: static export to `out/`, same-origin
+`/api/v1/**` proxy, Session authentication, multiple accounts and account-scoped
+training data. The active API contract is `docs/product/api-contract.md` and its
+linked V0.11 prompts. The former fixed-user GET gateway is historical.
+
+On 2026-10-02 the user authorized integrating remote PR #7 (`12f4705`) with the
+local CLI setup commit (`8ce4463`). Both histories are preserved by a merge;
+there is no force push or replacement of the V0.11 product implementation.
 
 ## Start here
 
@@ -135,22 +138,24 @@ pnpm preview:offline           # http://127.0.0.1:3100
 codex                         # ask Playwright MCP to inspect that URL
 ```
 
-Stop the manual harness before E2E: both use ports 3100–3102 and 3210–3212.
+Stop the manual harness before E2E: both use ports 3100 and 3210.
 Check desktop/mobile, 320px width, 200% text sizing, zh-CN/en, keyboard focus,
 dialog dismissal, navigation, console and network errors. Existing E2E tests
-already enforce these relevant invariants and block nonlocal/mutating browser
-requests. Inspect screenshots under `test-results` and the HTML report under
+block nonlocal requests and old API paths. V0.11 auth/account mutations are
+allowed only against the local synthetic backend. Inspect screenshots under `test-results` and the HTML report under
 `playwright-report`. Do not commit screenshots containing private information.
 
 For HMR/runtime diagnostics:
 
 ```bash
-pnpm dev:offline               # http://127.0.0.1:3000, backend explicitly empty
+pnpm dev:offline               # http://127.0.0.1:3000, synthetic backend on 3210
 ```
 
-Use Next DevTools with port 3000. This preview intentionally shows safe backend
-configuration errors on data pages; use the offline production harness for
-successful synthetic API states. Ordinary `pnpm dev` preserves the existing
+Use Next DevTools with port 3000. This command starts the V0.11 fixture backend
+on 3210 and explicitly sets the dev proxy to that loopback origin, overriding
+`.env.local`. An occupied fixture port fails before Next starts. Stop this mode
+before E2E or production preview, which also require port 3210. An empty backend
+variable is insufficient: the V0.11 Next configuration falls back to `backend:8081`. Ordinary `pnpm dev` preserves the existing
 `.env.local` behavior. Do not run dev and build concurrently because they share
 `.next`. Build uses `next/font/google` and can need Google Fonts network access.
 If the local proxy intercepts loopback tests, use
@@ -173,7 +178,8 @@ machine, download its architecture's release from `cli/cli`, verify its matching
 checksum before extraction, then place the binary at `.tools/gh/bin/gh`, or use
 an existing trusted system installation. Do not run shell installers from blogs.
 
-GitHub CLI is currently unauthenticated. The user must perform this step:
+GitHub CLI login was completed by the user and verified on 2026-10-02.
+On a new machine only, the user can perform:
 
 ```bash
 pnpm gh auth login --hostname github.com --web
@@ -226,7 +232,10 @@ release metadata before updates, then re-run MCP/browser and quality checks.
 
 ## Verification record and remaining limits
 
-Verification results:
+The following results describe the original V0.1 environment setup, before the
+V0.11 merge. They are historical, not evidence for the merged application:
+
+Original verification results:
 
 - `pnpm install --frozen-lockfile --registry=https://registry.npmjs.org`: passed.
 - `pnpm lint`, `pnpm format:check`, `pnpm typecheck`: passed.
@@ -256,7 +265,7 @@ were archived under `/tmp/codestartrack-next-*-backup-*` and regenerated. No sou
 or user settings were discarded. If stale deleted-route type errors recur, stop
 Next, archive generated `.next` output and regenerate; do not weaken TypeScript.
 
-Known limits: GitHub login remains manual; Context7 needs network and can rate
+Known limits: new-machine GitHub login remains manual; Context7 needs network and can rate
 limit; Chrome/Chromium-only checks do not cover Safari/Firefox or constitute a
 full accessibility audit. ESLint 9.39.4 is marked unsupported by npm; migrate to
 ESLint 10 in a separate compatibility-reviewed task. The MCP dependency uses an
@@ -276,13 +285,31 @@ All narrow-screen regression checks passed; no persistent overflow was found.
 - `package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml`: MCP development
   dependencies, Node 24 types, scoped SDK mitigation and convenience scripts.
 - `scripts/doctor.mjs`, `scripts/dev-offline.mjs`, `scripts/gh.mjs`: prerequisites,
-  backend-free dev launch and portable/system GitHub CLI wrapper.
+  fixture-backed dev launch and portable/system GitHub CLI wrapper.
 - `AGENTS.md`: valid Next managed block and project tooling guidance.
 - `README.md`, `docs/development/ai-development-guide.md`, this document:
   discoverable setup, current workflow, provenance and verification evidence.
 - `.agent/plans/codex-cli-environment.md`: execution plan and outcomes.
 - `.gitignore`, `.prettierignore`, `eslint.config.mjs`: exclude portable binaries.
 
-No application components, production APIs or Playwright test configuration
-were changed. Existing E2E fixtures and browser installations were sufficient.
+The environment integration preserves the remote V0.11 application and tests.
+Only tooling, instructions and the README conflict were adapted during merging.
 The local `.tools/gh` binary and generated browser evidence remain ignored.
+
+## V0.11 integration verification
+
+Verified after integrating PR #7 on 2026-10-02:
+
+- Frozen-lockfile install, lint, format, typecheck and static export build passed.
+- All 50 unit tests and 81 desktop/mobile E2E tests passed.
+- `dev:offline` served `/api/v1/me` through the local fixture even with a conflicting
+  inherited backend URL; a second instance rejected the occupied fixture port.
+  Stopping dev released that port successfully.
+- `dev:doctor` and GitHub CLI authentication passed; no peer dependency conflicts.
+- Old V0.1 route caches were archived under `/tmp/codestartrack-v011-stale-dev-*`.
+- Product source, Next/Playwright configuration and tests match remote V0.11.
+  The README preserves V0.11 and adds the environment guide link. Two inherited
+  documentation trailing-whitespace issues were trimmed for `git diff --check`.
+
+See `.agent/plans/merge-v011-codex-environment.md` for integration scope.
+No live backend calls or production mutations were used for verification.

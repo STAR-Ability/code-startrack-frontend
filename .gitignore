@@ -42,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Project-local portable CLI binaries (never commit credentials or tools)
+/.tools/

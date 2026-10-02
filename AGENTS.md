@@ -1,3 +1,5 @@
+<!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
@@ -5,8 +7,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
-
-<!-- BEGIN:nextjs-agent-rules -->
 
 # codeStartrack Frontend — Agent Instructions
 
@@ -439,3 +439,14 @@ A task is complete only when:
 - relevant docs/contracts are updated when needed;
 - no secrets or debugging artifacts remain;
 - the final report lists changes, validation performed, API/product gaps, and remaining risks.
+
+## 19. Codex CLI environment
+
+Project setup, tool provenance and verification: `docs/development/codex-cli.md`.
+MCP lives in `.codex/config.toml`; project Skills live in `.agents/skills/`.
+Start Codex from the repository root after `pnpm install --frozen-lockfile`.
+Use installed Next.js docs first, Context7 for other version-specific library
+questions, Next DevTools for runtime diagnostics, and Playwright MCP for browser
+inspection. Use the offline harness for UI exploration; browser MCP does not
+inherit the E2E network guard. Do not send private code or data to docs services.
+Preserve the user's global model, authentication and approval configuration.

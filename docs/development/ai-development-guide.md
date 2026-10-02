@@ -2,7 +2,10 @@
 
 ## 1. Recommended AI Setup
 
-Use **Codex as the primary coding agent**.
+Use **Codex CLI as the primary coding agent**.
+
+See [the project CLI setup](codex-cli.md) for pinned MCP servers, project Skills,
+portable tooling, source review and verified commands.
 
 For the current project stage, do not create a custom multi-agent system just to develop the frontend. A single Codex agent with good repository context, tests, MCP tools, and CI is simpler and easier to control.
 
@@ -15,6 +18,8 @@ Codex
 ├── shadcn/ui Skill
 ├── shadcn MCP
 ├── Next.js DevTools MCP
+├── Playwright MCP + Context7
+├── UI review + project browser verification Skills
 ├── Vitest
 ├── Playwright
 └── GitHub Actions CI
@@ -42,8 +47,10 @@ Use Skills for reusable workflow knowledge.
 Required/recommended now:
 
 - shadcn/ui official Skill.
+- Vercel web-design-guidelines Skill for UI/accessibility source review.
+- codestartrack-browser-review for the established offline E2E/MCP workflow.
 
-Do not create a custom repository Skill yet unless a workflow becomes repetitive and stable enough to justify one.
+Add further custom Skills only when a workflow becomes repetitive and stable enough to justify one.
 
 Good future Skill candidates might include:
 
@@ -60,6 +67,8 @@ Recommended:
 
 - shadcn MCP: registry search, component discovery, installation.
 - Next.js DevTools MCP: runtime/build errors, routes, logs, app diagnostics.
+- Playwright MCP: isolated browser inspection and UI verification.
+- Context7: current library documentation; prefer installed Next.js docs first.
 
 MCP is not a replacement for repository documentation.
 
@@ -80,12 +89,13 @@ Until then, prefer one Codex agent plus CI and review.
 
 ## 3. Task Workflow
 
-For a normal Issue:
+For current V0.1 work, follow the direct-`dev` override in
+`repository-management.md` and `AGENTS.md`:
 
 ```text
 Issue
   ↓
-Create branch from dev
+Work on dev
   ↓
 Ask Codex to inspect relevant docs/code
   ↓
@@ -95,7 +105,7 @@ Run local checks
   ↓
 Review diff
   ↓
-Open PR to dev
+Scoped Conventional Commit and push to origin/dev
   ↓
 CI
   ↓

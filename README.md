@@ -9,6 +9,9 @@
 - Node.js 24 LTS (`.nvmrc` and `package.json` engines).
 - pnpm 12.8.1 (pinned in `package.json`).
 
+For Codex CLI setup, MCP/Skills, portable GitHub CLI and offline browser review,
+see [the project environment guide](docs/development/codex-cli.md).
+
 ## Local development
 
 ```bash

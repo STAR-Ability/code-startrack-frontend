@@ -332,7 +332,7 @@ The user requested terminal-wide CLI access and compatible tool updates.
 | jq | 1.8.2 on user PATH; Apple jq 1.7.1 preserved. |
 | Codex / pnpm | 0.160.0 / 12.8.1, already current; no update required. |
 | Git | Apple 2.39.5 retained; adequate for this workflow. No Xcode/Homebrew upgrade solely for a newer Git. |
-| fd / tsx | Not installed; rg file listing / find and Node 24 native erasable TypeScript cover current needs. |
+| fd / tsx | Follow-up installation requested by the user: fd 10.5.0 on user PATH; tsx 4.23.15 pinned as a project devDependency. |
 | Playwright | Existing locked runner and MCP retained; no product dependency upgrade in this task. |
 
 User-level files (outside Git, no sudo or system-binary replacement):
@@ -400,3 +400,37 @@ Follow-up verification under Node 24.21.0:
   assertions were not changed; test stabilization remains a follow-up.
 - Full repository diff and whitespace checks passed. No live backend writes,
   secrets, shell backups or executable downloads are included in the commit.
+
+## fd and tsx follow-up
+
+At the user's request, installed the following tools after the initial fallback-only audit:
+
+- **fd 10.5.0**: official [sharkdp/fd release](https://github.com/sharkdp/fd/releases/tag/v10.5.0),
+  Intel macOS archive, SHA-256 verified against its release asset digest before
+  extraction: `7e31028c62c6955877735d0406807aa484c2a5e6f86235a59e26c29c301da590`.
+  Binary/licenses live in `~/.local/share/dev-tools/fd/10.5.0/`, with
+  `~/.local/bin/fd` on the existing user PATH. No additional shell edits needed.
+  Use `fd --type f --extension ts . src` for filename discovery; retain rg/find fallbacks.
+- **tsx 4.23.15**: official npm package, repository identity
+  [privatenumber/tsx](https://github.com/privatenumber/tsx), Node requirement >=18.
+  Pinned in project devDependencies and the lockfile; use `pnpm exec tsx script.ts`
+  or `pnpm exec tsx script.tsx`. No global copy, so collaborators use the same
+  version after installation. It executes TypeScript/TSX but does not typecheck.
+- tsx brings esbuild 0.28.2 and its platform-specific optional binaries. pnpm
+  initially blocked esbuild's postinstall script. The project explicitly sets
+  `allowBuilds.esbuild: false`, retaining the no-script policy while using the
+  installed platform binary. Frozen installation and actual TS/TSX execution
+  are checked, not just CLI version output. Keep optional dependencies enabled.
+  Additional lockfile entries include platform binaries and Vite/Vitest optional
+  peer resolution; application dependency versions are unchanged.
+
+AGENTS.md now prefers fd for dedicated filename discovery and project-local tsx
+for TypeScript scripts, retains Node for JS and compatible TS fallbacks, and
+continues requiring separate type checking. This supersedes the initial decision
+to omit fd/tsx; no other tool policy or system installation is replaced.
+
+Verification: fd found real project files; tsx executed both an enum-based TS
+snippet and a React TSX server-render assertion. Frozen install, lint, formatting,
+typecheck, all 50 unit tests and build passed; npm audit reported no known
+vulnerabilities. Browser E2E was not repeated for this tool-only change; the
+previous browser run and its timing caveat remain recorded above.

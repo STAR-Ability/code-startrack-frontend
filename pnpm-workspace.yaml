@@ -1,4 +1,6 @@
 allowBuilds:
+  # tsx uses the platform binary from esbuild's optional dependency directly.
+  esbuild: false
   sharp: false
   unrs-resolver: false
 

@@ -35,7 +35,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-The app runs at <http://localhost:3000>. For local integration, set the server-only `BACKEND_BASE_URL` to an HTTP(S) backend origin in an ignored `.env.local`. Preserve existing local settings. The development proxy forwards only `/api/v1/**`; the production default is `http://backend:8081`. The backend must implement V0.11 and validate `Origin` against its configured `PUBLIC_ORIGIN`.
+The app runs at [http://localhost:3000](http://localhost:3000). For local integration, set the server-only `BACKEND_BASE_URL` to an HTTP(S) backend origin in an ignored `.env.local`. Preserve existing local settings. The development proxy forwards only `/api/v1/**`; the production default is `http://backend:8081`. The backend must implement V0.11 and validate `Origin` against its configured `PUBLIC_ORIGIN`.
 
 The existing Geist fonts use `next/font/google`, so the first build requires font download access. No API server is needed at build time. Static HTML defaults to Chinese; the saved display locale is restored in the browser.
 

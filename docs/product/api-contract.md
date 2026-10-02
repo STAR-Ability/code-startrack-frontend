@@ -1,3 +1,24 @@
+# Active contract: codeStartrack V0.11
+
+The current implementation follows [V0.11 frontend API](../../prompts/前端api文档.md) and [V0.11 frontend data model](../../prompts/前端需要知道的数据库.md), as explicitly requested on 2026-10-02. They supersede the V0.1 integration below.
+
+- Browser calls only `/api/v1/**`, with Session credentials through a same-origin reverse proxy.
+- Public workspace shells (including `/practice`) remain visible during anonymous sessions, missing accounts and backend failures. The 2026-10-02 visitor-browsing request supersedes earlier frontend redirect-on-401 behavior: 401 still clears private state, but personal panels show login prompts. No anonymous private API access is added. Explicit logout/password change still navigate to login.
+- A successful null/empty response or a documented resource-not-found code shows an empty state. Generic HTTP/proxy 404, network failures and 5xx remain recoverable errors; they are not presented as empty data. Missing/inaccessible records stop rendering previously cached results.
+- `GET /me` establishes the authenticated user; paginated `GET /oj-accounts` establishes owned bindings.
+- Each account data request explicitly names an opaque decimal-string `accountId`. Profiles are independent per binding, never aggregated across a system user.
+- Dashboard, training overview, problems, submissions, ratings, analysis snapshots/history, recommendation batches/history and asynchronous sync jobs use the exact V0.11 envelopes and DTOs.
+- Reads do not compute recommendations. Generation uses one UUID idempotency key per operation and retains it for uncertain retries.
+- Runtime response validation rejects account mismatches and malformed required fields. Query keys include user, binding and all request parameters.
+- `UNBOUND` is read-only; `INVALID` permits manual sync/unbind. No implicit current-account endpoint exists.
+- Public Demo is synthetic and local. The former fixed-user gateway has been removed.
+
+Implementation and tests are in `src/lib/api/`, `src/components/workspace/`, `src/components/auth/` and `tests/e2e/`. The backend has not been modified or verified live. All contract tests use isolated fixtures.
+
+---
+
+## Historical V0.1 contract (superseded)
+
 # codeStartrack V0.1 Frontend API Contract
 
 ## Current read-only execution decisions

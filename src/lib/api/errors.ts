@@ -1,30 +1,27 @@
-export type ReadOperation = "profile" | "recommendation";
-
-export type ApiErrorCategory =
-  | "configuration"
-  | "invalid_request"
-  | "method_not_allowed"
-  | "transport"
-  | "aborted"
-  | "timeout"
-  | "http"
-  | "invalid_json"
-  | "invalid_payload";
-
-export type ApiErrorResponse = {
-  error: {
-    operation: ReadOperation;
-    category: ApiErrorCategory;
-    status: number;
-    upstreamStatus?: number;
-    backendError?: "account_not_found";
-  };
-};
-
-// Deliberately retain no raw message, URL, payload or exception cause.
-export class ApiReadError extends Error {
-  constructor(readonly detail: ApiErrorResponse["error"]) {
-    super(detail.category);
-    this.name = "ApiReadError";
+export class ApiError extends Error {
+  readonly retryAt: number;
+  constructor(
+    readonly code: string,
+    readonly status = 0,
+    readonly requestId: string | null = null,
+    readonly details: Record<string, unknown> = {},
+    readonly retryAfter = 0,
+  ) {
+    super(code);
+    this.name = "ApiError";
+    this.retryAt = retryAfter > 0 ? Date.now() + retryAfter * 1000 : 0;
   }
+}
+
+/** A contract-level missing record, not a proxy or an undocumented route failure. */
+export function isMissingResource(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    error.status === 404 &&
+    [
+      "RESOURCE_NOT_FOUND",
+      "OJ_ACCOUNT_NOT_FOUND",
+      "SYNC_JOB_NOT_FOUND",
+    ].includes(error.code)
+  );
 }

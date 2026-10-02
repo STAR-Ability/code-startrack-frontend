@@ -1,29 +1,20 @@
-import { expect, test } from "./fixtures";
-
-test("serves the read-only entry without browser errors", async ({ page }) => {
-  const browserErrors: string[] = [];
-  page.on("pageerror", (error) => browserErrors.push(error.message));
-  page.on("console", (message) => {
-    if (message.type() === "error") browserErrors.push(message.text());
-  });
-
-  const response = await page.goto("/");
-
-  expect(response?.status()).toBe(200);
-  await expect(page).toHaveTitle("码练星轨 | 只读 Demo");
-  await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
+import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
+test.beforeEach(() => configureUpstream());
+test("public landing and local Demo never fetch a learner", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page).toHaveTitle("码练星轨 | 编程训练");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "你的每一道代码",
+  );
+  await page.getByRole("link", { name: "查看只读 Demo", exact: true }).click();
+  await expect(page).toHaveURL("/demo");
   await expect(
-    page.getByRole("heading", {
-      level: 1,
-      name: /你的每一道代码，\s*都留下成长轨迹。/,
-    }),
+    page.getByText("示例数据 · 本地合成数据，不访问任何真实账号"),
   ).toBeVisible();
-  await expect(page.getByText("codeStartrack", { exact: true })).toBeVisible();
-  await expect(page.getByRole("main")).toBeInViewport();
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth,
-    ),
-  ).toBe(true);
-  expect(browserErrors).toEqual([]);
+  await expect(
+    page.getByRole("heading", { name: /A Small Step/ }),
+  ).toBeVisible();
+  expect(await upstreamCalls()).toEqual([]);
 });

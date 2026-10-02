@@ -1,0 +1,155 @@
+"use client";
+import { useState } from "react";
+import { api } from "@/lib/api/endpoints";
+import { windows, type AnalysisWindow } from "@/lib/api/schemas";
+import { useLocale } from "@/components/layout/locale-provider";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { useAccountQuery } from "./use-account-query";
+import { AnalysisView } from "./analysis-view";
+import { EmptyState, QueryFeedback, Pagination } from "./feedback";
+import { Chart } from "./chart";
+
+export function WindowSelector({
+  value,
+  onChange,
+}: {
+  value: AnalysisWindow;
+  onChange: (value: AnalysisWindow) => void;
+}) {
+  const { t } = useLocale();
+  return (
+    <ToggleGroup
+      value={[value]}
+      onValueChange={(values) => {
+        if (windows.includes(values[0] as AnalysisWindow))
+          onChange(values[0] as AnalysisWindow);
+      }}
+      aria-label={t("v.window")}
+      className="flex-wrap"
+    >
+      {windows.map((window) => (
+        <ToggleGroupItem key={window} value={window}>
+          {t(`v.window.${window}`)}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
+  );
+}
+export function AnalysisPage({
+  profileOnly = false,
+}: {
+  profileOnly?: boolean;
+}) {
+  const { t } = useLocale();
+  const [window, setWindow] = useState<AnalysisWindow>("ALL");
+  const [page, setPage] = useState(1);
+  const [snapshotId, setSnapshotId] = useState<string | null>(null);
+  const latest = useAccountQuery("analysis", { window }, (id, signal) =>
+    api.analysis(id, window, signal),
+  );
+  const history = useAccountQuery(
+    "analysis-history",
+    { window, page },
+    (id, signal) => api.analysisHistory(id, window, page, signal),
+    !profileOnly,
+  );
+  const snapshot = useAccountQuery(
+    "snapshot",
+    { snapshotId },
+    (id, signal) => api.snapshot(id, snapshotId!, signal),
+    !!snapshotId,
+  );
+  const displayed = snapshotId ? snapshot : latest;
+  const trend = [...(history.data?.data ?? [])].sort((a, b) =>
+    a.dataCutoffAt.localeCompare(b.dataCutoffAt),
+  );
+  return (
+    <>
+      {!profileOnly && (
+        <WindowSelector
+          value={window}
+          onChange={(value) => {
+            setWindow(value);
+            setPage(1);
+            setSnapshotId(null);
+          }}
+        />
+      )}
+      {snapshotId && (
+        <Button
+          variant="outline"
+          className="self-start"
+          onClick={() => setSnapshotId(null)}
+        >
+          {t("v.latest")}
+        </Button>
+      )}
+      <QueryFeedback query={displayed} />
+      {displayed.data !== undefined && (
+        <AnalysisView
+          analysis={displayed.data}
+          dimensions
+          statistics={!profileOnly}
+        />
+      )}
+      {!profileOnly && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <h2>{t("v.analysisHistory")}</h2>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <QueryFeedback query={history} />
+            {trend.length > 1 && (
+              <Chart
+                label={t("v.trend")}
+                option={{
+                  xAxis: {
+                    type: "category",
+                    data: trend.map((item) => item.dataCutoffAt),
+                  },
+                  yAxis: { type: "value", min: 0, max: 100 },
+                  series: [
+                    {
+                      type: "line",
+                      data: trend.map((item) => item.overallScore),
+                    },
+                  ],
+                }}
+              />
+            )}
+            {history.data?.data.length === 0 && (
+              <EmptyState title={t("v.noRecords")} />
+            )}
+            {history.data?.data.map((item) => (
+              <div
+                key={item.snapshotId}
+                className="flex flex-wrap items-center justify-between gap-3"
+              >
+                <span className="text-sm">
+                  {item.dataCutoffAt} · {item.overallScore} / 100
+                  {item.stale ? ` · ${t("v.stale")}` : ""}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setSnapshotId(item.snapshotId)}
+                >
+                  {t("v.snapshot")}
+                </Button>
+              </div>
+            ))}
+            <Pagination
+              meta={history.data?.meta}
+              page={page}
+              setPage={setPage}
+              pending={history.isFetching}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </>
+  );
+}

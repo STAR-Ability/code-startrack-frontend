@@ -18,3 +18,5 @@
 **/*.pem
 **/*.key
 **/.DS_Store
+!deploy/
+!deploy/**

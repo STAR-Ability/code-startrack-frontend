@@ -2,7 +2,7 @@
 
 **码练星轨 (codeStartrack) V0.11** incrementally extends the existing Next.js App Router application. It retains Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
 
-The public landing page and `/demo` use local illustrations and synthetic fixtures. Workspace shells, including `/practice`, are browsable without login. Personal data and actions require a backend Session and the `STUDENT` role; visitors see login prompts within those panels. Missing records use empty states, while connection failures offer retry without blocking navigation:
+The public landing page and `/demo` use local illustrations and synthetic fixtures. Workspace shells, including `/practice`, are browsable without login. Personal data and actions require a backend Session and the `STUDENT` role; visitors see login prompts within those panels. Empty responses preserve card/list structure; failed reads show safe placeholders, a visible error and retry without blocking navigation:
 
 | Route                                    | Purpose                                                                            |
 | ---------------------------------------- | ---------------------------------------------------------------------------------- |
@@ -38,6 +38,20 @@ pnpm dev
 The app runs at <http://localhost:3000>. For local integration, set the server-only `BACKEND_BASE_URL` to an HTTP(S) backend origin in an ignored `.env.local`. Preserve existing local settings. The development proxy forwards only `/api/v1/**`; the production default is `http://backend:8081`. The backend must implement V0.11 and validate `Origin` against its configured `PUBLIC_ORIGIN`.
 
 The existing Geist fonts use `next/font/google`, so the first build requires font download access. No API server is needed at build time. Static HTML defaults to Chinese; the saved display locale is restored in the browser.
+
+For development without a backend, use the explicit local Mock:
+
+```bash
+pnpm dev:mock
+# Or, after building:
+pnpm preview:mock
+MOCK_SCENARIO=empty pnpm preview:mock
+```
+
+The shared Mock API labels synthetic data and serves all V0.11 endpoint families.
+See the [Mock runbook and endpoint audit](docs/development/mock-api-audit.md) for
+failure/empty scenarios, fixture semantics, authentication limitations and all 31
+endpoint consumers. Live failures never automatically select synthetic data.
 
 ## Build and serve
 

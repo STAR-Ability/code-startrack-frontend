@@ -1,5 +1,7 @@
 "use client";
 import Link from "next/link";
+import type { CopyKey } from "@/lib/i18n/messages";
+import { usePathname } from "next/navigation";
 import { ArrowRightIcon, LogInIcon } from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
 import { buttonVariants } from "@/components/ui/button";
@@ -13,6 +15,68 @@ import {
 } from "@/components/ui/empty";
 import { useOptionalAccounts, useWorkspaceSession } from "./account-provider";
 import { EmptyState, ErrorNotice, QueryFeedback } from "./feedback";
+import { AnalysisView } from "./analysis-view";
+import { BatchView } from "./recommendations-page";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+
+// Safe page structure while identity/account reads are unavailable. No private hooks run here.
+function PersonalDataPlaceholder({ loading = false }: { loading?: boolean }) {
+  const pathname = usePathname();
+  const { t } = useLocale();
+  const analysis = ["/dashboard", "/data", "/profile", "/analysis"].includes(
+    pathname,
+  );
+  const lists: CopyKey[] =
+    pathname === "/data"
+      ? ["v.problems"]
+      : pathname === "/analysis"
+        ? ["v.analysisHistory"]
+        : pathname === "/practice"
+          ? ["v.recommendationHistory"]
+          : pathname === "/accounts"
+            ? ["v.accounts"]
+            : pathname === "/security"
+              ? ["data.identity", "v.changePassword", "v.changeEmail"]
+              : [];
+  return (
+    <div className="flex min-w-0 flex-col gap-6" data-personal-placeholder>
+      {pathname === "/dashboard" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <h2>{t("v.nextAction")}</h2>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>{t("v.unavailable")}</CardContent>
+        </Card>
+      )}
+      {["/dashboard", "/practice"].includes(pathname) && (
+        <BatchView batch={null} />
+      )}
+      {analysis && (
+        <AnalysisView
+          analysis={null}
+          dimensions={["/profile", "/analysis"].includes(pathname)}
+          statistics={["/data", "/analysis"].includes(pathname)}
+          loading={loading}
+          unavailable
+        />
+      )}
+      {lists.map((title) => (
+        <Card key={title}>
+          <CardHeader>
+            <CardTitle>
+              <h2>{t(title)}</h2>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EmptyState title={t("v.noRecords")} />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
 
 export function LoginPrompt() {
   const { t } = useLocale();
@@ -56,11 +120,18 @@ export function PersonalDataGate({
   const { t } = useLocale();
   if (!session.data) {
     if (session.isFetching && session.data === undefined)
-      return <QueryFeedback query={session} />;
+      return (
+        <>
+          <QueryFeedback query={session} />
+          {guestContent ?? <PersonalDataPlaceholder loading />}
+        </>
+      );
     return (
       <>
         {guestContent ?? <LoginPrompt />}
+        {!guestContent && <PersonalDataPlaceholder />}
         <ErrorNotice
+          dataError
           error={session.error}
           retry={() => void session.refetch()}
           pending={session.isFetching}
@@ -82,6 +153,7 @@ export function PersonalDataGate({
       return (
         <>
           <QueryFeedback query={context.query} />
+          <PersonalDataPlaceholder loading={context.query.isFetching} />
           <Link
             href="/accounts"
             className={buttonVariants({ variant: "outline" })}
@@ -91,12 +163,15 @@ export function PersonalDataGate({
         </>
       );
     return (
-      <EmptyState
-        title={t("v.noAccount")}
-        description={t("v.bindGuide")}
-        href="/accounts"
-        action={t("v.bind")}
-      />
+      <>
+        <EmptyState
+          title={t("v.noAccount")}
+          description={t("v.bindGuide")}
+          href="/accounts"
+          action={t("v.bind")}
+        />
+        <PersonalDataPlaceholder />
+      </>
     );
   }
   return (

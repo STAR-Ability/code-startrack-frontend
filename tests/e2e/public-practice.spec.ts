@@ -126,7 +126,7 @@ test("slow account list leaves the introduction and modes interactive and recove
   await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);
 });
 
-test("missing accounts show an empty panel while a connection failure can be retried", async ({
+test("failed accounts keep placeholders and offer recovery", async ({
   page,
 }) => {
   await page.route("**/api/v1/oj-accounts?*", (route) =>
@@ -137,7 +137,9 @@ test("missing accounts show an empty panel while a connection failure can be ret
   await expect(
     page.getByRole("heading", { name: "下一道题，下一步成长。" }),
   ).toBeVisible();
-  await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "重试", exact: true }),
+  ).toBeVisible();
   await page.unroute("**/api/v1/oj-accounts?*");
   await page.route("**/api/v1/oj-accounts?*", (route) =>
     failure(route, "INTERNAL_ERROR", 503),
@@ -146,7 +148,7 @@ test("missing accounts show an empty panel while a connection failure can be ret
   await expect(
     page.getByRole("button", { name: "重试", exact: true }),
   ).toBeEnabled();
-  await expect(page.getByText("暂无数据", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("暂无数据", { exact: true })).toBeVisible();
   await page.unroute("**/api/v1/oj-accounts?*");
   await page.getByRole("button", { name: "重试", exact: true }).click();
   await expect(
@@ -154,7 +156,7 @@ test("missing accounts show an empty panel while a connection failure can be ret
   ).toBeVisible();
 });
 
-test("missing recommendations and empty history use quiet empty states", async ({
+test("missing recommendations remain errors while successful empty history stays empty", async ({
   page,
 }) => {
   await page.route("**/recommendations/latest?*", (route) =>
@@ -173,7 +175,9 @@ test("missing recommendations and empty history use quiet empty states", async (
   });
   await page.goto("/practice");
   await expect(page.getByText("暂无数据", { exact: true })).toHaveCount(2);
-  await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "重试", exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "生成推荐", exact: true }),
   ).toBeEnabled();
@@ -311,7 +315,7 @@ test("a successful null recommendation is empty, not an unavailable service", as
   ).toBeEnabled();
 });
 
-test("a missing sync job stops its old progress indicator and shows no data", async ({
+test("a missing sync job stops its old progress indicator and offers retry", async ({
   page,
 }) => {
   await page.route("**/sync-jobs/*", (route) =>
@@ -319,12 +323,16 @@ test("a missing sync job stops its old progress indicator and shows no data", as
   );
   await page.goto("/practice");
   await page.getByRole("button", { name: "同步数据", exact: true }).click();
-  await expect(page.getByText("暂无数据", { exact: true })).toBeVisible({
-    timeout: 8000,
-  });
+  await expect(
+    page
+      .getByText("当前无法加载数据，请检查网络或稍后重试", { exact: true })
+      .first(),
+  ).toBeVisible({ timeout: 8000 });
   await expect(page.getByText("正在同步，完成后自动刷新")).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "同步数据", exact: true }),
   ).toBeEnabled();
-  await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "重试", exact: true }),
+  ).toBeVisible();
 });

@@ -74,6 +74,9 @@ test("failed refresh retains data and its details disclosure supports keyboard o
   await page.goto("/practice");
   const refresh = page.getByRole("button", { name: "刷新数据", exact: true });
   await expect(refresh).toBeEnabled();
+  await expect(
+    page.getByRole("heading", { name: /A Small Step/ }),
+  ).toBeVisible();
   await page.route("**/recommendations/latest?*", (route) =>
     route.fulfill({
       status: 503,
@@ -117,6 +120,9 @@ test("switching accounts dismisses old refresh feedback and never announces old 
 }) => {
   await page.goto("/practice");
   const refresh = page.getByRole("button", { name: "刷新数据", exact: true });
+  await expect(
+    page.getByRole("heading", { name: /A Small Step/ }),
+  ).toBeVisible();
   await expect(refresh).toBeEnabled();
   let release!: () => void;
   const held = new Promise<void>((resolve) => {

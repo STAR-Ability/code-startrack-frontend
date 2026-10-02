@@ -21,7 +21,10 @@ test("account-mismatched response is discarded", async ({ page }) => {
   await expect(page.getByText("ACCOUNT_MISMATCH")).not.toBeVisible();
   await page.getByText("查看问题详情", { exact: true }).click();
   await expect(page.getByText("ACCOUNT_MISMATCH")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "训练概览" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "训练概览" })).toBeVisible();
+  await expect(
+    page.getByRole("main").locator("dd").filter({ hasText: /^0$/ }),
+  ).toHaveCount(12 - 2);
 });
 test("sync task polls to PARTIAL, preserves data and offers analysis rebuild", async ({
   page,

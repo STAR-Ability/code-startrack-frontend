@@ -13,7 +13,7 @@ import { useAccountQuery } from "./use-account-query";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { QueryFeedback, ErrorNotice, useCountdown } from "./feedback";
+import { DataRegion, ErrorNotice, useCountdown } from "./feedback";
 import { BatchView } from "./recommendations-page";
 import { AnalysisView } from "./analysis-view";
 
@@ -63,52 +63,58 @@ export function DashboardPage() {
   const next = dashboard.data?.nextAction;
   return (
     <>
-      <QueryFeedback query={dashboard} />
-      {dashboard.data && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                <h2>{t("v.nextAction")}</h2>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-start gap-3">
-              {next === "WAIT_SYNC" ? (
-                <p role="status">{t("v.syncing")}</p>
-              ) : next === "SYNC" || next === "REBUILD_ANALYSIS" ? (
-                <Button
-                  disabled={
-                    locked ||
-                    action.isPending ||
-                    !!remaining ||
-                    account?.bindStatus === "UNBOUND"
-                  }
-                  onClick={() => action.mutate(next)}
-                >
-                  {action.isPending && (
-                    <Spinner data-icon="inline-start" aria-hidden="true" />
+      <DataRegion query={dashboard} name={t("v.dashboard")}>
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              <h2>{t("v.nextAction")}</h2>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col items-start gap-3">
+            {!dashboard.data ? (
+              <p>{t("v.unavailable")}</p>
+            ) : next === "WAIT_SYNC" ? (
+              <p role="status">{t("v.syncing")}</p>
+            ) : next === "SYNC" || next === "REBUILD_ANALYSIS" ? (
+              <Button
+                disabled={
+                  locked ||
+                  action.isPending ||
+                  !!remaining ||
+                  account?.bindStatus === "UNBOUND"
+                }
+                onClick={() => action.mutate(next)}
+              >
+                {action.isPending && (
+                  <Spinner data-icon="inline-start" aria-hidden="true" />
+                )}
+                {t(next === "SYNC" ? "v.sync" : "v.rebuild")}
+              </Button>
+            ) : (
+              <>
+                <p>{t(next === "NONE" ? "v.ready" : "v.noBatch")}</p>
+                <Link href="/practice" className={buttonVariants()}>
+                  {t(
+                    next === "GENERATE_RECOMMENDATIONS"
+                      ? "v.generate"
+                      : "nav.practice",
                   )}
-                  {t(next === "SYNC" ? "v.sync" : "v.rebuild")}
-                </Button>
-              ) : (
-                <>
-                  <p>{t(next === "NONE" ? "v.ready" : "v.noBatch")}</p>
-                  <Link href="/practice" className={buttonVariants()}>
-                    {t(
-                      next === "GENERATE_RECOMMENDATIONS"
-                        ? "v.generate"
-                        : "nav.practice",
-                    )}
-                  </Link>
-                </>
-              )}
-              <ErrorNotice error={action.error} />
-            </CardContent>
-          </Card>
-          <BatchView batch={dashboard.data.recommendationBatch} firstOnly />
-          <AnalysisView analysis={dashboard.data.analysis} />
-        </>
-      )}
+                </Link>
+              </>
+            )}
+            <ErrorNotice error={action.error} />
+          </CardContent>
+        </Card>
+        <BatchView
+          batch={dashboard.data?.recommendationBatch ?? null}
+          firstOnly
+        />
+        <AnalysisView
+          analysis={dashboard.data?.analysis ?? null}
+          loading={dashboard.isFetching && dashboard.data === undefined}
+          unavailable={!!dashboard.error}
+        />
+      </DataRegion>
     </>
   );
 }

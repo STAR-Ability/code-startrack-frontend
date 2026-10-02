@@ -33,11 +33,14 @@ test("mode and history reads do not generate; failed generation retries with one
     writes[1].headers["idempotency-key"],
   );
   expect(writes[0].body).toEqual({ mode: "WEAKNESS", limit: 10 });
-  await page.getByRole("button", { name: "查看批次", exact: true }).click();
+  await page
+    .getByRole("button", { name: "查看批次", exact: true })
+    .first()
+    .click();
   await expect(
     page.getByRole("button", { name: "返回最新结果" }),
   ).toBeVisible();
-  await expect(page.getByText("已完成", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /A New Step/ })).toBeVisible();
   await page.getByRole("button", { name: "查看生成时的画像" }).click();
   await expect(
     page.getByRole("dialog", { name: "查看生成时的画像" }),
@@ -50,4 +53,20 @@ test("successful zero-candidate batch is an empty state, not an error", async ({
   await page.goto("/practice");
   await expect(page.getByText("当前难度范围暂无候选题")).toBeVisible();
   await expect(page.locator('[data-slot="alert"]')).toHaveCount(0);
+});
+test("historical completed recommendations retain their original rank and source snapshot", async ({
+  page,
+}) => {
+  await configureUpstream({ completed: true });
+  await page.goto("/practice");
+  await page
+    .getByRole("button", { name: "查看批次", exact: true })
+    .last()
+    .click();
+  await expect(page.getByText("已完成", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "#1 One More Step" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "查看生成时的画像" }).click();
+  await expect(page.getByRole("dialog")).toContainText("暂无训练证据");
 });

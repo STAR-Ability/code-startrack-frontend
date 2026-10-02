@@ -137,13 +137,17 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
       <CardContent className="flex flex-col gap-4">
         <QueryFeedback query={status} />
         {jobId && <QueryFeedback query={job} showLoading={false} />}
-        {!missingStatus && (
+        {
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <div>
               <dt className="text-muted-foreground">{t("v.lastSync")}</dt>
               <dd>
                 {format(
-                  status.data ? status.data.lastSyncedAt : account.lastSyncedAt,
+                  !missingStatus && status.data
+                    ? status.data.lastSyncedAt
+                    : missingStatus
+                      ? null
+                      : account.lastSyncedAt,
                 )}
               </dd>
             </div>
@@ -151,12 +155,16 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
               <dt className="text-muted-foreground">{t("v.nextSync")}</dt>
               <dd>
                 {format(
-                  status.data ? status.data.nextSyncAt : account.nextSyncAt,
+                  !missingStatus && status.data
+                    ? status.data.nextSyncAt
+                    : missingStatus
+                      ? null
+                      : account.nextSyncAt,
                 )}
               </dd>
             </div>
           </dl>
-        )}
+        }
         {latestJob ? (
           <div className="flex flex-col gap-3" aria-live="polite">
             <div className="flex flex-wrap gap-2">

@@ -23,6 +23,7 @@ import { toast } from "@/components/ui/toast";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { PageMeta } from "@/lib/api/schemas";
+import { dataState, useMockMode, type DataQuery } from "@/lib/api/data-state";
 
 export function useCountdown(until: number) {
   const [now, setNow] = useState(() => Date.now());
@@ -89,18 +90,20 @@ export function ErrorNotice({
   pending = false,
   empty = false,
   compact = false,
+  dataError = false,
 }: {
   error: unknown;
   retry?: () => void;
   pending?: boolean;
   empty?: boolean;
   compact?: boolean;
+  dataError?: boolean;
 }) {
   const { t } = useLocale();
   const id = useId();
   const apiError = error instanceof ApiError ? error : null;
   const remaining = useCountdown(apiError?.retryAt ?? 0);
-  const message = t(errorMessage(error));
+  const message = t(dataError ? "ui.connectionHint" : errorMessage(error));
   const title = t("ui.errorTitle");
   const active = !!error && !pending && apiError?.status !== 401;
   const signature = apiError?.code ?? (error ? "UNKNOWN" : "");
@@ -135,6 +138,7 @@ export function ErrorNotice({
       )}
       {apiError && (
         <DetailsDisclosure title={t("ui.details")}>
+          {dataError && <p>{t(errorMessage(error))}</p>}
           {compact && <p className="mt-2">{message}</p>}
           <p className="mt-2 break-all font-mono">
             {apiError.code}
@@ -147,6 +151,7 @@ export function ErrorNotice({
   );
   return compact ? (
     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <p role="alert">{message}</p>
       {recovery}
     </div>
   ) : empty ? (
@@ -221,21 +226,17 @@ export function QueryFeedback({
   showLoading?: boolean;
 }) {
   const { t } = useLocale();
+  const mock = useMockMode();
+  const data = isMissingResource(query.error) ? undefined : query.data;
   useSlowRequest(query.isFetching);
-  if (isMissingResource(query.error))
-    return query.isFetching ? (
-      <LoadingState compact={compact} />
-    ) : (
-      <EmptyState
-        title={t("practice.noData")}
-        description={t("practice.noDataDescription")}
-      />
-    );
   return (
-    <>
+    <div
+      data-state={dataState({ ...query, data }, mock)}
+      className="flex min-w-0 flex-col gap-3"
+    >
       {showLoading &&
         query.isFetching &&
-        (query.data === undefined ? (
+        (data === undefined ? (
           <LoadingState compact={compact} />
         ) : (
           <div
@@ -247,16 +248,42 @@ export function QueryFeedback({
           </div>
         ))}
       <ErrorNotice
+        dataError
         error={query.error}
-        retry={compact ? undefined : () => void query.refetch()}
+        retry={() => void query.refetch()}
         pending={query.isFetching}
-        empty={query.data === undefined && !compact}
+        empty={data === undefined && !compact}
         compact={compact}
       />
-      {query.error && query.data !== undefined && !compact && (
+      {Boolean(query.error) && data !== undefined && !compact && (
         <p className="text-xs text-muted-foreground">{t("data.previous")}</p>
       )}
-    </>
+    </div>
+  );
+}
+/** Feedback and children share a stable boundary; data availability never unmounts a card. */
+export function DataRegion({
+  query,
+  children,
+  empty,
+  name,
+}: {
+  query: DataQuery;
+  children: React.ReactNode;
+  empty?: boolean;
+  name: string;
+}) {
+  const mock = useMockMode();
+  return (
+    <section
+      aria-label={name}
+      aria-busy={query.isFetching}
+      data-state={dataState(query, mock, empty)}
+      className="flex min-w-0 flex-col gap-4"
+    >
+      <QueryFeedback query={query} />
+      {children}
+    </section>
   );
 }
 export function EmptyState({

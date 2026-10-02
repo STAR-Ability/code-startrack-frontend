@@ -40,6 +40,7 @@ import {
   ErrorNotice,
   Pagination,
   QueryFeedback,
+  DataRegion,
   useCountdown,
   useSlowRequest,
 } from "./feedback";
@@ -77,7 +78,19 @@ export function BatchView({
   const { t } = useLocale();
   if (!batch)
     return (
-      <EmptyState title={t("practice.noData")} description={t("v.noBatch")} />
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h2>{t("practice.forYou")}</h2>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EmptyState
+            title={t("practice.noData")}
+            description={t("v.noBatch")}
+          />
+        </CardContent>
+      </Card>
     );
   return (
     <>
@@ -111,7 +124,7 @@ export function BatchView({
               <h2 className="wrap-anywhere">
                 <span className="mr-3 font-mono text-muted-foreground">
                   #{item.rank}
-                </span>
+                </span>{" "}
                 {item.problem.title ?? item.problem.externalProblemKey}
               </h2>
             </CardTitle>
@@ -303,8 +316,13 @@ export function RecommendationsPage({
           {t("v.latest")}
         </Button>
       )}
-      <QueryFeedback query={displayed} />
-      {displayed.data !== undefined && <BatchView batch={displayed.data} />}
+      <DataRegion
+        query={displayed}
+        name={t("practice.forYou")}
+        empty={!displayed.data?.recommendations.length}
+      >
+        <BatchView batch={displayed.data ?? null} />
+      </DataRegion>
       {displayed.data && (
         <Button
           wrap
@@ -334,7 +352,7 @@ export function RecommendationsPage({
             {t("v.allModes")}
           </label>
           <QueryFeedback query={history} />
-          {history.data?.data.length === 0 && (
+          {!history.isFetching && !history.data?.data.length && (
             <EmptyState
               title={t("practice.noData")}
               description={t("v.noRecords")}
@@ -376,9 +394,12 @@ export function RecommendationsPage({
             <DialogTitle>{t("v.snapshotLink")}</DialogTitle>
           </DialogHeader>
           <QueryFeedback query={snapshot} />
-          {snapshot.data && (
-            <AnalysisView analysis={snapshot.data} dimensions />
-          )}
+          <AnalysisView
+            analysis={snapshot.data ?? null}
+            dimensions
+            loading={snapshot.isFetching && snapshot.data === undefined}
+            unavailable={!!snapshot.error}
+          />
         </DialogContent>
       </Dialog>
     </>

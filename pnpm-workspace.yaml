@@ -1,0 +1,10 @@
+allowBuilds:
+  # tsx uses the platform binary from esbuild's optional dependency directly.
+  esbuild: false
+  sharp: false
+  unrs-resolver: false
+
+# Next DevTools 0.4.0 pins SDK 1.25.2 (GHSA-345p-7cg4-v4c7).
+# Keep the mitigation scoped; remove after upstream ships a patched SDK.
+overrides:
+  "next-devtools-mcp>@modelcontextprotocol/sdk": 1.31.0

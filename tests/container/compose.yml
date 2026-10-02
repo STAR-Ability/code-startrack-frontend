@@ -1,0 +1,29 @@
+# Test-only merge with the root Compose file. Runtime network is isolated.
+services:
+  frontend:
+    environment:
+      FRONTEND_COOKIE_SECURE: "false"
+  secure-frontend:
+    image: ${FRONTEND_IMAGE}
+    environment:
+      BACKEND_BASE_URL: http://backend:8081
+      FRONTEND_COOKIE_SECURE: "true"
+  backend:
+    image: node:24-alpine
+    command: [node, /app/tests/container/upstream.mjs]
+    volumes:
+      - ./tests:/app/tests:ro
+      - ./src/lib/demo:/app/src/lib/demo:ro
+      - ./src/lib/mock:/app/src/lib/mock:ro
+      - ./src/lib/api:/app/src/lib/api:ro
+      - ./node_modules/zod:/app/node_modules/zod:ro
+  browser-check:
+    profiles: [verify]
+    build:
+      context: ./tests/container
+      dockerfile: Dockerfile
+    init: true
+    shm_size: 1gb
+networks:
+  default:
+    internal: true

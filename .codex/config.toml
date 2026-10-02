@@ -1,0 +1,24 @@
+# Project-local tools; install the reviewed lockfile before starting Codex here.
+# Preserve user-level model, provider, authentication and approval preferences.
+[mcp_servers.shadcn]
+command = "pnpm"
+args = ["exec", "shadcn", "mcp"]
+startup_timeout_sec = 30
+
+[mcp_servers.next-devtools]
+command = "pnpm"
+args = ["exec", "next-devtools-mcp"]
+startup_timeout_sec = 30
+# Browser verification is provided by the dedicated Playwright server.
+disabled_tools = ["browser_eval"]
+
+[mcp_servers.playwright]
+command = "pnpm"
+args = ["exec", "playwright-mcp", "--browser", "chrome", "--headless", "--isolated", "--block-service-workers", "--timeout-action", "15000", "--output-dir", "test-results/mcp"]
+startup_timeout_sec = 30
+tool_timeout_sec = 60
+
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+startup_timeout_sec = 30
+tool_timeout_sec = 60

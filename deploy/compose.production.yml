@@ -1,0 +1,19 @@
+# Standalone frontend deployment for the inspected startrack-prod host backend.
+# Existing TLS ingress already forwards to 127.0.0.1:3000.
+services:
+  frontend:
+    image: ${FRONTEND_IMAGE:?Set an immutable GHCR image reference}
+    environment:
+      BACKEND_BASE_URL: http://host.docker.internal:8081
+      FRONTEND_COOKIE_SECURE: "true"
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "127.0.0.1:3000:80"
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

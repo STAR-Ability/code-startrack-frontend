@@ -66,3 +66,51 @@ Before replacement, save the old frontend inspect output and frontend Compose/en
 Verify container health, startup/access/error logs, exported pages and assets, same-origin unauthenticated API responses, and the existing HTTPS ingress. Use a GET-only browser guard for live pages: login pages automatically request a captcha with POST, so block that request during read-only acceptance. Authenticated business flows remain fixture-verified until a separately authorized production test is available.
 
 The public ingress returned HTTP 468 to automated HTTP probes before deployment. Preserve the WAF and report any continuing public-access restriction separately from the frontend container and local ingress checks.
+
+## V0.11.0 deployment result — 2026-10-03
+
+Deployment completed at approximately 01:07 Asia/Shanghai. The production image was built from main commit `21e763477a6380b080f3b1355791f6c8fb5e5ebc`, preserved by annotated Git tag `v0.11.0`.
+
+| Item                     | Verified result                                                                                    |
+| ------------------------ | -------------------------------------------------------------------------------------------------- |
+| Image                    | `ghcr.io/star-ability/code-startrack-frontend:v0.11.0`                                             |
+| Commit tag               | `ghcr.io/star-ability/code-startrack-frontend:sha-21e763477a6380b080f3b1355791f6c8fb5e5ebc`        |
+| Deployed digest          | `sha256:036c3fb29a4eec9df67cafb65acac471a1c463fb935f08841045b7fb731517f0`                          |
+| Container                | `code-startrack-frontend-frontend-1`, ID `70de727ee37e`, healthy, zero restarts                    |
+| Binding                  | `127.0.0.1:3000` → nginx `80`                                                                      |
+| Deployment files         | `/opt/projects/code-startrack-frontend-deploy/releases/v0.11.0/`                                   |
+| Original frontend backup | `/opt/projects/code-startrack-frontend-deploy/backups/pre-v0.11.0.Ax5Cvq/`                         |
+| Main CI                  | [Successful run](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37036733540) |
+| Image publication        | [Successful run](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37036751363) |
+
+The `.env` in the release directory pins the complete GHCR digest. Inspect the deployment with:
+
+```bash
+ssh startrack-prod
+cd /opt/projects/code-startrack-frontend-deploy/releases/v0.11.0
+docker compose --project-name code-startrack-frontend \
+  --env-file .env -f compose.production.yml ps
+```
+
+Validation passed:
+
+- Lint, formatting, strict typecheck, 73 unit tests and production static build.
+- 110 desktop/mobile E2E passes; one intentional mobile skip of a desktop-sidebar test. The publication job independently repeated these checks.
+- Full local Docker acceptance, including browser interaction, Session Cookie/Origin forwarding, Secure/HttpOnly/SameSite flags, HTTPS forwarding and frontend liveness with the fixture stopped.
+- Live OpenAPI review of 31 operations and 377 nested DTO fields; 17 private GET routes returned the expected 401 envelope through SSH.
+- A production canary using the exact GHCR digest passed ten pages and the backend Session check before replacing the old frontend.
+- Final production browser verification passed 20 desktop/mobile page visits and three same-origin private GET checks with no page errors or horizontal overflow. Captcha POSTs were intercepted before transport; no production auth/business mutation was made.
+- Existing TLS ingress returned page 200 and `/api/v1/me` 401 through SSH, with hostname and certificate validation using Cloudflare's [official Origin CA](https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/). No system trust-store change or insecure TLS option was used.
+- nginx configuration validation passed, no nginx error-level messages were observed, and the backend container ID/image/start time, unrelated container IDs and Docker Volume inventory match the pre-deployment snapshot.
+
+Resolved failures: the initial Docker Hub nginx pull timed out; the Docker fixture had stale source/dependency mounts and attempted to violate its loopback guard; a recommendation test clicked stale history before its refresh completed; and a GHCR nginx layer stalled at zero bytes on the server. These were corrected and revalidated. The last transfer was recovered by fetching the identical official nginx digest from ECR, then pulling the frontend from GHCR by its published digest. No registry/system configuration was changed.
+
+Remaining acceptance limits:
+
+- The public edge still returns SafeLine HTTP 468 to curl and the automated browser and displays a human-confirmation prompt. This predates the frontend deployment. Public edge access after human confirmation remains unverified; WAF, 1Panel and OpenResty configuration are unchanged.
+- Real login, email delivery, account binding, synchronization and recommendation mutations were not run against production. Their frontend flows pass isolated fixtures; this does not prove production email/provider behavior.
+- The algorithm service is absent. Analysis/recommendation endpoints and existing empty/error/partial-sync behavior remain in place, without fabricated successful results.
+- Backend `COOKIE_SECURE=false` remains unchanged. The frontend enforces secure Session cookies, but direct backend access does not receive that frontend protection.
+- Actions reported existing action-runtime deprecation and upcoming runner-image migration notices; all jobs passed. Updating these tool versions is separate maintenance.
+
+The previous frontend image and original Compose/env/inspect files remain available for rollback. The authorized old container was removed only after the canary passed. Its historical V0.1 contract is incompatible with the current V0.11 backend, so restoration of that image is not evidence of functional rollback compatibility. No database, backend container, Volume or unrelated service was modified.

@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { HomeIcon, UserRoundIcon, CodeXmlIcon, OrbitIcon } from "lucide-react";
 import { useLocale } from "./locale-provider";
 import { Brand, SkipLink } from "./brand";
 import { LocaleSwitch } from "./locale-switch";
-import { LoginDialog } from "./login-dialog";
 import {
   SidebarProvider,
   Sidebar,
@@ -17,25 +17,46 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { TrainingQueryProvider } from "@/components/training/query-provider";
+import { WorkspaceSessionProvider } from "@/components/workspace/account-provider";
+import { AccountSwitcher } from "@/components/workspace/workspace-page";
 import { cn } from "@/lib/utils";
 
 function Navigation({ mobile = false }: { mobile?: boolean }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const pathname = usePathname();
+  const navigation = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (!mobile) return;
+    const element = navigation.current;
+    const current = element?.querySelector<HTMLElement>(
+      '[aria-current="page"]',
+    );
+    if (!element || !current) return;
+    const frame = element.getBoundingClientRect();
+    const item = current.getBoundingClientRect();
+    element.scrollLeft +=
+      item.left - frame.left - (frame.width - item.width) / 2;
+  }, [pathname, mobile, locale]);
   const links = [
-    ["/", "nav.home", HomeIcon],
-    ["/profile", "nav.profile", UserRoundIcon],
+    ["/dashboard", "v.dashboard", HomeIcon],
+    ["/data", "v.data", OrbitIcon],
+    ["/analysis", "v.analysis", OrbitIcon],
+    ["/profile", "v.profile", UserRoundIcon],
     ["/practice", "nav.practice", CodeXmlIcon],
+    ["/accounts", "v.accounts", UserRoundIcon],
+    ["/security", "v.security", UserRoundIcon],
   ] as const;
   return (
-    <nav aria-label={t("nav.workspace")}>
-      <SidebarMenu className={cn(mobile && "flex-row")}>
+    <nav
+      ref={navigation}
+      aria-label={t("nav.workspace")}
+      className={cn(mobile && "max-w-full overflow-x-auto")}
+    >
+      <SidebarMenu
+        className={cn(mobile && "w-max min-w-full flex-row flex-nowrap")}
+      >
         {links.map(([href, label, Icon]) => (
-          <SidebarMenuItem
-            key={href}
-            className={cn(mobile && "min-w-0 flex-1")}
-          >
+          <SidebarMenuItem key={href} className={cn(mobile && "w-20 shrink-0")}>
             <Link
               href={href}
               prefetch={false}
@@ -55,7 +76,7 @@ function Navigation({ mobile = false }: { mobile?: boolean }) {
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
   return (
-    <TrainingQueryProvider>
+    <WorkspaceSessionProvider>
       <SkipLink />
       <SidebarProvider>
         <aside className="hidden w-60 shrink-0 md:block">
@@ -79,13 +100,9 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
               <LocaleSwitch />
               <Separator />
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-col gap-1">
-                  <p className="text-sm font-medium">{t("demo.learner")}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("demo.label")}
-                  </p>
-                </div>
-                <LoginDialog />
+                <Link href="/security" className="text-sm">
+                  {t("v.security")}
+                </Link>
               </div>
             </SidebarFooter>
           </Sidebar>
@@ -95,15 +112,18 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
             <Brand />
             <div className="flex flex-wrap items-center gap-2">
               <LocaleSwitch />
-              <LoginDialog />
+              <Link href="/security" prefetch={false} className="text-sm">
+                {t("v.security")}
+              </Link>
             </div>
           </header>
+          <AccountSwitcher />
           {children}
           <div className="mobile-navigation sticky bottom-0 mt-auto border-t bg-background/95 px-3 py-2 backdrop-blur-md md:hidden">
             <Navigation mobile />
           </div>
         </div>
       </SidebarProvider>
-    </TrainingQueryProvider>
+    </WorkspaceSessionProvider>
   );
 }

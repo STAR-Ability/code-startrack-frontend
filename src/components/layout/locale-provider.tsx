@@ -1,8 +1,20 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { usePathname } from "next/navigation";
-import { saveLocale, translate, type Locale } from "@/lib/i18n/locale";
+import {
+  saveLocale,
+  translate,
+  resolveLocale,
+  LOCALE_COOKIE,
+  type Locale,
+} from "@/lib/i18n/locale";
 
 const LocaleContext = createContext<{
   locale: Locale;
@@ -20,13 +32,30 @@ export function LocaleProvider({
   initialLocale: Locale;
   children: React.ReactNode;
 }) {
-  const [locale, setLocaleState] = useState(initialLocale);
+  const savedLocale = useSyncExternalStore(
+    () => () => {},
+    () => {
+      try {
+        return resolveLocale(
+          document.cookie
+            .split("; ")
+            .find((value) => value.startsWith(`${LOCALE_COOKIE}=`))
+            ?.split("=")[1],
+        );
+      } catch {
+        return initialLocale;
+      }
+    },
+    () => initialLocale,
+  );
+  const [chosenLocale, setLocaleState] = useState<Locale | null>(null);
+  const locale = chosenLocale ?? savedLocale;
   const [announcement, setAnnouncement] = useState("");
   const pathname = usePathname();
 
   useEffect(() => {
     document.documentElement.lang = locale;
-    const title = translate(
+    const fallbackTitle = translate(
       locale,
       pathname === "/profile"
         ? "metadata.profileTitle"
@@ -36,6 +65,20 @@ export function LocaleProvider({
             ? "metadata.dashboardTitle"
             : "metadata.homeTitle",
     );
+    const routeTitles = {
+      "/data": "v.data",
+      "/analysis": "v.analysis",
+      "/accounts": "v.accounts",
+      "/security": "v.security",
+      "/login": "auth.login",
+      "/register": "v.register",
+      "/reset-password": "v.resetPassword",
+      "/demo": "v.demoTitle",
+    } as const;
+    const routeTitle = routeTitles[pathname as keyof typeof routeTitles];
+    const title = routeTitle
+      ? `${translate(locale, routeTitle)} | ${translate(locale, "brand.name")}`
+      : fallbackTitle;
     const description = translate(locale, "metadata.description");
     function syncMetadata() {
       if (document.title !== title) document.title = title;
@@ -45,8 +88,8 @@ export function LocaleProvider({
       }
     }
     syncMetadata();
-    // Next may stream cookie-derived metadata after navigation. When cookies
-    // are blocked, the in-memory preference must still own the visible metadata.
+    // Next may apply the static default metadata during navigation. The
+    // current display preference must still own the visible metadata.
     const observer = new MutationObserver(syncMetadata);
     observer.observe(document.head, {
       childList: true,

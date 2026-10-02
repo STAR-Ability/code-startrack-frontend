@@ -1,4 +1,7 @@
+import { workspaceZh, workspaceEn } from "./workspace-messages";
+
 export const zhCN = {
+  ...workspaceZh,
   "motion.pause": "暂停滚动",
   "motion.play": "继续滚动",
   "landing.days": "天",
@@ -10,20 +13,19 @@ export const zhCN = {
   "nav.about": "关于项目",
   "nav.start": "开始训练",
   "auth.login": "登录",
-  "auth.title": "你的训练，即将拥有自己的空间",
-  "auth.description":
-    "账号登录与注册暂未开放。现在可以无需登录，体验共享学习者的只读 Demo。",
-  "auth.unavailable": "登录即将开放",
+  "auth.title": "登录你的训练空间",
+  "auth.description": "使用平台账号登录，管理自己的 Codeforces 训练数据。",
+  "auth.unavailable": "Session 安全登录",
   "auth.close": "暂不登录",
   "auth.dismiss": "关闭弹窗",
   "landing.eyebrow": "让每一次练习，都有迹可循",
   "landing.title": "你的每一道代码，",
   "landing.titleEnd": "都留下成长轨迹。",
   "landing.description":
-    "聚合程序设计训练记录，建立统一训练画像，找到下一道值得做的题。让零散的练习，连成自己的成长轨迹。",
+    "连接你的 Codeforces 账号，查看训练数据、六维能力与个性化推荐。让每一个账号的练习，连成清晰的成长轨迹。",
   "landing.preview": "查看产品演示",
   "landing.sample": "交互示意 · 非真实学习者数据",
-  "landing.trust": "多源愿景 · 统一画像 · 下一题推荐",
+  "landing.trust": "多 CF 账号 · 独立画像 · 下一题推荐",
   "landing.previewProfile": "练习，正在积累。",
   "landing.previewReason": "从基础到进阶，为下一次思考留一点空间。",
   "landing.next": "下一道，值得一试",
@@ -33,44 +35,47 @@ export const zhCN = {
   "landing.flowDescription": "一个学习者，一条持续生长的训练轨迹。",
   "flow.data": "训练数据",
   "flow.dataNote": "从 Codeforces 开始，保留练习的每一份积累。",
-  "flow.unify": "统一数据层",
-  "flow.unifyNote": "由后端统一整理记录，围绕同一个学习者。",
+  "flow.unify": "账号数据",
+  "flow.unifyNote": "后端整理公开记录，每个绑定账号独立保存与分析。",
   "flow.profile": "训练画像",
   "flow.profileNote": "用通过题数、难度与近期提交看见训练状态。",
   "flow.recommend": "题目推荐",
-  "flow.recommendNote": "展示一道候选题，推荐仍处于早期验证阶段。",
+  "flow.recommendNote": "按难度匹配、弱项训练或综合模式生成推荐。",
   "flow.practice": "继续训练",
   "flow.practiceNote": "前往题目来源平台，开启下一次练习。",
   "landing.featuresTitle": "少一点分散，多一点方向。",
   "landing.featuresDescription": "围绕编程训练本身，构建清晰、连贯的学习体验。",
   "feature.profile": "一个画像，看见你的积累",
   "feature.profileNote":
-    "训练记录汇入同一个学习者画像。关注真正有意义的数字，而不是更多报表。",
+    "每个 Codeforces 账号有独立的六维能力画像与四窗口分析。",
   "feature.recommend": "下一题，有迹可循",
   "feature.recommendNote":
-    "题目、标签、来源与推荐说明，一眼读懂。当前推荐为早期占位结果。",
-  "feature.sources": "多源记录，一个你",
-  "feature.sourcesNote": "当前从 Codeforces 开始。更多连接器，是下一段旅程。",
+    "题目、标签、来源与推荐说明，一眼读懂。历史批次保留原始排名。",
+  "feature.sources": "多个账号，各自的轨迹",
+  "feature.sourcesNote":
+    "支持多个 Codeforces 账号，切换查看各自的数据与同步进度。",
   "feature.activity": "每一次提交，都有分量",
-  "feature.activityNote": "查看近 7 天与 30 天提交数，了解近期训练节奏。",
+  "feature.activityNote":
+    "查看每日提交、等待判题与窗口内通过题数，了解训练节奏。",
   "feature.journey": "成长，是一条连续的线",
-  "feature.journeyNote": "训练旅程概念演示。每日轨迹与历史时间线尚未开放。",
+  "feature.journeyNote":
+    "通过时间窗口和历史分析快照，回看训练变化。下方轨迹为交互示意。",
   "landing.journeyTitle": "从第一题，到下一个可能。",
   "landing.journeyNote": "点选轨迹节点，探索一段示意训练旅程。",
   "landing.day": "第 {day} 天",
   "landing.today": "下一步",
   "landing.stackTitle": "留一点挑战给明天。",
-  "landing.stackNote": "未来推荐体验示意。实际训练页当前仅提供一道推荐题。",
+  "landing.stackNote": "推荐体验示意。登录后可以生成、切换模式并查看推荐历史。",
   "landing.currentSource": "当前数据源",
   "landing.futureSources": "更多连接器 · 未来开放",
-  "landing.unified": "统一训练数据",
+  "landing.unified": "按账号独立分析",
   "landing.ctaTitle": "下一道题，不再只是随机开始。",
   "landing.ctaNote": "从一份训练画像开始，找到属于自己的练习节奏。",
   "landing.viewProfile": "查看个人画像",
   "landing.footer": "码练星轨 · 让练习连成轨迹",
   "profile.pageTitle": "个人中心",
   "profile.pageNote": "你的练习积累，在这里成为一幅清晰的画像。",
-  "profile.identity": "统一训练画像",
+  "profile.identity": "账号训练画像",
   "profile.activityTitle": "近期训练动态",
   "profile.activityNote":
     "提交次数包含所有评测结果，不等同于通过题数。当前尚无每日明细。",
@@ -104,12 +109,12 @@ export const zhCN = {
   "navigation.skip": "跳至主要内容",
   "demo.label": "只读 Demo",
   "demo.learner": "示例学习者",
-  "demo.context": "当前展示共享示例学习者的数据。",
+  "demo.context": "当前展示本地合成的示例数据。",
   "entry.title": "训练画像与题目推荐",
-  "entry.description":
-    "以 Codeforces 训练数据为起点，查看统一的学习画像与一道推荐题目。",
+  "entry.description": "按账号查看 Codeforces 训练数据、分析与推荐。",
   "entry.openDemo": "查看只读 Demo",
-  "entry.readOnly": "当前演示仅供查看，暂不开放账号绑定与同步。",
+  "entry.readOnly":
+    "Demo 使用本地示例数据；登录后可绑定自己的账号并同步公开训练记录。",
   "source.label": "数据来源",
   "accounts.unavailable": "已连接账号详情暂不可用。",
   "profile.title": "训练画像",
@@ -149,15 +154,16 @@ export const zhCN = {
   "recommendation.linkUnavailable": "题目链接暂不可用",
   "time.utc": "UTC",
   "time.zoneUnknown": "时区未提供",
-  "metadata.homeTitle": "码练星轨 | 只读 Demo",
+  "metadata.homeTitle": "码练星轨 | 编程训练",
   "metadata.dashboardTitle": "训练画像与推荐 | 码练星轨",
   "metadata.description":
-    "查看示例学习者的训练画像和一道推荐题目。当前仅支持只读浏览，推荐仍为早期占位结果。",
+    "连接多个 Codeforces 账号，按账号查看训练数据、六维能力、个人分析与题目推荐。",
 } as const;
 
 export type CopyKey = keyof typeof zhCN;
 
 export const en = {
+  ...workspaceEn,
   "motion.pause": "Pause scrolling",
   "motion.play": "Resume scrolling",
   "landing.days": "DAYS",
@@ -169,20 +175,20 @@ export const en = {
   "nav.about": "About",
   "nav.start": "Start practicing",
   "auth.login": "Log in",
-  "auth.title": "A space for your practice",
-  "auth.description":
-    "Sign-in and registration are not available yet. Explore the shared learner’s read-only demo without an account.",
-  "auth.unavailable": "Sign-in coming later",
+  "auth.title": "Log in to your training workspace",
+  "auth.description": "Log in to manage your own Codeforces practice data.",
+  "auth.unavailable": "Session sign-in",
   "auth.close": "Maybe later",
   "auth.dismiss": "Close dialog",
   "landing.eyebrow": "EVERY PRACTICE LEAVES A TRACE",
   "landing.title": "Every line of code,",
   "landing.titleEnd": "a step in your story.",
   "landing.description":
-    "Bring your programming practice into one training profile. Turn scattered attempts into a clearer path to your next problem.",
+    "Connect your Codeforces accounts to explore practice data, six-dimensional profiles and recommendations. Follow each account’s own progress.",
   "landing.preview": "Explore the preview",
   "landing.sample": "Interactive preview · illustrative data",
-  "landing.trust": "Multi-source vision · One profile · Your next problem",
+  "landing.trust":
+    "Multiple CF accounts · Separate profiles · Your next problem",
   "landing.previewProfile": "Practice adds up.",
   "landing.previewReason":
     "A little room for the next challenge, from fundamentals to new ideas.",
@@ -193,14 +199,15 @@ export const en = {
   "landing.flowDescription": "One learner. One evolving practice journey.",
   "flow.data": "Practice data",
   "flow.dataNote": "Starting with Codeforces and the practice you already do.",
-  "flow.unify": "One foundation",
-  "flow.unifyNote": "Records organized by the backend around one learner.",
+  "flow.unify": "Account data",
+  "flow.unifyNote":
+    "The backend organizes public records independently for each account binding.",
   "flow.profile": "Your profile",
   "flow.profileNote":
     "Solved problems, difficulty and recent submission counts.",
   "flow.recommend": "A recommendation",
   "flow.recommendNote":
-    "One candidate problem. Recommendations are still early placeholders.",
+    "Generate recommendations by level, weakness or hybrid mode.",
   "flow.practice": "Keep practicing",
   "flow.practiceNote":
     "Open the source platform for your next practice session.",
@@ -209,19 +216,19 @@ export const en = {
     "A clear, connected experience built around programming practice.",
   "feature.profile": "One profile. A clearer picture.",
   "feature.profileNote":
-    "A unified view of meaningful practice metrics, with room for more sources over time.",
+    "Each Codeforces account has its own six-dimensional profile and four analysis windows.",
   "feature.recommend": "A direction for your next problem",
   "feature.recommendNote":
-    "Problem, tags, source and explanation in one focused view. Currently an early placeholder.",
-  "feature.sources": "More sources. Still one you.",
+    "Read the problem, tags, source and reason together. Historical batches retain their original ranking.",
+  "feature.sources": "Multiple accounts, separate journeys",
   "feature.sourcesNote":
-    "Codeforces is the current source. More connectors are a future step.",
+    "Connect multiple Codeforces accounts and switch between their data and sync progress.",
   "feature.activity": "Every attempt counts",
   "feature.activityNote":
-    "Read your 7-day and 30-day submission counts to understand recent activity.",
+    "Explore daily submissions, pending judgements and problems solved within each window.",
   "feature.journey": "Progress is a continuous line",
   "feature.journeyNote":
-    "A preview of the journey ahead. Daily activity and history timelines are not available yet.",
+    "Review progress through analysis windows and historical snapshots. The journey below is illustrative.",
   "landing.journeyTitle": "From your first problem to what’s next.",
   "landing.journeyNote":
     "Select a milestone to explore an illustrative practice journey.",
@@ -229,10 +236,10 @@ export const en = {
   "landing.today": "Up next",
   "landing.stackTitle": "Leave a little challenge for tomorrow.",
   "landing.stackNote":
-    "A preview of a future recommendation queue. The practice page currently shows one problem.",
+    "An illustrative recommendation preview. Log in to generate, switch modes and browse history.",
   "landing.currentSource": "Current data source",
   "landing.futureSources": "More connectors · coming later",
-  "landing.unified": "Unified training data",
+  "landing.unified": "Independent analysis per account",
   "landing.ctaTitle": "Give your next problem a direction.",
   "landing.ctaNote":
     "Start with your training profile. Find your own practice rhythm.",
@@ -240,7 +247,7 @@ export const en = {
   "landing.footer": "codeStartrack · Connect your practice",
   "profile.pageTitle": "Your training profile",
   "profile.pageNote": "A clearer view of the practice you have put in.",
-  "profile.identity": "Unified training profile",
+  "profile.identity": "Account training profile",
   "profile.activityTitle": "Recent activity",
   "profile.activityNote":
     "Submission counts include all verdicts, not just solved problems. Daily details are not available.",
@@ -277,13 +284,13 @@ export const en = {
   "navigation.skip": "Skip to main content",
   "demo.label": "Read-only demo",
   "demo.learner": "Demo learner",
-  "demo.context": "This demo shows a shared learner's data.",
+  "demo.context": "Showing local synthetic example data.",
   "entry.title": "Training profile and recommendation",
   "entry.description":
-    "Explore one training profile and one recommended problem, starting with Codeforces training data.",
+    "Explore Codeforces training data, analysis and recommendations per account.",
   "entry.openDemo": "View read-only demo",
   "entry.readOnly":
-    "This demo is read-only. Account connection and synchronization are unavailable.",
+    "The demo uses local example data. Log in to connect your own accounts and sync public practice records.",
   "source.label": "Data source",
   "accounts.unavailable": "Connected account details are unavailable.",
   "profile.title": "Training profile",
@@ -329,9 +336,9 @@ export const en = {
   "recommendation.linkUnavailable": "Problem link unavailable",
   "time.utc": "UTC",
   "time.zoneUnknown": "Time zone not provided",
-  "metadata.homeTitle": "codeStartrack | Read-only Demo",
+  "metadata.homeTitle": "codeStartrack | Programming practice",
   "metadata.dashboardTitle":
     "Training profile and recommendation | codeStartrack",
   "metadata.description":
-    "Explore a demo learner's training profile and one recommended problem. This demo is read-only; recommendations are early placeholders.",
+    "Connect multiple Codeforces accounts to explore practice data, six-dimensional profiles, analysis and recommendations.",
 } satisfies Record<CopyKey, string>;

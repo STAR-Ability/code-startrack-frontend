@@ -1,30 +1,18 @@
-# Test-only merge with the root Compose file. No service can reach the Internet.
+# Test-only merge with the root Compose file. Runtime network is isolated.
 services:
-  fixture-a:
+  backend:
     image: node:24-alpine
-    command: ["node", "/fixtures/container/upstream.mjs"]
-    environment:
-      SOLVED_COUNT: "31"
+    command: [node, /app/tests/container/upstream.mjs]
     volumes:
-      - ./tests:/fixtures:ro
-  fixture-b:
-    image: node:24-alpine
-    command: ["node", "/fixtures/container/upstream.mjs"]
-    environment:
-      SOLVED_COUNT: "47"
-    volumes:
-      - ./tests:/fixtures:ro
+      - ./tests:/app/tests:ro
+      - ./src/lib/demo:/app/src/lib/demo:ro
   browser-check:
     profiles: [verify]
-    image: codestartrack-browser-check:local
     build:
       context: ./tests/container
       dockerfile: Dockerfile
     init: true
     shm_size: 1gb
-    environment:
-      EXPECTED_SOLVED: ${EXPECTED_SOLVED:-31}
-      EXPECTED_FIXTURE: ${EXPECTED_FIXTURE:-fixture-a}
 networks:
   default:
     internal: true

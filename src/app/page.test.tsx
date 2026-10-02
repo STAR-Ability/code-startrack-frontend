@@ -5,7 +5,7 @@ import { LocaleProvider } from "@/components/layout/locale-provider";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
 
-test("separates illustrative marketing from the read-only learner routes", () => {
+test("separates public local Demo from authenticated learner routes", () => {
   vi.stubGlobal(
     "IntersectionObserver",
     class {
@@ -23,7 +23,7 @@ test("separates illustrative marketing from the read-only learner routes", () =>
   );
   expect(screen.getByRole("link", { name: "查看只读 Demo" })).toHaveAttribute(
     "href",
-    "/practice",
+    "/demo",
   );
   expect(screen.getByRole("link", { name: "查看个人画像" })).toHaveAttribute(
     "href",

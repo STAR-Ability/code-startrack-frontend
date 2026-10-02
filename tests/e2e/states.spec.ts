@@ -1,136 +1,80 @@
 import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
-
-test.beforeEach(() => configureUpstream({}));
-
-test("delayed reads show distinct states and issue only E1 then E2", async ({
+test.beforeEach(() => configureUpstream());
+test("null analysis, zero evidence and stale results are distinct", async ({
   page,
 }) => {
-  await configureUpstream({ profile: "delay", recommendation: "delay" });
-  await page.goto("/practice");
-  await expect(page.getByText("正在加载训练画像…")).toBeVisible();
-  await expect(page.getByText("画像加载成功后将显示推荐题目。")).toBeVisible();
-  await expect(page.locator("dd")).toHaveCount(0);
-  await expect
-    .poll(async () => (await upstreamCalls()).map((call) => call.path))
-    .toEqual(["/api/users/1/profile"]);
-  await expect(page.getByText("正在加载推荐题目…")).toBeVisible();
-  await expect(
-    page.getByText(/训练画像已就绪|Your training profile is ready/),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "在 Codeforces 打开题目" }),
-  ).toBeVisible();
-  expect((await upstreamCalls()).map((call) => call.path)).toEqual([
-    "/api/users/1/profile",
-    "/api/users/1/recommendations?limit=1",
-  ]);
-});
-
-for (const operation of ["profile", "recommendation"] as const) {
-  for (const mode of [
-    "non-json-error",
-    "invalid-json",
-    "invalid-payload",
-    "network",
-    "timeout",
-  ]) {
-    test(`${operation} ${mode} stays a visible failure with scoped recovery`, async ({
-      page,
-      context,
-    }) => {
-      await context.addCookies([
-        {
-          name: "codestartrack_locale",
-          value: "en",
-          url: "http://127.0.0.1:3100",
-        },
-      ]);
-      await configureUpstream({ [operation]: mode });
-      await page.goto("/practice");
-      const region = page.getByRole("region", {
-        name:
-          operation === "profile" ? "Training profile" : "Recommended problem",
-      });
-      await expect(
-        region.getByRole("button", { name: `Retry ${operation}` }),
-      ).toBeVisible({ timeout: 12_000 });
-      await expect(region.getByRole("alert")).toContainText(
-        mode === "timeout" ? "timed out" : "Could not load",
-      );
-      if (operation === "profile") {
-        await expect(page.locator("dd")).toHaveCount(0);
-        expect(await upstreamCalls()).toHaveLength(1);
-      } else {
-        await expect(
-          page.getByText(/训练画像已就绪|Your training profile is ready/),
-        ).toBeVisible();
-        await expect(page.getByText(/early placeholders/)).toBeVisible();
-        expect(await upstreamCalls()).toHaveLength(2);
-      }
-      expect(await page.locator("body").innerText()).not.toMatch(
-        /127\.0\.0\.1|BACKEND_BASE_URL|account_not_found|private learner/,
-      );
-    });
-  }
-}
-
-test("missing runtime configuration is an error without any upstream call", async ({
-  page,
-}) => {
-  const response = await page.goto("http://127.0.0.1:3102/practice");
-  expect(response?.status()).toBe(200);
-  await expect(
-    page.getByRole("button", { name: "重试加载画像" }),
-  ).toBeVisible();
-  await expect(page.locator("dd")).toHaveCount(0);
-  const responseBody = await page.request.get(
-    "http://127.0.0.1:3102/api/training/profile",
-  );
-  expect((await responseBody.json()).error.category).toBe("configuration");
-  expect(
-    (await (await fetch("http://127.0.0.1:3212/__control")).json()).calls,
-  ).toEqual([]);
-});
-
-test("retry cannot duplicate an in-flight request", async ({ page }) => {
-  await configureUpstream({ recommendation: "http-error" });
-  await page.goto("/practice");
-  const retry = page.getByRole("button", { name: "重试加载推荐" });
-  await expect(retry).toBeVisible();
-  await configureUpstream({ recommendation: "delay" }, true);
-  await retry.focus();
-  await page.keyboard.press("Enter");
-  await expect(retry).toBeDisabled();
-  await page.keyboard.press("Enter");
-  await expect(
-    page.getByRole("link", { name: "在 Codeforces 打开题目" }),
-  ).toBeVisible();
-  expect((await upstreamCalls()).map((call) => call.path)).toEqual([
-    "/api/users/1/profile",
-    "/api/users/1/recommendations?limit=1",
-    "/api/users/1/recommendations?limit=1",
-  ]);
-});
-
-test("locale preference survives navigation and reload without additional reads on switching", async ({
-  page,
-}) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "English", exact: true }).click();
-  await page.getByRole("link", { name: "View read-only demo" }).click();
-  await expect(
-    page.getByRole("link", { name: "Open on Codeforces" }),
-  ).toBeVisible();
-  await expect(page).toHaveTitle("Practice | codeStartrack");
-  await page.getByRole("button", { name: "简体中文", exact: true }).click();
-  await expect(
-    page.getByRole("link", { name: "在 Codeforces 打开题目" }),
-  ).toBeVisible();
-  expect(await upstreamCalls()).toHaveLength(2);
+  await configureUpstream({ noAnalysis: true });
+  await page.goto("/profile");
+  await expect(page.getByText("尚未生成分析")).toBeVisible();
+  await configureUpstream({ zero: true, stale: true });
   await page.reload();
+  await expect(page.getByText("暂无训练证据")).toBeVisible();
+  await expect(page.getByText("数据已过期", { exact: true })).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "在 Codeforces 打开题目" }),
+    page.getByRole("heading", { name: "六维能力 · 0–100" }),
   ).toBeVisible();
-  expect(await upstreamCalls()).toHaveLength(4);
-  await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
+});
+test("account-mismatched response is discarded", async ({ page }) => {
+  await configureUpstream({ mismatch: true });
+  await page.goto("/profile");
+  await expect(page.getByText("内容暂未加载", { exact: true })).toBeVisible();
+  await expect(page.getByText("ACCOUNT_MISMATCH")).not.toBeVisible();
+  await page.getByText("查看问题详情", { exact: true }).click();
+  await expect(page.getByText("ACCOUNT_MISMATCH")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "训练概览" })).toHaveCount(0);
+});
+test("sync task polls to PARTIAL, preserves data and offers analysis rebuild", async ({
+  page,
+}) => {
+  await configureUpstream({ partial: true, nextAction: "SYNC" });
+  await page.goto("/dashboard");
+  await page
+    .getByRole("button", { name: "同步数据", exact: true })
+    .first()
+    .click();
+  await expect(page.getByText("部分完成", { exact: true })).toBeVisible({
+    timeout: 12_000,
+  });
+  await expect(page.locator('[data-slot="alert"]')).toContainText([
+    "部分阶段未完成",
+    "ALGORITHM_UNAVAILABLE",
+  ]);
+  await expect(
+    page.getByRole("button", { name: "重建画像", exact: true }),
+  ).toBeEnabled();
+  const before = (await upstreamCalls()).filter((call) =>
+    call.path.includes("/sync-jobs/"),
+  ).length;
+  await page.waitForTimeout(3500);
+  expect(
+    (await upstreamCalls()).filter((call) => call.path.includes("/sync-jobs/"))
+      .length,
+  ).toBe(before);
+});
+test("429 cooldown prevents repeated sync writes", async ({ page }) => {
+  await configureUpstream({ rateLimit: true });
+  await page.goto("/profile");
+  const sync = page.getByRole("button", { name: "同步数据", exact: true });
+  await sync.click();
+  await expect(page.locator('[data-slot="alert"]')).toContainText(
+    "SYNC_RATE_LIMITED",
+  );
+  await expect(sync).toBeDisabled();
+  await expect(sync).toBeEnabled({ timeout: 4000 });
+  expect(
+    (await upstreamCalls()).filter((call) => call.method === "POST"),
+  ).toHaveLength(1);
+});
+test("logout clears private data while workspace shells remain accessible", async ({
+  page,
+}) => {
+  await page.goto("/security");
+  await page.getByRole("button", { name: "退出登录", exact: true }).click();
+  await expect(page).toHaveURL("/login");
+  await page.goto("/profile");
+  await expect(page).toHaveURL("/profile");
+  await expect(
+    page.getByText("请登录查看更多数据", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
 });

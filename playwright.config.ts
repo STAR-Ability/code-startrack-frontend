@@ -1,10 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
+process.env.NO_PROXY = [process.env.NO_PROXY, "localhost", "127.0.0.1"]
+  .filter(Boolean)
+  .join(",");
+
 const baseURL = "http://127.0.0.1:3100";
 
 export default defineConfig({
   testDir: "./tests/e2e",
-  // Gateway and UI tests deliberately share/reset one isolated upstream log.
+  // Tests share/reset one isolated V0.11 backend fixture.
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

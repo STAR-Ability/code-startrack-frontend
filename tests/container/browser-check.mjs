@@ -49,6 +49,35 @@ try {
     origin,
   );
   assert.match(calls.at(-1).headers.cookie, /cst_session=synthetic/);
+  assert.equal(calls.at(-1).headers["x-forwarded-proto"], "http");
+  // Emulate the existing TLS ingress without changing backend cookie settings.
+  const secureLogin = await fetch("http://secure-frontend/api/v1/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Origin: "https://acm.qlluck.com",
+      "X-Forwarded-Proto": "https",
+    },
+    body: JSON.stringify({
+      account: "demo_student",
+      password: "synthetic-password",
+      captchaChallengeId: "00000000-0000-4000-8000-000000000100",
+      captchaAnswer: "test",
+    }),
+  });
+  assert.equal(secureLogin.status, 200);
+  assert.match(secureLogin.headers.get("set-cookie"), /; secure/i);
+  assert.match(secureLogin.headers.get("set-cookie"), /; httponly/i);
+  assert.match(secureLogin.headers.get("set-cookie"), /; samesite=lax/i);
+  const secureCalls = await (
+    await fetch("http://backend:8081/__control")
+  ).json();
+  assert.equal(
+    secureCalls.calls.at(-1).headers.origin,
+    "https://acm.qlluck.com",
+  );
+  assert.equal(secureCalls.calls.at(-1).headers["x-forwarded-proto"], "https");
+  assert.match(login.headers()["cache-control"], /no-store/);
   assert.equal(
     (await context.request.get(`${origin}/api/training/profile`)).status(),
     404,

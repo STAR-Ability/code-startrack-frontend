@@ -15,7 +15,7 @@ The current implementation follows [V0.11 frontend API](../../prompts/前端api�
 - Public Demo is synthetic and local. Explicit `dev:mock` / `preview:mock` use the same isolated V0.11 Mock API as E2E; transport provenance visibly labels synthetic data. Live failures never automatically select Mock data. The former fixed-user gateway has been removed.
 - All 31 documented endpoints have UI consumers. The endpoint matrix, Mock scenarios/limitations and shared loading/success/empty/error/mock policy are in [the Mock/API audit](../development/mock-api-audit.md).
 
-Implementation and tests are in `src/lib/api/`, `src/components/workspace/`, `src/components/auth/` and `tests/e2e/`. The backend has not been modified or verified live. All contract tests use isolated fixtures.
+Implementation and tests are in `src/lib/api/`, `src/components/workspace/`, `src/components/auth/` and `tests/e2e/`. On 2026-10-03, read-only inspection through an SSH tunnel confirmed the deployed V0.11 OpenAPI path/method inventory, request parameters, DTO field names/types, backend health and unauthenticated Session error envelope. No frontend endpoint change was needed. Generated OpenAPI does not fully specify requiredness/nullability/enums; the explicit DTO document supplies those details. Authenticated and mutation behavior remains validated only against isolated fixtures. The backend was not modified. See [deployment evidence and limits](../development/deployment.md#production-target-verified-on-2026-10-03).
 
 ---
 

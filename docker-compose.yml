@@ -6,6 +6,7 @@ services:
     pull_policy: missing
     environment:
       BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://backend:8081}
+      FRONTEND_COOKIE_SECURE: ${FRONTEND_COOKIE_SECURE:-true}
     ports:
       - "${FRONTEND_BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-3000}:80"
     restart: unless-stopped

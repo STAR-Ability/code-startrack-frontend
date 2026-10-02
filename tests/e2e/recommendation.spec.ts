@@ -23,7 +23,14 @@ test("mode and history reads do not generate; failed generation retries with one
   await expect(page.locator('[data-slot="alert"]')).toContainText(
     "ALGORITHM_TIMEOUT",
   );
+  const generatedResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().endsWith("/recommendations/generate") &&
+      response.ok(),
+  );
   await page.getByRole("button", { name: "重试", exact: true }).click();
+  const { data: generatedBatch } = await (await generatedResponse).json();
   await expect(page.locator('[data-slot="alert"]')).toHaveCount(0);
   const writes = (await upstreamCalls()).filter((call) =>
     call.path.endsWith("/recommendations/generate"),
@@ -33,9 +40,12 @@ test("mode and history reads do not generate; failed generation retries with one
     writes[1].headers["idempotency-key"],
   );
   expect(writes[0].body).toEqual({ mode: "WEAKNESS", limit: 10 });
+  // History refetches independently after generation. Select the returned batch
+  // only once its row appears, rather than racing the old first history row.
   await page
+    .getByText(generatedBatch.generatedAt, { exact: false })
+    .locator("..")
     .getByRole("button", { name: "查看批次", exact: true })
-    .first()
     .click();
   await expect(
     page.getByRole("button", { name: "返回最新结果" }),

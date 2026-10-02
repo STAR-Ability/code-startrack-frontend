@@ -464,18 +464,18 @@ assuming a tool exists. Prefer existing tools and project scripts over installin
 another dependency. The inventory in `docs/development/codex-cli.md` describes
 this Mac, not prerequisites that every contributor must install.
 
-| Task | Preferred tool and fallback order |
-| --- | --- |
-| Understand indexed code | Follow the CodeGraph rule above when `.codegraph/` exists; otherwise proceed directly with the tools below. Do not create an index implicitly. |
-| Search source text | `rg` → `grep -R -n`; scope paths and exclude dependencies, generated output and private env files. |
-| Locate files | Start repository inventories with `rg --files`; prefer `fd` for dedicated filename/path discovery → `rg --files -g '<pattern>'` → scoped `find`. `fd` is available on this Mac's user PATH. Both fd and rg normally skip ignored/hidden files; inspect those explicitly when the task requires it. |
-| Read/transform JSON | `jq` → a small Node script using `JSON.parse` / `JSON.stringify`. Do not parse structured JSON with grep/sed. |
-| Version control | `git`; inspect status, diff and history first. Preserve the branch/push rules in section 15. No destructive fallback. |
-| GitHub Issues, PRs and CI | `gh` → `pnpm gh` (repository portable wrapper) → Git for Git operations and browser/read-only API inspection where sufficient. Report unsupported actions or missing authentication rather than extracting credentials. |
-| Node version | `fnm` with `.nvmrc` → an already-installed Node satisfying `package.json#engines` (or an existing version manager). Use Node 24 here; never select a new major merely because it is latest. In a shell without fnm initialization, use `fnm exec --using=24 -- node ...` or initialize fnm explicitly. |
-| Dependencies and scripts | `pnpm` at `package.json#packageManager` → an already-provisioned compatible Corepack shim. If neither exists, report the bootstrap requirement; do not substitute npm/yarn, rewrite the lockfile or auto-download an arbitrary CLI. Prefer frozen-lockfile installs for verification. |
-| Temporary JS/TS | Use `node` for JS/ESM; prefer project-local `pnpm exec tsx <script.ts>` (also supports `.tsx`) for TypeScript scripts. The version is pinned in devDependencies. If tsx is unavailable, use Node 24 native erasable TypeScript for compatible `.mts`/`.ts`, then the existing TypeScript/Vitest workflow. Neither tsx nor native Node typechecks; keep `pnpm typecheck`. Native Node does not implement tsconfig path aliases/TSX. Avoid a separate global tsx version and implicit `npx ...@latest` downloads. |
-| Browser/UI verification | Configured Playwright MCP for interactive inspection; `pnpm test:e2e` for repeatable regression checks → the installed `@playwright/test` browser API for a focused script. Use the offline harness and browser-review Skill. HTTP checks with curl/Node are useful but do not replace browser, console, responsive or interaction checks. |
+| Task                      | Preferred tool and fallback order                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Understand indexed code   | Follow the CodeGraph rule above when`.codegraph/` exists; otherwise proceed directly with the tools below. Do not create an index implicitly.                                                                                                                                                                                                                                                                                                                                                                              |
+| Search source text        | `rg` → `grep -R -n`; scope paths and exclude dependencies, generated output and private env files.                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Locate files              | Start repository inventories with`rg --files`; prefer `fd` for dedicated filename/path discovery → `rg --files -g '<pattern>'` → scoped `find`. `fd` is available on this Mac's user PATH. Both fd and rg normally skip ignored/hidden files; inspect those explicitly when the task requires it.                                                                                                                                                                                                                |
+| Read/transform JSON       | `jq` → a small Node script using `JSON.parse` / `JSON.stringify`. Do not parse structured JSON with grep/sed.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Version control           | `git`; inspect status, diff and history first. Preserve the branch/push rules in section 15. No destructive fallback.                                                                                                                                                                                                                                                                                                                                                                                                      |
+| GitHub Issues, PRs and CI | `gh` → `pnpm gh` (repository portable wrapper) → Git for Git operations and browser/read-only API inspection where sufficient. Report unsupported actions or missing authentication rather than extracting credentials.                                                                                                                                                                                                                                                                                                |
+| Node version              | `fnm` with `.nvmrc` → an already-installed Node satisfying `package.json#engines` (or an existing version manager). Use Node 24 here; never select a new major merely because it is latest. In a shell without fnm initialization, use `fnm exec --using=24 -- node ...` or initialize fnm explicitly.                                                                                                                                                                                                              |
+| Dependencies and scripts  | `pnpm` at `package.json#packageManager` → an already-provisioned compatible Corepack shim. If neither exists, report the bootstrap requirement; do not substitute npm/yarn, rewrite the lockfile or auto-download an arbitrary CLI. Prefer frozen-lockfile installs for verification.                                                                                                                                                                                                                                   |
+| Temporary JS/TS           | Use`node` for JS/ESM; prefer project-local `pnpm exec tsx <script.ts>` (also supports `.tsx`) for TypeScript scripts. The version is pinned in devDependencies. If tsx is unavailable, use Node 24 native erasable TypeScript for compatible `.mts`/`.ts`, then the existing TypeScript/Vitest workflow. Neither tsx nor native Node typechecks; keep `pnpm typecheck`. Native Node does not implement tsconfig path aliases/TSX. Avoid a separate global tsx version and implicit `npx ...@latest` downloads. |
+| Browser/UI verification   | Configured Playwright MCP for interactive inspection;`pnpm test:e2e` for repeatable regression checks → the installed `@playwright/test` browser API for a focused script. Use the offline harness and browser-review Skill. HTTP checks with curl/Node are useful but do not replace browser, console, responsive or interaction checks.                                                                                                                                                                               |
 
 Do not default to Python for ordinary frontend file edits, JSON processing,
 automation or temporary scripts. Use Node/shell and the tools above. Python is
@@ -487,3 +487,54 @@ existing equivalents first. For necessary updates, check official sources,
 compatibility and checksums, preserve existing installations/configuration and
 re-run relevant checks. Stop the affected step for administrator privileges,
 account login/OAuth, API keys or potentially destructive environment changes.
+
+
+# Server Operations
+
+## Production Server
+
+SSH alias:
+
+ssh startrack-prod
+
+Server:
+server1.qlluck.com
+
+Backend container:
+
+startrack-app
+
+Old frontend container:
+
+code-startrack-frontend-frontend-1
+
+The old frontend container may be removed when deploying the new frontend.
+
+## Backend API
+
+Inspect backend container and exposed ports before making assumptions.
+
+API documentation:
+
+/doc.html
+
+Use the actual production API documentation as the source of truth.
+
+## Deployment Rules
+
+1. Test locally first.
+2. Test local Docker build and startup.
+3. Verify frontend/backend API compatibility.
+4. Do not modify database data.
+5. Do not remove backend containers.
+6. Do not delete Docker volumes.
+7. Merge dev -> main only after tests pass.
+8. Build production image from main.
+9. Push image to GHCR.
+10. Deploy the GHCR image to production.
+11. Verify container status, logs and HTTP access.
+
+## Important
+
+Algorithm analysis service is not deployed yet.
+Do not block frontend/backend integration because this service is unavailable.

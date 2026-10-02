@@ -44,6 +44,7 @@ try {
     "90",
     "backend",
     "frontend",
+    "secure-frontend",
   ]);
   await run([
     ...compose,
@@ -67,6 +68,9 @@ try {
     "/dev/null",
     "http://127.0.0.1/healthz",
   ]);
+} catch (error) {
+  await run([...compose, "logs", "--tail", "80"]).catch(() => {});
+  throw error;
 } finally {
-  await run([...compose, "down", "--volumes", "--remove-orphans"]);
+  await run([...compose, "down"]);
 }

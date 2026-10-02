@@ -13,6 +13,7 @@ RUN pnpm build
 
 FROM nginx:stable-alpine AS runner
 ENV BACKEND_BASE_URL=http://backend:8081
+ENV FRONTEND_COOKIE_SECURE=true
 COPY --from=builder /app/out /usr/share/nginx/html
 COPY deploy/default.conf.template /etc/nginx/templates/default.conf.template
 EXPOSE 80

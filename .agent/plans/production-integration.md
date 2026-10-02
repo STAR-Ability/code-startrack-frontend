@@ -26,9 +26,9 @@ Next.js 16 static export, nginx same-origin /api/v1 proxy, opaque Session cookie
 - [x] Live OpenAPI paths, parameters, DTOs and Session/Origin behavior reviewed.
 - [x] Standard quality checks, E2E and local Docker acceptance pass.
 - [x] Runtime proxy reaches the backend through an SSH tunnel locally.
-- [ ] dev is fully merged into main and an immutable main image is in GHCR.
-- [ ] Production frontend is healthy; pages and read-only API checks pass.
-- [ ] Limitations and rollback are documented.
+- [x] dev is fully merged into main and an immutable main image is in GHCR.
+- [x] Production frontend is healthy; pages and read-only API checks pass.
+- [x] Limitations and rollback are documented.
 
 ## Implementation Stages
 
@@ -66,7 +66,7 @@ Retain the old frontend image and exact container configuration, back up fronten
 
 - [x] Stage 1
 - [x] Stage 2
-- [ ] Stage 3
+- [x] Stage 3
 
 ## Decisions / Deviations
 
@@ -85,3 +85,9 @@ Retain the old frontend image and exact container configuration, back up fronten
 - The local nginx image also passed 20 desktop/mobile live-tunnel page checks, three same-origin private GET checks, liveness and legacy-path rejection. The browser guard blocked non-GET traffic before transport, including automatic captcha requests. No page errors or horizontal overflow occurred.
 - Final lint, format, typecheck and 73 unit tests passed after the test harness fixes. The complete E2E pass remains applicable because subsequent changes affect only the Docker fixture harness.
 - Preserve the user's local .codex/config.toml preference edits uncommitted; perform the release merge in a clean main worktree. Include the user's task-relevant AGENTS.md server-operation instructions in the scoped deployment commit.
+- Released main commit `21e763477a6380b080f3b1355791f6c8fb5e5ebc`, annotated tag `v0.11.0`. Both dev/main CI and publication run `37036751363` passed, including 73 unit tests and 110 E2E passes with one intentional skip. Local main Docker build also passed.
+- GHCR version and commit tags resolve to `sha256:036c3fb29a4eec9df67cafb65acac471a1c463fb935f08841045b7fb731517f0`. A stalled GHCR base-layer transfer was recovered by pulling the identical nginx layer from the official ECR mirror, then successfully pulling the complete frontend by its GHCR digest. No Docker daemon configuration was changed.
+- Production canary passed ten page checks and the backend Session error check before replacement. The old frontend's ID was matched to its restricted backup before removal. The new frontend is healthy with zero restarts, bound only to 127.0.0.1:3000. Backend ID/image/start time, all unrelated container IDs and all volumes remain unchanged.
+- Production browser checks passed 20 desktop/mobile routes and three private API checks through SSH, with no page errors or horizontal overflow; automatic captcha POSTs were blocked. Existing TLS ingress also returned 200 for the page and 401 for /api/v1/me using the official Cloudflare Origin CA trust anchor without disabling TLS validation.
+- Public edge acceptance remains limited: curl and the automated browser receive the existing SafeLine 468 human-confirmation challenge. The screenshot confirms that the WAF requests a human confirmation before the app; no WAF/configuration change or challenge bypass was attempted.
+- Deployment manifest, backup location, digest, validation and remaining limitations are recorded in docs/development/deployment.md. Final reporting changes are documentation-only; the deployed runtime is the immutable v0.11.0 release.

@@ -17,10 +17,11 @@ import { Badge } from "@/components/ui/badge";
 import { SyncPanel } from "./sync-panel";
 import type { CopyKey } from "@/lib/i18n/messages";
 
-export function AccountSwitcher() {
+export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
   const context = useOptionalAccounts();
   const session = useWorkspaceSession();
   const { t } = useLocale();
+  const pathname = usePathname();
   const id = useId();
   if (!context)
     return (
@@ -46,45 +47,57 @@ export function AccountSwitcher() {
     );
   const { accounts, account, selectedAccountId, selectAccount, user, query } =
     context;
+  const userOnly =
+    !inline && (pathname === "/dashboard" || pathname.startsWith("/security"));
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4 border-b bg-background px-5 py-4 sm:px-8">
-      <Field className="max-w-sm">
-        <FieldLabel htmlFor={id}>{t("v.selectAccount")}</FieldLabel>
-        <NativeSelect
-          id={id}
-          disabled={!accounts.length && account?.bindStatus !== "UNBOUND"}
-          value={selectedAccountId ?? ""}
-          onChange={(event) => selectAccount(event.target.value || null)}
-        >
-          {!selectedAccountId && (
-            <NativeSelectOption value="">
-              {t(
-                query.isFetching
-                  ? "v.loading"
-                  : query.error
-                    ? "v.unavailable"
-                    : "v.noAccount",
-              )}
-            </NativeSelectOption>
-          )}
-          {accounts.map((item) => (
-            <NativeSelectOption key={item.accountId} value={item.accountId}>
-              {item.username} · {item.accountId}
-            </NativeSelectOption>
-          ))}
-          {account?.bindStatus === "UNBOUND" && (
-            <NativeSelectOption value={account.accountId}>
-              {account.username} · {t("v.readOnly")}
-            </NativeSelectOption>
-          )}
-        </NativeSelect>
-      </Field>
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <span>{user.displayName ?? user.username}</span>
-        <Link href="/accounts" className="underline underline-offset-4">
-          {t("v.accounts")}
-        </Link>
-      </div>
+    <div
+      className={
+        inline
+          ? "flex flex-wrap items-end gap-3"
+          : "flex flex-wrap items-end justify-between gap-3 border-b bg-background/80 px-5 py-3 sm:px-6"
+      }
+    >
+      {!userOnly && (
+        <Field className="max-w-sm">
+          <FieldLabel htmlFor={id}>{t("v.selectAccount")}</FieldLabel>
+          <NativeSelect
+            id={id}
+            disabled={!accounts.length && account?.bindStatus !== "UNBOUND"}
+            value={selectedAccountId ?? ""}
+            onChange={(event) => selectAccount(event.target.value || null)}
+          >
+            {!selectedAccountId && (
+              <NativeSelectOption value="">
+                {t(
+                  query.isFetching
+                    ? "v.loading"
+                    : query.error
+                      ? "v.unavailable"
+                      : "v.noAccount",
+                )}
+              </NativeSelectOption>
+            )}
+            {accounts.map((item) => (
+              <NativeSelectOption key={item.accountId} value={item.accountId}>
+                {item.username} · {item.accountId}
+              </NativeSelectOption>
+            ))}
+            {account?.bindStatus === "UNBOUND" && (
+              <NativeSelectOption value={account.accountId}>
+                {account.username} · {t("v.readOnly")}
+              </NativeSelectOption>
+            )}
+          </NativeSelect>
+        </Field>
+      )}
+      {!inline && (
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <span>{user.displayName ?? user.username}</span>
+          <Link href="/accounts" className="underline underline-offset-4">
+            {t("v.accounts")}
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -109,7 +122,7 @@ export function WorkspacePage({
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-5 py-8 sm:px-8 lg:px-12"
+      className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-5 px-5 py-6 sm:px-6 lg:px-8"
     >
       <header className="flex flex-col gap-2">
         <p className="text-xs tracking-widest text-muted-foreground">
@@ -125,7 +138,7 @@ export function WorkspacePage({
             />
           )}
         </div>
-        {account && (
+        {account && requireAccount && (
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">{account.username}</Badge>
             {account.bindStatus !== "ACTIVE" && (

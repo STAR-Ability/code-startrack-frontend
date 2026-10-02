@@ -88,7 +88,7 @@ export function AccountsPage() {
   const list = history ? (historyQuery.data ?? []) : accounts;
   return (
     <>
-      <Card>
+      <Card size="sm" interaction="none">
         <CardHeader>
           <CardTitle>
             <h2>{t("v.bind")}</h2>
@@ -97,7 +97,7 @@ export function AccountsPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit((values) => bind.mutate(values))}>
-            <FieldGroup>
+            <FieldGroup className="sm:flex-row sm:items-end">
               <FormInput
                 label={t("v.handle")}
                 required
@@ -106,7 +106,11 @@ export function AccountsPage() {
                   validate: (value) => !!value.trim(),
                 })}
               />
-              <Button disabled={bind.isPending || !!remaining} type="submit">
+              <Button
+                wrap
+                disabled={bind.isPending || !!remaining}
+                type="submit"
+              >
                 {bind.isPending && (
                   <Spinner data-icon="inline-start" aria-hidden="true" />
                 )}

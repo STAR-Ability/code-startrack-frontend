@@ -229,6 +229,7 @@ export function QueryFeedback({
   const mock = useMockMode();
   const data = isMissingResource(query.error) ? undefined : query.data;
   useSlowRequest(query.isFetching);
+  if (!query.isFetching && !query.error) return null;
   return (
     <div
       data-state={dataState({ ...query, data }, mock)}

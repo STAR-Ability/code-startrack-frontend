@@ -6,13 +6,14 @@ The public landing page and `/demo` use local illustrations and synthetic fixtur
 
 | Route                                    | Purpose                                                                            |
 | ---------------------------------------- | ---------------------------------------------------------------------------------- |
-| `/dashboard`                             | Account summary and backend-directed next action                                   |
+| `/dashboard`                             | All-bound-CF-account totals/list and account-specific next action                  |
 | `/data`                                  | Windowed overview, attempted problems, submissions and rating changes              |
 | `/profile`                               | Six-dimensional account profile on a fixed 0–100 scale                             |
 | `/analysis`                              | Four analysis windows and immutable snapshot history                               |
 | `/practice`                              | Three recommendation modes, explicit generation and batch history                  |
 | `/accounts`                              | Multiple CF bindings, synchronization, unbinding and read-only historical bindings |
-| `/security`                              | Password/email changes and session logout                                          |
+| `/security`                              | Identity, account action links and session logout                                  |
+| `/security/password`, `/security/email`  | Independent identity-verified change flows and reauthentication                    |
 | `/login`, `/register`, `/reset-password` | Captcha and email-code authentication flows                                        |
 
 ## Contract and architecture
@@ -21,7 +22,9 @@ The V0.11 sources are [frontend API](prompts/前端api文档.md) and [frontend d
 
 Every browser API request uses same-origin `/api/v1/**` and `credentials: "include"`. There are no browser tokens, fixed demo-user API calls, database connections, Algorithm calls or Codeforces data API calls. Problem URLs are navigation links supplied by the backend.
 
-`src/lib/api/` contains validated DTOs and the API client. Query keys include `publicId`, `accountId`, resource and every window/mode/page/filter parameter. IDs remain decimal strings, including values larger than JavaScript's safe integer range. Switching accounts cancels old reads and remounts page state; unbinding removes that binding's cache; logout clears all private caches. Mutation results are checked against the initiating user before updating state.
+`src/lib/api/` contains validated DTOs and the API client. Query keys include `publicId`, `accountId`, resource and every window/mode/page/filter parameter. IDs remain decimal strings, including values larger than JavaScript's safe integer range. Switching accounts cancels old detail reads and remounts account-specific page state; portfolio reads remain scoped to all owned bindings; unbinding removes that binding's cache; logout clears all private caches. Mutation results are checked against the initiating user before updating state.
+
+The dashboard sums only additive counts for one analysis window. Solved problems are labeled as account occurrences because cross-account overlap is not deduplicated. Rating, ability and recommendations stay account-specific. Compact detail metrics precede reusable ECharts visuals; desktop navigation collapses to labeled icons and restores its optional preference.
 
 For Codex CLI setup, MCP/Skills, portable GitHub CLI and offline browser review,
 see [the project environment guide](docs/development/codex-cli.md).
@@ -81,6 +84,6 @@ pnpm test:e2e
 pnpm test:container
 ```
 
-E2E uses the production export, a local HTTP proxy on `127.0.0.1:3100` and a synthetic V0.11 backend on `127.0.0.1:3210`. It never uses `.env.local` to choose an upstream. Desktop/mobile tests cover locale, keyboard and narrow layouts, authentication, bigint IDs, delayed account switching, unbinding, readonly history, analysis windows, nullable data, recommendation idempotency and task states. Browser network guards reject external requests and old API paths. Container checks require a running Docker daemon.
+E2E uses the production export, a local HTTP proxy on `127.0.0.1:3100` and a synthetic V0.11 backend on `127.0.0.1:3210`. It never uses `.env.local` to choose an upstream. Desktop/mobile tests cover locale, keyboard and narrow layouts, authentication, bigint IDs, delayed account switching, unbinding, readonly history, analysis windows, nullable data, recommendation idempotency and task states. They also cover partial portfolio failures, sidebar persistence and independent password/email verification. Browser network guards reject external requests and old API paths. Container checks require a running Docker daemon.
 
 The [execution plan](.agent/plans/v0.11-frontend.md) records migration decisions, validation and remaining integration risks. Real backend compatibility, mail delivery, provider sync and Algorithm operation must still be verified against the deployed V0.11 services.

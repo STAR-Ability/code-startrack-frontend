@@ -30,6 +30,8 @@ for (const locale of ["zh-CN", "en"]) {
       "/practice",
       "/accounts",
       "/security",
+      "/security/password",
+      "/security/email",
       "/login",
     ]) {
       await page.goto(route);
@@ -62,6 +64,18 @@ async function narrow(page: Page) {
         page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       )
       .toBe(true);
+    const active = page.locator('.mobile-navigation [aria-current="page"]');
+    if (await active.count()) {
+      await expect
+        .poll(() =>
+          active.evaluate((element) => {
+            const item = element.getBoundingClientRect();
+            const frame = element.closest("nav")!.getBoundingClientRect();
+            return item.left >= frame.left - 1 && item.right <= frame.right + 1;
+          }),
+        )
+        .toBe(true);
+    }
   }
   await page.evaluate(() => {
     document.documentElement.style.fontSize = "";

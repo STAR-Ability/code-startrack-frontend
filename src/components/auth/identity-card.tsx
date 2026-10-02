@@ -18,7 +18,7 @@ export function IdentityCard() {
   });
   const roles = isMissingResource(query.error) ? [] : (query.data?.roles ?? []);
   return (
-    <Card>
+    <Card size="sm" interaction="none">
       <CardHeader>
         <CardTitle>
           <h2>{t("data.identity")}</h2>
@@ -30,7 +30,7 @@ export function IdentityCard() {
           name={t("data.identity")}
           empty={!roles.length}
         >
-          <dl className="flex flex-col gap-3">
+          <dl className="grid min-w-0 gap-3 sm:grid-cols-3">
             <div>
               <dt className="text-xs text-muted-foreground">
                 {t("v.username")}

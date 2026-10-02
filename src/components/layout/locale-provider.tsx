@@ -70,6 +70,8 @@ export function LocaleProvider({
       "/analysis": "v.analysis",
       "/accounts": "v.accounts",
       "/security": "v.security",
+      "/security/password": "v.changePassword",
+      "/security/email": "v.changeEmail",
       "/login": "auth.login",
       "/register": "v.register",
       "/reset-password": "v.resetPassword",

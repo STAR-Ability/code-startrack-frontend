@@ -2,17 +2,21 @@ import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 test.beforeEach(() => configureUpstream());
 
 for (const [route, resource, headings] of [
-  ["/dashboard", "/dashboard", ["下一步", "为你推荐", "训练概览"]],
+  [
+    "/dashboard",
+    "/dashboard",
+    ["下一步", "为你推荐", "全部 CF 账号 · 训练汇总"],
+  ],
   [
     "/data",
     "/training/overview",
     ["训练概览", "知识标签", "难度分布", "每日训练", "做题记录"],
   ],
-  ["/profile", "/analysis/latest", ["训练概览", "六维能力 · 0–100"]],
+  ["/profile", "/analysis/latest", ["能力摘要", "六维能力 · 0–100"]],
   [
     "/analysis",
     "/analysis/latest",
-    ["训练概览", "六维能力 · 0–100", "分析历史"],
+    ["画像指标", "六维能力 · 0–100", "分析历史"],
   ],
 ] as const) {
   test(`first failure preserves ${route} cards and retry restores actual data`, async ({
@@ -30,20 +34,36 @@ for (const [route, resource, headings] of [
         .first(),
     ).toBeVisible();
     const overview = page.locator('[data-slot="card"]').filter({
-      has: page.getByRole("heading", { name: "训练概览", exact: true }),
+      has: page.getByRole("heading", {
+        name:
+          headings[0] === "下一步" ? "全部 CF 账号 · 训练汇总" : headings[0],
+        exact: true,
+      }),
     });
-    await expect(overview.locator("dd").filter({ hasText: /^0$/ })).toHaveCount(
-      10,
-    );
-    await expect(overview).toContainText("暂无");
+    if (route === "/dashboard") {
+      await expect(
+        overview.locator("dd").filter({ hasText: /^8$/ }),
+      ).toHaveCount(1);
+    } else {
+      await expect(
+        overview.locator("dd").filter({ hasText: /^0$/ }),
+      ).toHaveCount(route === "/data" ? 10 : 4);
+      await expect(overview).toContainText("暂无");
+    }
     await configureUpstream({ errorResource: null }, true);
     await page
       .getByRole("button", { name: "重试", exact: true })
       .first()
       .click();
-    await expect(overview.locator("dd").filter({ hasText: /^5$/ })).toHaveCount(
-      1,
-    );
+    if (route === "/dashboard") {
+      await expect(
+        page.getByRole("heading", { name: "#1 A Small Step", exact: true }),
+      ).toBeVisible();
+    } else {
+      await expect(
+        overview.locator("dd").filter({ hasText: /^5$/ }),
+      ).toHaveCount(1);
+    }
     await expect(
       page.locator('section[data-state="mock"]').first(),
     ).toBeVisible();
@@ -102,7 +122,7 @@ test("a complete backend outage keeps safe workspace structures without invented
   await expect(
     page.getByRole("heading", { name: "六维能力 · 0–100" }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { name: "训练概览" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "能力摘要" })).toBeVisible();
   await expect(
     page
       .getByText("当前无法加载数据，请检查网络或稍后重试", { exact: true })
@@ -135,7 +155,10 @@ test("account details and roles use the two previously unused reads and recover 
   await configureUpstream({ errorPath: "/me/roles" }, true);
   await page.goto("/security");
   await expect(page.getByRole("heading", { name: "身份与角色" })).toBeVisible();
-  await expect(page.getByLabel("当前密码", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "修改密码", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator("main input")).toHaveCount(0);
   await configureUpstream({ errorPath: null }, true);
   await page.getByRole("button", { name: "重试", exact: true }).click();
   await expect(

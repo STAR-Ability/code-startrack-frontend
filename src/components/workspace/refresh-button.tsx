@@ -40,7 +40,8 @@ export function RefreshButton({
       return (
         key[2] === "accounts" ||
         key[2] === "roles" ||
-        (key[2] === "account" && key[3] === accountId)
+        (key[2] === "account" &&
+          (key[3] === accountId || key[4] === "portfolio-overview"))
       );
     },
     [publicId, accountId],
@@ -66,7 +67,7 @@ export function RefreshButton({
     setUpdated(false);
     toast.close(noticeId);
     try {
-      // Only mounted reads: never prefetch another account or create sync/recommendation jobs.
+      // Only mounted reads, including the explicit portfolio; never create jobs.
       await client.refetchQueries(
         { type: "active", predicate },
         { throwOnError: true, cancelRefetch: false },

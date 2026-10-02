@@ -10,6 +10,7 @@ import { useAccountQuery } from "./use-account-query";
 import { AnalysisView } from "./analysis-view";
 import { EmptyState, QueryFeedback, DataRegion, Pagination } from "./feedback";
 import { Chart } from "./chart";
+import { trendOption } from "@/lib/charts/options";
 
 export function WindowSelector({
   value,
@@ -27,7 +28,7 @@ export function WindowSelector({
           onChange(values[0] as AnalysisWindow);
       }}
       aria-label={t("v.window")}
-      className="flex-wrap"
+      className="max-w-full flex-wrap"
     >
       {windows.map((window) => (
         <ToggleGroupItem key={window} value={window}>
@@ -88,7 +89,7 @@ export function AnalysisPage({
       )}
       <DataRegion
         query={displayed}
-        name={t("profile.overview")}
+        name={t(profileOnly ? "metrics.ability" : "metrics.analysis")}
         empty={!displayed.data || displayed.data.summary.submissionCount === 0}
       >
         <AnalysisView
@@ -97,35 +98,55 @@ export function AnalysisPage({
           unavailable={!!displayed.error}
           dimensions
           statistics={!profileOnly}
+          ability
+          metricTitle={
+            snapshotId
+              ? "metrics.snapshot"
+              : profileOnly
+                ? "metrics.ability"
+                : "metrics.analysis"
+          }
+          trend={
+            !profileOnly ? (
+              <Card size="sm" interaction="none">
+                <CardHeader>
+                  <CardTitle>
+                    <h2>{t("v.trend")}</h2>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <QueryFeedback query={history} />
+                  {trend.length > 1 ? (
+                    <Chart
+                      label={t("v.trend")}
+                      option={trendOption(
+                        trend.map((item) => item.dataCutoffAt),
+                        [
+                          {
+                            name: t("v.overallScore"),
+                            values: trend.map((item) => item.overallScore),
+                          },
+                        ],
+                        true,
+                      )}
+                    />
+                  ) : (
+                    <EmptyState title={t("v.noRecords")} />
+                  )}
+                </CardContent>
+              </Card>
+            ) : undefined
+          }
         />
       </DataRegion>
       {!profileOnly && (
-        <Card>
+        <Card size="sm" interaction="none">
           <CardHeader>
             <CardTitle>
               <h2>{t("v.analysisHistory")}</h2>
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <QueryFeedback query={history} />
-            {trend.length > 1 && (
-              <Chart
-                label={t("v.trend")}
-                option={{
-                  xAxis: {
-                    type: "category",
-                    data: trend.map((item) => item.dataCutoffAt),
-                  },
-                  yAxis: { type: "value", min: 0, max: 100 },
-                  series: [
-                    {
-                      type: "line",
-                      data: trend.map((item) => item.overallScore),
-                    },
-                  ],
-                }}
-              />
-            )}
             {!history.isFetching && !history.data?.data.length && (
               <EmptyState title={t("v.noRecords")} />
             )}

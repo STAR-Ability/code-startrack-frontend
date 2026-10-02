@@ -1,4 +1,10 @@
 import { AuthShell } from "@/components/auth/auth-shell";
+import { MockNotice } from "@/components/workspace/mock-notice";
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <AuthShell>{children}</AuthShell>;
+  return (
+    <>
+      <MockNotice />
+      <AuthShell>{children}</AuthShell>
+    </>
+  );
 }

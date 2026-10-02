@@ -131,7 +131,7 @@ test("a slow account query is dismissed on switch and never becomes another acco
     .selectOption("9007199254740995");
   await page.clock.runFor(600);
   await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "训练概览" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "能力摘要" })).toBeVisible();
   release();
   await page.clock.runFor(1000);
   await expect(page.locator('[data-slot="toast"]')).toHaveCount(0);

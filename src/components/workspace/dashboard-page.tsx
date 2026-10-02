@@ -15,9 +15,25 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DataRegion, ErrorNotice, useCountdown } from "./feedback";
 import { BatchView } from "./recommendations-page";
-import { AnalysisView } from "./analysis-view";
+import { AccountPortfolio } from "./account-portfolio";
+import { PersonalDataGate } from "./personal-data-gate";
+import { SyncPanel } from "./sync-panel";
+import { Badge } from "@/components/ui/badge";
+import { AccountSwitcher } from "./workspace-page";
 
 export function DashboardPage() {
+  const { t } = useLocale();
+  return (
+    <>
+      <AccountPortfolio />
+      <h2 className="text-base font-medium">{t("portfolio.selected")}</h2>
+      <PersonalDataGate>
+        <SelectedTraining />
+      </PersonalDataGate>
+    </>
+  );
+}
+function SelectedTraining() {
   const { account, user } = useAccounts();
   const { t } = useLocale();
   const client = useQueryClient();
@@ -63,58 +79,70 @@ export function DashboardPage() {
   const next = dashboard.data?.nextAction;
   return (
     <>
-      <DataRegion query={dashboard} name={t("v.dashboard")}>
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2>{t("v.nextAction")}</h2>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-start gap-3">
-            {!dashboard.data ? (
-              <p>{t("v.unavailable")}</p>
-            ) : next === "WAIT_SYNC" ? (
-              <p role="status">{t("v.syncing")}</p>
-            ) : next === "SYNC" || next === "REBUILD_ANALYSIS" ? (
-              <Button
-                disabled={
-                  locked ||
-                  action.isPending ||
-                  !!remaining ||
-                  account?.bindStatus === "UNBOUND"
-                }
-                onClick={() => action.mutate(next)}
-              >
-                {action.isPending && (
-                  <Spinner data-icon="inline-start" aria-hidden="true" />
-                )}
-                {t(next === "SYNC" ? "v.sync" : "v.rebuild")}
-              </Button>
-            ) : (
-              <>
-                <p>{t(next === "NONE" ? "v.ready" : "v.noBatch")}</p>
-                <Link href="/practice" className={buttonVariants()}>
-                  {t(
-                    next === "GENERATE_RECOMMENDATIONS"
-                      ? "v.generate"
-                      : "nav.practice",
-                  )}
-                </Link>
-              </>
+      <div className="flex flex-wrap items-end gap-3">
+        <AccountSwitcher inline />
+        {account!.bindStatus !== "ACTIVE" && (
+          <Badge variant="secondary">
+            {t(
+              account!.bindStatus === "UNBOUND"
+                ? "v.readOnly"
+                : "v.invalidAccount",
             )}
-            <ErrorNotice error={action.error} />
-          </CardContent>
-        </Card>
-        <BatchView
-          batch={dashboard.data?.recommendationBatch ?? null}
-          firstOnly
-        />
-        <AnalysisView
-          analysis={dashboard.data?.analysis ?? null}
-          loading={dashboard.isFetching && dashboard.data === undefined}
-          unavailable={!!dashboard.error}
-        />
+          </Badge>
+        )}
+      </div>
+      <DataRegion query={dashboard} name={t("v.dashboard")}>
+        <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          <Card size="sm">
+            <CardHeader>
+              <CardTitle>
+                <h2>{t("v.nextAction")}</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-start gap-3">
+              {!dashboard.data ? (
+                <p>{t("v.unavailable")}</p>
+              ) : next === "WAIT_SYNC" ? (
+                <p role="status">{t("v.syncing")}</p>
+              ) : next === "SYNC" || next === "REBUILD_ANALYSIS" ? (
+                <Button
+                  disabled={
+                    locked ||
+                    action.isPending ||
+                    !!remaining ||
+                    account?.bindStatus === "UNBOUND"
+                  }
+                  onClick={() => action.mutate(next)}
+                >
+                  {action.isPending && (
+                    <Spinner data-icon="inline-start" aria-hidden="true" />
+                  )}
+                  {t(next === "SYNC" ? "v.sync" : "v.rebuild")}
+                </Button>
+              ) : (
+                <>
+                  <p>{t(next === "NONE" ? "v.ready" : "v.noBatch")}</p>
+                  <Link href="/practice" className={buttonVariants()}>
+                    {t(
+                      next === "GENERATE_RECOMMENDATIONS"
+                        ? "v.generate"
+                        : "nav.practice",
+                    )}
+                  </Link>
+                </>
+              )}
+              <ErrorNotice error={action.error} />
+            </CardContent>
+          </Card>
+          <div className="flex min-w-0 flex-col gap-3">
+            <BatchView
+              batch={dashboard.data?.recommendationBatch ?? null}
+              firstOnly
+            />
+          </div>
+        </div>
       </DataRegion>
+      <SyncPanel account={account!} />
     </>
   );
 }

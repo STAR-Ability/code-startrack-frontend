@@ -83,10 +83,13 @@ test("registration uses email verification with the exact contract and resets th
 test("password change revokes local identity and returns to login", async ({
   page,
 }) => {
-  await page.goto("/security");
+  await page.goto("/security/password");
   await page.getByLabel("当前密码", { exact: true }).fill("synthetic-password");
   await page
     .getByLabel("新密码", { exact: true })
+    .fill("synthetic-new-password");
+  await page
+    .getByLabel("确认新密码", { exact: true })
     .fill("synthetic-new-password");
   await page.getByRole("button", { name: "修改密码", exact: true }).click();
   await expect(page).toHaveURL("/login");

@@ -18,14 +18,14 @@ import { EmptyState, ErrorNotice, QueryFeedback } from "./feedback";
 import { AnalysisView } from "./analysis-view";
 import { BatchView } from "./recommendations-page";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { MetricPanel } from "./metric-panel";
 
 // Safe page structure while identity/account reads are unavailable. No private hooks run here.
 function PersonalDataPlaceholder({ loading = false }: { loading?: boolean }) {
   const pathname = usePathname();
   const { t } = useLocale();
-  const analysis = ["/dashboard", "/data", "/profile", "/analysis"].includes(
-    pathname,
-  );
+  const context = useOptionalAccounts();
+  const analysis = ["/data", "/profile", "/analysis"].includes(pathname);
   const lists: CopyKey[] =
     pathname === "/data"
       ? ["v.problems"]
@@ -35,13 +35,33 @@ function PersonalDataPlaceholder({ loading = false }: { loading?: boolean }) {
           ? ["v.recommendationHistory"]
           : pathname === "/accounts"
             ? ["v.accounts"]
-            : pathname === "/security"
-              ? ["data.identity", "v.changePassword", "v.changeEmail"]
-              : [];
+            : pathname === "/security/password"
+              ? ["v.changePassword"]
+              : pathname === "/security/email"
+                ? ["v.changeEmail"]
+                : pathname === "/security"
+                  ? [
+                      "data.identity",
+                      "security.operations",
+                      "security.sessions",
+                    ]
+                  : [];
   return (
-    <div className="flex min-w-0 flex-col gap-6" data-personal-placeholder>
+    <div className="flex min-w-0 flex-col gap-4" data-personal-placeholder>
+      {pathname === "/dashboard" && !context && (
+        <MetricPanel
+          title="portfolio.title"
+          loading={loading}
+          metrics={[
+            ["portfolio.accounts", 0],
+            ["v.submissions", 0],
+            ["v.accepted", 0],
+            ["portfolio.solved", 0],
+          ]}
+        />
+      )}
       {pathname === "/dashboard" && (
-        <Card>
+        <Card size="sm" interaction="none">
           <CardHeader>
             <CardTitle>
               <h2>{t("v.nextAction")}</h2>
@@ -60,10 +80,18 @@ function PersonalDataPlaceholder({ loading = false }: { loading?: boolean }) {
           statistics={["/data", "/analysis"].includes(pathname)}
           loading={loading}
           unavailable
+          ability={pathname !== "/data"}
+          metricTitle={
+            pathname === "/profile"
+              ? "metrics.ability"
+              : pathname === "/analysis"
+                ? "metrics.analysis"
+                : "profile.overview"
+          }
         />
       )}
       {lists.map((title) => (
-        <Card key={title}>
+        <Card key={title} size="sm" interaction="none">
           <CardHeader>
             <CardTitle>
               <h2>{t(title)}</h2>
@@ -177,7 +205,7 @@ export function PersonalDataGate({
   return (
     <div
       key={`${context.user.publicId}:${requireAccount ? (context.selectedAccountId ?? "none") : "user"}`}
-      className="flex min-w-0 flex-col gap-6 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
+      className="flex min-w-0 flex-col gap-4 motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200"
     >
       {(context.query.error ||
         (!requireAccount && context.query.isFetching)) && (

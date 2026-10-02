@@ -4,7 +4,7 @@ test("account switch cancels old reads and never displays a late Alpha response 
   page,
 }) => {
   await configureUpstream({ delayAlpha: true, paginateAccounts: true });
-  await page.goto("/dashboard");
+  await page.goto("/data");
   await page
     .getByLabel("当前 Codeforces 账号")
     .selectOption("9007199254740995");

@@ -10,7 +10,7 @@ Reviewed App Router routes/layouts; workspace, auth, landing and shared UI consu
 API endpoints/response schemas/transport; session, ownership, cache keys and mutations;
 locale dictionaries; charts; Demo fixtures; offline scripts; Playwright fixtures/specs;
 static server/nginx/Docker/CI configuration; and relevant engineering/product rules.
-The active frontend is V0.11 with 12 product routes (including the landing page).
+The active frontend is V0.11 with 14 product routes (including the landing page).
 `apidocs.md`, the V0.1 page/requirements documents and the broader Demo V2 plan describe
 older/different stages. Their user-level aggregation, fixed-user gateway, Judge and
 Agent requirements are superseded by this task's explicit account-scoped V0.11
@@ -122,8 +122,8 @@ usage. Requests remain centralized in `src/lib/api/endpoints.ts`.
 | POST /auth/password/reset                              | Reset-password form                                               |
 | GET /me                                                | Session provider and signed-in identity                           |
 | GET /me/roles                                          | **Added:** identity/role card in security                         |
-| POST /me/password/change                               | Security password form                                            |
-| POST /me/email/change                                  | Security verified email-change form                               |
+| POST /me/password/change                               | Independent `/security/password` form                                            |
+| POST /me/email/change                                  | Independent `/security/email` verified form                               |
 | GET /oj-accounts                                       | Owned account selector; unbound-history toggle; all pages fetched |
 | POST /oj-accounts                                      | Bind form                                                         |
 | GET /oj-accounts/{accountId}                           | **Added:** expandable account details                             |
@@ -133,7 +133,7 @@ usage. Requests remain centralized in `src/lib/api/endpoints.ts`.
 | GET /oj-accounts/{accountId}/sync-status               | Sync panel, restoring an in-flight job                            |
 | POST /oj-accounts/{accountId}/analysis/rebuild         | Dashboard next action and sync panel                              |
 | GET /oj-accounts/{accountId}/dashboard                 | Dashboard summary, recommendation and next action                 |
-| GET /oj-accounts/{accountId}/training/overview         | Personal data overview and stats, four windows                    |
+| GET /oj-accounts/{accountId}/training/overview         | Data overview/stats and multi-account dashboard totals, four windows                    |
 | GET /oj-accounts/{accountId}/problems                  | Attempted problems, status/tag/difficulty filters                 |
 | GET /oj-accounts/{accountId}/submissions               | Submission tab and problem drawer; verdict/problem/time filters   |
 | GET /oj-accounts/{accountId}/rating-changes            | Rating tab and chronological chart for the current page           |
@@ -150,7 +150,9 @@ and provider timestamps, fetched only when expanded. Security's identity card
 shows existing username/email plus the role endpoint's display names/codes. It
 is isolated from password/email forms so its failure does not hide those forms.
 
-No extra dashboard/product module was needed. Optional provider avatar/photos,
+The subsequent compact-workspace task adds a dashboard portfolio over all owned ACTIVE/INVALID bindings. Reads use a cancellable queue with at most four concurrent requests; switching the detail account does not cancel portfolio reads. Submission/accepted/solved counts are additive snapshot presentation only; solved problems are account occurrences, not deduplicated user-level counts. Coverage, failures and staleness stay visible; Rating/ability/recommendations remain independent. Data retains the sole full training overview; profile/analysis show concise ability/snapshot metrics before reusable ECharts visuals. Account/security overview now exposes action buttons linking to independent change routes.
+
+No undocumented API/product module was added. Optional provider avatar/photos,
 contribution/friend counts, first/last names, city and maxRank; problem points;
 submission raw verdict/testset/passed-test metadata; and algorithm/mapping/version
 internals are intentionally not all shown. Existing score charts show the primary
@@ -187,6 +189,8 @@ as a real zero sample or inserted into the successful Query cache.
 
 ## Verification
 
+### Initial Mock/resilience integration
+
 Lint, format and type checking passed. All 69 unit tests (including 18 HTTP Mock
 contract tests) and all 99 desktop/mobile E2E tests passed. The static export
 passed with `pnpm build --webpack`; the default Turbopack worker failed to bind
@@ -205,3 +209,18 @@ statistical relationships, pagination/filter semantics, rejected input, ownershi
 immutable snapshot/batch identity, rebinding, idempotency and partial jobs. E2E
 regressions cover persistent structures, zero/null defaults, isolated failures,
 recovery, account/role details, slow/empty states and historical completion.
+
+### Compact multi-account workspace follow-up
+
+The compact-workspace change preserves all 31 endpoint consumers and adds no new
+production endpoint. Lint, formatting, typecheck, 73 unit tests and the default
+Turbopack production export passed. The full E2E run passed 108 cases with one
+intentional mobile skip for the desktop-only sidebar; final portfolio and
+accessibility regressions passed 15 cases with the same skip, including the two
+new zero-evidence cases. Local Mock review covered 70 route/locale/size/zoom
+combinations without runtime/hydration errors or failed API/network requests.
+Playwright MCP also verified the corrected recommendation columns, clipped
+collapsed-brand text and current mobile navigation visibility after text zoom.
+
+See [the compact-workspace plan](../../.agent/plans/compact-multi-account-workspace.md)
+for aggregation semantics, browser findings and delivery context.

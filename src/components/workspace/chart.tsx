@@ -15,9 +15,44 @@ export function Chart({
     let cleanup: (() => void) | undefined;
     void import("echarts").then((echarts) => {
       if (disposed || !element.current) return;
-      const chart = echarts.init(element.current, undefined, {
-        renderer: "svg",
-      });
+      const styles = getComputedStyle(element.current);
+      const foreground = styles.getPropertyValue("--muted-foreground").trim();
+      const border = styles.getPropertyValue("--border").trim();
+      const chart = echarts.init(
+        element.current,
+        {
+          color: [
+            styles.getPropertyValue("--link").trim(),
+            styles.getPropertyValue("--chart-2").trim(),
+            styles.getPropertyValue("--chart-3").trim(),
+          ],
+          textStyle: { color: foreground, fontFamily: styles.fontFamily },
+          categoryAxis: {
+            axisLine: { lineStyle: { color: border } },
+            axisLabel: { color: foreground },
+          },
+          valueAxis: {
+            axisLine: { show: false },
+            axisLabel: { color: foreground },
+            splitLine: { lineStyle: { color: border } },
+          },
+          radar: {
+            axisLine: { lineStyle: { color: border } },
+            splitLine: { lineStyle: { color: border } },
+            splitArea: {
+              areaStyle: {
+                color: [
+                  "transparent",
+                  styles.getPropertyValue("--muted").trim(),
+                ],
+              },
+            },
+          },
+        },
+        {
+          renderer: "svg",
+        },
+      );
       const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       );
@@ -53,7 +88,7 @@ export function Chart({
       ref={element}
       role="img"
       aria-label={label}
-      className="h-72 w-full min-w-0"
+      className="h-60 w-full min-w-0"
     />
   );
 }

@@ -128,7 +128,7 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
         }).format(new Date(value))
       : t("v.never");
   return (
-    <Card>
+    <Card size="sm" interaction="none">
       <CardHeader>
         <CardTitle>
           <h2>{t("v.syncStatus")}</h2>

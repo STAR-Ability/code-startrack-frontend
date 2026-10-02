@@ -285,15 +285,20 @@ test("account resolution does not erase a user-level security form", async ({
     await held;
     await route.continue();
   });
-  await page.goto("/security");
+  await page.goto("/security/password");
   const current = page.getByLabel("当前密码", { exact: true });
   const next = page.getByLabel("新密码", { exact: true });
   await current.fill("synthetic-password");
   await next.fill("synthetic-new-password");
   release();
-  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveValue(
-    "9007199254740993",
-  );
+  await expect
+    .poll(async () =>
+      (await upstreamCalls()).some((call) =>
+        call.path.startsWith("/api/v1/oj-accounts?"),
+      ),
+    )
+    .toBe(true);
+  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
   await expect(current).toHaveValue("synthetic-password");
   await expect(next).toHaveValue("synthetic-new-password");
 });

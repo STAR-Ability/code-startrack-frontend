@@ -121,6 +121,7 @@ function AccountProvider({
     if (account)
       void client.cancelQueries({
         queryKey: keys.account(user.publicId, account.accountId),
+        predicate: (query) => query.queryKey[4] !== "portfolio-overview",
       });
     setSelection({
       publicId: user.publicId,

@@ -12,7 +12,7 @@ export function MockNotice() {
     <div
       role="status"
       data-state="mock"
-      className="flex flex-wrap items-center gap-2 border-b bg-background px-5 py-2 text-xs text-muted-foreground md:pl-64"
+      className="flex flex-wrap items-center gap-2 border-b bg-background/80 px-5 py-2 text-xs text-muted-foreground"
     >
       <Badge variant="outline" wrap>
         <FlaskConicalIcon aria-hidden="true" />

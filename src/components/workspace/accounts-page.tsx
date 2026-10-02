@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useJobLock } from "./use-job-lock";
+import { AccountDetails } from "./account-details";
 import { api } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/errors";
 import { keys } from "@/lib/query/keys";
@@ -211,6 +212,7 @@ function AccountCard({ account }: { account: OjAccountDto }) {
           <p>{t(`v.job.${account.lastSyncStatus}`)}</p>
         )}
         <ErrorNotice error={sync.error ?? unbind.error} />
+        <AccountDetails accountId={account.accountId} />
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
         <Button

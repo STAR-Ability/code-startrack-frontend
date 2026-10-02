@@ -35,7 +35,7 @@ import { FormInput } from "@/components/auth/auth-form";
 import { WindowSelector } from "./analysis-page";
 import { AnalysisView } from "./analysis-view";
 import { useAccountQuery } from "./use-account-query";
-import { QueryFeedback, EmptyState, Pagination } from "./feedback";
+import { QueryFeedback, DataRegion, EmptyState, Pagination } from "./feedback";
 import { ProblemLink } from "./recommendations-page";
 import { Chart } from "./chart";
 
@@ -49,13 +49,21 @@ export function DataPage() {
   return (
     <>
       <WindowSelector value={window} onChange={setWindow} />
-      <QueryFeedback query={overview} />
-      {overview.data !== undefined && (
-        <AnalysisView analysis={overview.data} statistics />
-      )}
+      <DataRegion
+        query={overview}
+        name={t("profile.overview")}
+        empty={!overview.data || overview.data.summary.submissionCount === 0}
+      >
+        <AnalysisView
+          analysis={overview.data ?? null}
+          statistics
+          loading={overview.isFetching && overview.data === undefined}
+          unavailable={!!overview.error}
+        />
+      </DataRegion>
       <ToggleGroup
         aria-label={t("v.data")}
-        className="flex-wrap"
+        className="w-full min-w-0 flex-wrap"
         value={[tab]}
         onValueChange={(values) => {
           if (values[0]) setTab(values[0]);
@@ -68,7 +76,11 @@ export function DataPage() {
             ["ratings", "v.ratingHistory"],
           ] as const
         ).map(([value, label]) => (
-          <ToggleGroupItem key={value} value={value}>
+          <ToggleGroupItem
+            key={value}
+            value={value}
+            className="h-auto max-w-full min-w-0 py-2 whitespace-normal"
+          >
             {t(label)}
           </ToggleGroupItem>
         ))}
@@ -111,6 +123,7 @@ function Problems() {
       <CardContent className="flex flex-col gap-5">
         <ToggleGroup
           aria-label={t("v.status")}
+          className="w-full min-w-0 flex-wrap"
           value={[status]}
           onValueChange={(values) => {
             if (["ALL", "SOLVED", "UNSOLVED"].includes(values[0])) {
@@ -164,7 +177,7 @@ function Problems() {
           </FieldGroup>
         </form>
         <QueryFeedback query={query} />
-        {query.data?.data.length === 0 && (
+        {!query.isFetching && !query.data?.data.length && (
           <EmptyState title={t("v.noRecords")} />
         )}
         {query.data?.data.map((item) => (
@@ -317,7 +330,9 @@ function Submissions({ problemId }: { problemId?: string }) {
         </form>
       )}
       <QueryFeedback query={query} />
-      {query.data?.data.length === 0 && <EmptyState title={t("v.noRecords")} />}
+      {!query.isFetching && !query.data?.data.length && (
+        <EmptyState title={t("v.noRecords")} />
+      )}
       {query.data?.data.map((item) => (
         <Submission key={item.submissionId} item={item} />
       ))}
@@ -398,7 +413,7 @@ function Ratings() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <QueryFeedback query={query} />
-        {query.data?.data.length === 0 && (
+        {!query.isFetching && !query.data?.data.length && (
           <EmptyState title={t("v.noRecords")} />
         )}
         {chronological.length > 0 && (

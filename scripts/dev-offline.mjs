@@ -1,8 +1,10 @@
 import { spawn } from "node:child_process";
-import { createMockBackend } from "../tests/mock-backend.mjs";
+import { createMockBackend } from "../src/lib/mock/backend.mjs";
 
 // Bind before starting Next: an occupied fixture port must fail, not be reused.
-const backend = createMockBackend();
+const backend = createMockBackend({
+  scenario: process.env.MOCK_SCENARIO ?? "success",
+});
 await new Promise((resolve, reject) => {
   backend.once("error", reject);
   backend.listen(3210, "127.0.0.1", resolve);

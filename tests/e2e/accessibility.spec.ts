@@ -24,9 +24,12 @@ for (const locale of ["zh-CN", "en"]) {
     await narrow(page);
     for (const route of [
       "/dashboard",
+      "/data",
+      "/analysis",
       "/profile",
       "/practice",
       "/accounts",
+      "/security",
       "/login",
     ]) {
       await page.goto(route);

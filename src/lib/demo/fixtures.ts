@@ -6,6 +6,8 @@ import type {
   RecommendationMode,
   SyncJobDto,
   UserDto,
+  ProblemDto,
+  SubmissionDto,
 } from "../api/schemas";
 
 // Synthetic public Demo and test fixtures only. Never fall back to these in private queries.
@@ -50,13 +52,14 @@ export const demoAccounts: OjAccountDto[] = [
   lastSyncedAt: "2026-10-02T02:30:00Z",
   lastSyncStatus: "SUCCESS",
   nextSyncAt: "2026-10-03T02:30:00Z",
-  boundAt: "2026-10-01T02:30:00Z",
+  boundAt: index ? "2026-09-30T02:30:00Z" : "2026-10-01T02:30:00Z",
   unboundAt: null,
 }));
 export const demoUnbound: OjAccountDto = {
   ...demoAccounts[0],
   accountId: "9007199254740991",
   bindStatus: "UNBOUND",
+  nextSyncAt: null,
   unboundAt: "2026-10-01T03:30:00Z",
 };
 export function demoAnalysis(
@@ -81,7 +84,8 @@ export function demoAnalysis(
   return {
     accountId,
     snapshotId: fixtureUuid(
-      (second ? 20 : 10) + ["7D", "30D", "365D", "ALL"].indexOf(window),
+      (second ? 20 : accountId === demoUnbound.accountId ? 30 : 10) +
+        ["7D", "30D", "365D", "ALL"].indexOf(window),
     ),
     algorithmVersion: "demo-1",
     mappingVersion: "demo-1",
@@ -145,9 +149,9 @@ export function demoAnalysis(
       : [
           {
             tag: "implementation",
-            attemptedProblemCount: attempted,
+            attemptedProblemCount: solved,
             solvedCount: solved,
-            submissionCount: submissions,
+            submissionCount: submissions - pending,
           },
         ],
     difficultyStats: empty
@@ -174,7 +178,7 @@ export function demoAnalysis(
         ],
   };
 }
-export const demoProblem = {
+export const demoProblem: ProblemDto = {
   problemId: "9007199254741993",
   platform: "codeforces" as const,
   externalProblemKey: "demo-A",
@@ -187,10 +191,11 @@ export const demoProblem = {
   isGym: false,
   catalogSource: "CATALOG" as const,
 };
-export const demoGym = {
+export const demoGym: ProblemDto = {
   ...demoProblem,
   problemId: "9007199254741995",
   externalProblemKey: "gym-demo-B",
+  solvedCount: null,
   title: null,
   difficulty: null,
   tags: [],
@@ -229,7 +234,7 @@ export function demoBatch(
         reasonCode: "DEFAULT_RECOMMENDATION",
         reason: "这道题适合作为下一道练习题。",
         matchedDimension: null,
-        solvedSinceGeneration: true,
+        solvedSinceGeneration: false,
       },
     ],
     generatedAt: "2026-10-02T02:32:00Z",
@@ -246,9 +251,10 @@ export function demoJob(
     scope: "ACCOUNT_FULL",
     triggerType: "MANUAL",
     status,
-    stage: status === "SUCCESS" ? "DONE" : "ANALYSIS",
-    itemsFetched: 5,
-    itemsInserted: 5,
+    stage:
+      status === "QUEUED" ? null : status === "SUCCESS" ? "DONE" : "ANALYSIS",
+    itemsFetched: status === "QUEUED" ? 0 : 5,
+    itemsInserted: status === "QUEUED" ? 0 : 5,
     itemsUpdated: 0,
     errors:
       status === "PARTIAL"
@@ -262,10 +268,84 @@ export function demoJob(
           ]
         : [],
     requestedAt: "2026-10-02T02:29:00Z",
-    startedAt: "2026-10-02T02:29:01Z",
+    startedAt: status === "QUEUED" ? null : "2026-10-02T02:29:01Z",
     finishedAt:
       status === "RUNNING" || status === "QUEUED"
         ? null
         : "2026-10-02T02:30:00Z",
   };
+}
+
+// Submission records, progress and summary describe the same synthetic dataset.
+export const demoSecondProblem: ProblemDto = {
+  ...demoProblem,
+  problemId: "9007199254741997",
+  externalProblemKey: "demo-C",
+  title: "One More Step",
+};
+export const demoSolvedProblem: ProblemDto = {
+  ...demoProblem,
+  problemId: "9007199254741989",
+  externalProblemKey: "demo-E",
+  title: "First Practice",
+};
+export const demoCandidate: ProblemDto = {
+  ...demoProblem,
+  problemId: "9007199254741999",
+  externalProblemKey: "demo-D",
+  title: "A New Step",
+};
+export function demoSubmissions(
+  accountId = demoAccounts[0].accountId,
+): SubmissionDto[] {
+  const second = accountId === demoAccounts[1].accountId;
+  const records: [ProblemDto, SubmissionDto["verdict"]][] = second
+    ? [
+        [demoSecondProblem, "WRONG_ANSWER"],
+        [demoSecondProblem, "ACCEPTED"],
+        [demoGym, "PENDING"],
+      ]
+    : [
+        [demoSolvedProblem, "WRONG_ANSWER"],
+        [demoSolvedProblem, "ACCEPTED"],
+        [demoSecondProblem, "WRONG_ANSWER"],
+        [demoSecondProblem, "ACCEPTED"],
+        [demoGym, "PENDING"],
+      ];
+  return records
+    .map(([problem, verdict], index) => ({
+      submissionId: [
+        "9007199254742993",
+        "9007199254742994",
+        "9007199254742995",
+        "9007199254742996",
+        "9007199254742997",
+      ][index],
+      accountId,
+      externalSubmissionId: [
+        "9007199254743993",
+        "9007199254743994",
+        "9007199254743995",
+        "9007199254743996",
+        "9007199254743997",
+      ][index],
+      problem,
+      verdict,
+      verdictRaw:
+        verdict === "PENDING" ? null : verdict === "ACCEPTED" ? "OK" : verdict,
+      programmingLanguage: "GNU C++23",
+      participantType: "CONTESTANT",
+      memberHandles: problem.isGym
+        ? ["DemoAlpha", "DemoBeta"]
+        : [second ? "DemoBeta" : "DemoAlpha"],
+      teamId: problem.isGym ? "1" : null,
+      teamName: problem.isGym ? "Synthetic team" : null,
+      testset: verdict === "PENDING" ? null : "TESTS",
+      passedTestCount: verdict === "PENDING" ? null : 10,
+      timeMs: verdict === "PENDING" ? null : 31,
+      memoryBytes: 1048576,
+      submittedAt:
+        "2026-10-01T02:" + String(index * 5).padStart(2, "0") + ":00Z",
+    }))
+    .reverse();
 }

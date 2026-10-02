@@ -27,7 +27,7 @@ test("analysis windows refetch exact DTO and history opens immutable snapshot", 
   ).toBeVisible();
   expect(
     (await upstreamCalls()).some((call) =>
-      /\/analysis\/00000000-0000-4000-8000-000000000080/.test(call.path),
+      /\/analysis\/00000000-0000-4000-8000-000000000180/.test(call.path),
     ),
   ).toBe(true);
 });
@@ -38,7 +38,7 @@ test("personal data exposes nullable Gym data, pending team submissions and MiB 
   await expect(
     page.getByRole("heading", { name: "做题记录", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "题目提交记录" }).last().click();
+  await page.getByRole("button", { name: "题目提交记录" }).first().click();
   const drawer = page.getByRole("dialog");
   await expect(drawer).toContainText("gym-demo-B");
   await expect(drawer).toContainText("等待判题");

@@ -4,14 +4,15 @@ The current implementation follows [V0.11 frontend API](../../prompts/前端api�
 
 - Browser calls only `/api/v1/**`, with Session credentials through a same-origin reverse proxy.
 - Public workspace shells (including `/practice`) remain visible during anonymous sessions, missing accounts and backend failures. The 2026-10-02 visitor-browsing request supersedes earlier frontend redirect-on-401 behavior: 401 still clears private state, but personal panels show login prompts. No anonymous private API access is added. Explicit logout/password change still navigate to login.
-- A successful null/empty response or a documented resource-not-found code shows an empty state. Generic HTTP/proxy 404, network failures and 5xx remain recoverable errors; they are not presented as empty data. Missing/inaccessible records stop rendering previously cached results.
+- Successful null/empty responses show empty states. Failed reads, including documented resource-not-found responses, retain card/list structure, show an explicit localized error and offer retry. Missing/inaccessible records stop rendering previously cached values; safe zero/null UI placeholders are not cached as successful data. A 401 still clears private state and shows login guidance.
 - `GET /me` establishes the authenticated user; paginated `GET /oj-accounts` establishes owned bindings.
 - Each account data request explicitly names an opaque decimal-string `accountId`. Profiles are independent per binding, never aggregated across a system user.
 - Dashboard, training overview, problems, submissions, ratings, analysis snapshots/history, recommendation batches/history and asynchronous sync jobs use the exact V0.11 envelopes and DTOs.
 - Reads do not compute recommendations. Generation uses one UUID idempotency key per operation and retains it for uncertain retries.
 - Runtime response validation rejects account mismatches and malformed required fields. Query keys include user, binding and all request parameters.
 - `UNBOUND` is read-only; `INVALID` permits manual sync/unbind. No implicit current-account endpoint exists.
-- Public Demo is synthetic and local. The former fixed-user gateway has been removed.
+- Public Demo is synthetic and local. Explicit `dev:mock` / `preview:mock` use the same isolated V0.11 Mock API as E2E; transport provenance visibly labels synthetic data. Live failures never automatically select Mock data. The former fixed-user gateway has been removed.
+- All 31 documented endpoints have UI consumers. The endpoint matrix, Mock scenarios/limitations and shared loading/success/empty/error/mock policy are in [the Mock/API audit](../development/mock-api-audit.md).
 
 Implementation and tests are in `src/lib/api/`, `src/components/workspace/`, `src/components/auth/` and `tests/e2e/`. The backend has not been modified or verified live. All contract tests use isolated fixtures.
 

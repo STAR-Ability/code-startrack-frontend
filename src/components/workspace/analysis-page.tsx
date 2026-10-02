@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useAccountQuery } from "./use-account-query";
 import { AnalysisView } from "./analysis-view";
-import { EmptyState, QueryFeedback, Pagination } from "./feedback";
+import { EmptyState, QueryFeedback, DataRegion, Pagination } from "./feedback";
 import { Chart } from "./chart";
 
 export function WindowSelector({
@@ -86,14 +86,19 @@ export function AnalysisPage({
           {t("v.latest")}
         </Button>
       )}
-      <QueryFeedback query={displayed} />
-      {displayed.data !== undefined && (
+      <DataRegion
+        query={displayed}
+        name={t("profile.overview")}
+        empty={!displayed.data || displayed.data.summary.submissionCount === 0}
+      >
         <AnalysisView
-          analysis={displayed.data}
+          analysis={displayed.data ?? null}
+          loading={displayed.isFetching && displayed.data === undefined}
+          unavailable={!!displayed.error}
           dimensions
           statistics={!profileOnly}
         />
-      )}
+      </DataRegion>
       {!profileOnly && (
         <Card>
           <CardHeader>
@@ -121,7 +126,7 @@ export function AnalysisPage({
                 }}
               />
             )}
-            {history.data?.data.length === 0 && (
+            {!history.isFetching && !history.data?.data.length && (
               <EmptyState title={t("v.noRecords")} />
             )}
             {history.data?.data.map((item) => (

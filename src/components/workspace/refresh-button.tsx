@@ -38,7 +38,9 @@ export function RefreshButton({
       if (key[0] === "session") return true;
       if (key[0] !== "private" || key[1] !== publicId) return false;
       return (
-        key[2] === "accounts" || (key[2] === "account" && key[3] === accountId)
+        key[2] === "accounts" ||
+        key[2] === "roles" ||
+        (key[2] === "account" && key[3] === accountId)
       );
     },
     [publicId, accountId],

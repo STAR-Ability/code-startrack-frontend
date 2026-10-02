@@ -1,0 +1,3 @@
+// Fixed synthetic PNG, visibly reads ABCD. The Mock does not validate captcha ownership.
+export const mockCaptchaImage =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHQAAAAsCAIAAAA7JQvqAAAA5ElEQVR4nO2asRHDQAzDvEv23y0jpFCpIk+JPPt8QK3gadS5vhDjunvAmyFuEOIGIW4Q4gYhbhDiBhHifg7Y/PbE43Im9nSIa9vTIa5tT4e4tj2dP3E3H/wEj+p33RfEJe7Uo/pd9wVxiTv1qH7XfUFc4k49qt91XxD3GXFVNh7vR+49s3eJS9zdR+49s3eJ+4y4mxF3eVS/674gLnGnHtXvui+IS9ypR/W77gviEnfqUf2u+4K474p7gvqW6kzs6RDXtqdDXNueDnFtezr8ES8IcYMQNwhxgxA3CHGDEDcIcYP8ALkBuXRWxDNNAAAAAElFTkSuQmCC";

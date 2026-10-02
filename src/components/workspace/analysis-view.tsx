@@ -1,4 +1,7 @@
 "use client";
+import { emptySummary } from "@/lib/api/data-state";
+import { dimensionCodes } from "@/lib/api/schemas";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { AnalysisDto } from "@/lib/api/schemas";
 import { activitySeries } from "@/lib/charts/data";
 import { useLocale } from "@/components/layout/locale-provider";
@@ -19,10 +22,14 @@ export function AnalysisView({
   analysis,
   dimensions = false,
   statistics = false,
+  loading = false,
+  unavailable = false,
 }: {
   analysis: AnalysisDto | null;
   dimensions?: boolean;
   statistics?: boolean;
+  loading?: boolean;
+  unavailable?: boolean;
 }) {
   const { t, locale } = useLocale();
   const timezone = useAccountTimezone();
@@ -32,11 +39,17 @@ export function AnalysisView({
       : new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(
           value,
         );
-  if (!analysis) return <EmptyState title={t("v.noAnalysis")} />;
-  const scores = [...analysis.dimensions].sort(
-    (a, b) => a.displayOrder - b.displayOrder,
-  );
-  const summary = analysis.summary;
+
+  const scores = [
+    ...(analysis?.dimensions ??
+      dimensionCodes.map((code, index) => ({
+        code,
+        name: t(`data.dimension.${code}`),
+        displayOrder: index + 1,
+        score: 0,
+      }))),
+  ].sort((a, b) => a.displayOrder - b.displayOrder);
+  const summary = analysis?.summary ?? emptySummary;
   const metrics = [
     ["v.attempted", summary.attemptedProblemCount],
     ["v.solved", summary.solvedCount],
@@ -51,10 +64,10 @@ export function AnalysisView({
     ["v.unratedSolved", summary.unratedSolvedCount],
     ["v.activeDays", summary.activeDays],
   ] as const;
-  const daily = statistics ? activitySeries(analysis) : [];
+  const daily = statistics && analysis ? activitySeries(analysis) : [];
   return (
     <>
-      {analysis.stale && (
+      {analysis?.stale && (
         <Alert>
           <AlertDescription>
             <Badge variant="secondary">{t("v.stale")}</Badge>
@@ -62,15 +75,22 @@ export function AnalysisView({
           </AlertDescription>
         </Alert>
       )}
-      {!summary.submissionCount && <EmptyState title={t("v.noEvidence")} />}
+      {!analysis && !loading && (
+        <EmptyState
+          title={t(unavailable ? "practice.noData" : "v.noAnalysis")}
+        />
+      )}
+      {analysis && !summary.submissionCount && (
+        <EmptyState title={t("v.noEvidence")} />
+      )}
       <Card>
         <CardHeader>
           <CardTitle>
             <h2>{t("profile.overview")}</h2>
           </CardTitle>
           <CardDescription>
-            {t(`v.window.${analysis.window}`)} · {t("v.analysisZone")}:{" "}
-            {analysis.timezone}
+            {analysis ? t(`v.window.${analysis.window}`) : t("v.unavailable")} ·{" "}
+            {t("v.analysisZone")}: {analysis?.timezone ?? t("v.unavailable")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -79,7 +99,7 @@ export function AnalysisView({
               <div key={label} className="flex flex-col gap-2">
                 <dt className="text-xs text-muted-foreground">{t(label)}</dt>
                 <dd className="font-mono text-2xl tabular-nums">
-                  {number(value)}
+                  {loading ? <Skeleton className="h-8 w-12" /> : number(value)}
                 </dd>
               </div>
             ))}
@@ -88,15 +108,19 @@ export function AnalysisView({
       </Card>
       <p className="text-xs leading-relaxed text-muted-foreground">
         {t("v.cutoff")}:{" "}
-        <time dateTime={analysis.dataCutoffAt}>
-          {new Intl.DateTimeFormat(locale, {
-            dateStyle: "medium",
-            timeStyle: "short",
-            timeZone: timezone,
-          }).format(new Date(analysis.dataCutoffAt))}
-        </time>{" "}
-        · {t("v.rating")}: {number(analysis.currentRating)} · {t("v.maxRating")}
-        : {number(analysis.maxRating)}
+        {analysis ? (
+          <time dateTime={analysis.dataCutoffAt}>
+            {new Intl.DateTimeFormat(locale, {
+              dateStyle: "medium",
+              timeStyle: "short",
+              timeZone: timezone,
+            }).format(new Date(analysis.dataCutoffAt))}
+          </time>
+        ) : (
+          t("v.unavailable")
+        )}{" "}
+        · {t("v.rating")}: {number(analysis?.currentRating ?? null)} ·{" "}
+        {t("v.maxRating")}: {number(analysis?.maxRating ?? null)}
         <br />
         {t("v.windowNote")}
       </p>
@@ -107,12 +131,10 @@ export function AnalysisView({
               <h2>{t("v.dimensions")}</h2>
             </CardTitle>
             <CardDescription>
-              {t("v.overallScore")}: {number(analysis.overallScore)} ·{" "}
+              {t("v.overallScore")}: {number(analysis?.overallScore ?? 0)} ·{" "}
               {t("v.weakest")}:{" "}
-              {
-                scores.find((item) => item.code === analysis.weakestDimension)
-                  ?.name
-              }
+              {scores.find((item) => item.code === analysis?.weakestDimension)
+                ?.name ?? t("v.unavailable")}
             </CardDescription>
           </CardHeader>
           <CardContent className="grid min-w-0 gap-6 lg:grid-cols-2">
@@ -142,7 +164,7 @@ export function AnalysisView({
                 >
                   <dt>
                     {item.name}
-                    {item.code === analysis.weakestDimension && (
+                    {item.code === analysis?.weakestDimension && (
                       <span className="ml-2 text-xs text-muted-foreground">
                         {t("v.weakest")}
                       </span>
@@ -166,9 +188,9 @@ export function AnalysisView({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {analysis.tagStats.length ? (
+                {(analysis?.tagStats ?? []).length ? (
                   <dl className="flex flex-col gap-2">
-                    {analysis.tagStats.map((item) => (
+                    {(analysis?.tagStats ?? []).map((item) => (
                       <div
                         key={item.tag}
                         className="flex flex-wrap justify-between gap-3"
@@ -194,7 +216,7 @@ export function AnalysisView({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {analysis.difficultyStats.length ? (
+                {(analysis?.difficultyStats ?? []).length ? (
                   <>
                     <Chart
                       label={t("v.difficultyStats")}
@@ -202,7 +224,7 @@ export function AnalysisView({
                         grid: { left: 50, right: 15, bottom: 45 },
                         xAxis: {
                           type: "category",
-                          data: analysis.difficultyStats.map(
+                          data: (analysis?.difficultyStats ?? []).map(
                             (item) => item.difficulty ?? t("v.unrated"),
                           ),
                         },
@@ -211,7 +233,7 @@ export function AnalysisView({
                           {
                             type: "bar",
                             name: t("v.solved"),
-                            data: analysis.difficultyStats.map(
+                            data: (analysis?.difficultyStats ?? []).map(
                               (item) => item.solvedCount,
                             ),
                           },
@@ -219,7 +241,7 @@ export function AnalysisView({
                       }}
                     />
                     <dl className="flex flex-col gap-1">
-                      {analysis.difficultyStats.map((item) => (
+                      {(analysis?.difficultyStats ?? []).map((item) => (
                         <div
                           key={item.difficulty ?? "unrated"}
                           className="flex justify-between gap-3"

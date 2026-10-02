@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ApiError } from "./errors";
 import { envelope, errorSchema, pageEnvelope } from "./schemas";
+import { recordDataSource } from "./data-state";
 
 export type RequestOptions = {
   method?: "GET" | "POST" | "DELETE";
@@ -47,6 +48,9 @@ export async function request<T>(
         ? { body: JSON.stringify(options.body) }
         : {}),
     });
+    // Keep known Mock provenance through intercepted/proxy failures lacking headers.
+    if (response.headers.get("X-codeStartrack-Mock") === "true")
+      recordDataSource(true);
     const payload: unknown =
       response.status === 204
         ? undefined

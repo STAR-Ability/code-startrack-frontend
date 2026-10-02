@@ -5,6 +5,7 @@ import { LocaleProvider } from "@/components/layout/locale-provider";
 import { TrainingQueryProvider } from "@/components/training/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toast";
+import { MockNotice } from "@/components/workspace/mock-notice";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,7 +31,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <LocaleProvider initialLocale={locale}>
           <TooltipProvider delay={350}>
             <Toaster limit={3}>
-              <TrainingQueryProvider>{children}</TrainingQueryProvider>
+              <TrainingQueryProvider>
+                <MockNotice />
+                {children}
+              </TrainingQueryProvider>
             </Toaster>
           </TooltipProvider>
         </LocaleProvider>

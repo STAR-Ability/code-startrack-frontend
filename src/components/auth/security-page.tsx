@@ -25,6 +25,7 @@ import {
   useSlowRequest,
 } from "@/components/workspace/feedback";
 import { EmailVerification, FormInput, type Verification } from "./auth-form";
+import { IdentityCard } from "./identity-card";
 
 export function SecurityPage() {
   const { user } = useAccounts();
@@ -109,9 +110,11 @@ export function SecurityPage() {
     !!remaining;
   return (
     <>
+      <IdentityCard />
       <p className="text-sm text-muted-foreground">{t("v.reauthNote")}</p>
       <div className="flex flex-wrap gap-3">
         <Button
+          wrap
           variant="outline"
           disabled={pending}
           onClick={() => logout.mutate(false)}
@@ -122,6 +125,7 @@ export function SecurityPage() {
           {t("v.logout")}
         </Button>
         <Button
+          wrap
           variant="outline"
           disabled={pending}
           onClick={() => logout.mutate(true)}

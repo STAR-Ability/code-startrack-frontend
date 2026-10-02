@@ -4,7 +4,7 @@ Audited on 2026-10-02. This setup is for codeStartrack V0.11, not a generic star
 
 ## Local audit and architecture
 
-The audited machine is Intel x86_64 macOS 15.7.9, with Node 24.18.0, pnpm 12.8.1,
+The audited machine is Intel x86_64 macOS 15.7.9, originally with Node 24.18.0, pnpm 12.8.1,
 Apple Git 2.39.5 and Codex CLI 0.160.0 already installed. Codex is logged in with
 ChatGPT and this repository is already trusted. No Codex App, OS upgrade,
 Homebrew upgrade, global package upgrade or model/provider change is required.
@@ -45,7 +45,8 @@ pnpm dev:doctor
 codex
 ```
 
-Use the existing Node 24 installation; `nvm use` is optional if nvm is installed.
+On this Mac, fnm selects Node 24.21.0 from `.nvmrc` in new zsh sessions.
+Run `fnm use` if needed; the original system Node 24.18.0 remains available.
 For a new machine, install Node 24 and the exact pnpm version in `package.json`
 using their official installers. Do not run system upgrades to repair a project.
 `pnpm dev:doctor` reports prerequisites and local configuration without printing env
@@ -59,7 +60,8 @@ turn, or after restart if the client caches them. Use `/mcp` to inspect connecti
 and `/skills` (or `$` completion) to inspect Skills.
 
 Global `~/.codex/config.toml`, credentials, existing Skills/plugins, approval
-rules and shell startup files are preserved. Do not use `codex mcp add` for these
+rules are preserved. Shell startup files have additive PATH/fnm setup and backups
+as documented below. Do not use `codex mcp add` for these
 project servers: it would normally write user-level configuration instead.
 
 ## Selected MCP servers
@@ -171,7 +173,8 @@ file: gh_2.102.0_macOS_amd64.zip
 SHA256: b245f24eb2bf5f75b426b4c26da3651a107f8d5b6f4fddfbfccc5679041378b3
 ```
 
-The binary and license live in ignored `.tools/gh/`; no system PATH changes.
+The initial binary and license live in ignored `.tools/gh/`. The follow-up audit
+also copied this verified release to the user PATH (see below).
 `pnpm gh --version` uses that copy, falling back to a system `gh` on other hosts.
 This portable binary is local and is not distributed by Git/pnpm. For another
 machine, download its architecture's release from `cli/cli`, verify its matching
@@ -313,3 +316,87 @@ Verified after integrating PR #7 on 2026-10-02:
 
 See `.agent/plans/merge-v011-codex-environment.md` for integration scope.
 No live backend calls or production mutations were used for verification.
+
+## User PATH and frontend CLI audit — 2026-10-02
+
+GitHub login and executable discovery are separate: gh was authenticated but
+initially reachable only through the repository wrapper. fnm was not installed.
+The user requested terminal-wide CLI access and compatible tool updates.
+
+| Tool | Verified state after setup |
+| --- | --- |
+| gh | 2.102.0, current official release; user PATH and existing portable copy; existing keychain login reused. |
+| fnm | 1.39.0, newly installed official macOS binary. |
+| Node | 24.21.0 via fnm in this repository; latest Node 24 release in the official index at audit time. System 24.18.0 preserved. |
+| rg | 15.2.0 on user PATH; old Homebrew 14.1.1 preserved. Codex already bundled 15.2.0, but normal terminals did not use it. |
+| jq | 1.8.2 on user PATH; Apple jq 1.7.1 preserved. |
+| Codex / pnpm | 0.160.0 / 12.8.1, already current; no update required. |
+| Git | Apple 2.39.5 retained; adequate for this workflow. No Xcode/Homebrew upgrade solely for a newer Git. |
+| fd / tsx | Not installed; rg file listing / find and Node 24 native erasable TypeScript cover current needs. |
+| Playwright | Existing locked runner and MCP retained; no product dependency upgrade in this task. |
+
+User-level files (outside Git, no sudo or system-binary replacement):
+
+- `~/.local/share/dev-tools/{gh/2.102.0,fnm/1.39.0,rg/15.2.0,jq/1.8.2}`:
+  versioned binaries, exposed by symlinks in `~/.local/bin/`.
+- `~/.config/dev-tools/path.sh`: idempotent user-bin PATH setup.
+- `~/.config/dev-tools/zsh-env.zsh`: fnm initialization once per zsh process,
+  recursive `.nvmrc` discovery, quiet directory switching and preserved pnpm PATH.
+  Engine-only inference is disabled to avoid implicit changes in unrelated projects.
+- `~/.zshenv`: additive PATH block for noninteractive shells;
+  `~/.zprofile` and `~/.zshrc`: additive PATH/fnm blocks for login/interactive shells.
+  Existing content is retained. Bash configuration is unchanged.
+- Original startup files are backed up under
+  `~/.config/dev-tools/backups/2026-10-02T09-39-06.424Z/`.
+- fnm stores Node in its standard macOS application-support directory. Its
+  default alias is `system`, preserving unmanaged Node outside versioned projects.
+  Entering this repository selects the installed Node 24 version; automatic
+  switching does not authorize installing versions for other projects.
+
+Open a new zsh terminal or run `exec zsh -l` to refresh an existing terminal.
+A plain noninteractive shell receives the executable PATH; use `fnm exec` when
+it needs explicit Node selection without startup initialization. Future Node
+updates should match the project, not use `fnm install --latest`.
+
+Rollback is scoped: remove only the marked frontend CLI blocks from startup
+files (or compare with backups), remove the added user-bin symlinks, and open a
+new shell. System binaries are untouched. Do not blindly restore an old backup
+over subsequent user edits. Managed binaries and Node versions can remain on
+disk until no longer needed.
+
+Official source review and SHA-256 verification before binary execution:
+
+- [fnm v1.39.0](https://github.com/Schniz/fnm/releases/tag/v1.39.0), `fnm-macos.zip`:
+  `f046483e85c53b3278efe49a3620c8680f22efa58a8dabfd03eafc6b59b31a25`.
+- [ripgrep 15.2.0](https://github.com/BurntSushi/ripgrep/releases/tag/15.2.0), Intel macOS archive:
+  `af7825fcc69a2afc7a7aea55fc9af90e26421d8f20fe59df32e233c0b8a231c1`.
+- [jq 1.8.2](https://github.com/jqlang/jq/releases/tag/jq-1.8.2), `jq-macos-amd64`:
+  `e94b266e3c26690550006abe63152b782280f4e14374accdf04cbde844f00bc0`.
+- [Node distribution index](https://nodejs.org/dist/index.json): fnm downloaded
+  24.21.0 directly from the official HTTPS distribution. No remote shell installer.
+- gh uses the previously verified release recorded above. npm's official
+  registry was checked for Codex and pnpm versions; neither required updating.
+
+No new login, OAuth grant, API key, administrator access or dependency was needed.
+AGENTS.md section 20 records tool priorities, fallback order and the preference
+for Node over Python for frontend tasks. The existing CodeGraph-first rule still
+applies if an index is added later; this audit does not create one.
+
+Follow-up verification under Node 24.21.0:
+
+- Login, interactive and noninteractive zsh resolve gh/fnm/rg/jq on the user PATH.
+  Repo/subdirectory Node selection and restoration of system Node outside the
+  repo passed explicit assertions. Startup syntax checks passed; the original
+  content of all three startup files remains an exact prefix of the new files.
+- Native `.mts` execution and jq JSON parsing passed. GitHub authentication,
+  Codex version/login, MCP discovery and the environment doctor passed.
+- Frozen-lockfile install, lint, format, typecheck, all 50 unit tests and static
+  export build passed. No package or lockfile changes were needed.
+- Browser regression: first run 80/81 passed. The desktop failed-refresh test
+  could not find initial recommendation content; it installs a failing route
+  after the refresh button is enabled without first waiting for that content.
+  The same unmodified test passed on `--last-failed` (1/1). This suggests an
+  existing timing race, not a clean first-pass suite. Product code and test
+  assertions were not changed; test stabilization remains a follow-up.
+- Full repository diff and whitespace checks passed. No live backend writes,
+  secrets, shell backups or executable downloads are included in the commit.

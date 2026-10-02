@@ -456,3 +456,34 @@ questions, Next DevTools for runtime diagnostics, and Playwright MCP for browser
 inspection. Use the offline harness for UI exploration; browser MCP does not
 inherit the E2E network guard. Do not send private code or data to docs services.
 Preserve the user's global model, authentication and approval configuration.
+
+## 20. Frontend CLI tool selection
+
+Check availability with `command -v` and inspect the relevant version before
+assuming a tool exists. Prefer existing tools and project scripts over installing
+another dependency. The inventory in `docs/development/codex-cli.md` describes
+this Mac, not prerequisites that every contributor must install.
+
+| Task | Preferred tool and fallback order |
+| --- | --- |
+| Understand indexed code | Follow the CodeGraph rule above when `.codegraph/` exists; otherwise proceed directly with the tools below. Do not create an index implicitly. |
+| Search source text | `rg` → `grep -R -n`; scope paths and exclude dependencies, generated output and private env files. |
+| Locate files | Start repository inventories with `rg --files`; use `fd` for dedicated filename/path discovery when installed → `rg --files -g '<pattern>'` → scoped `find`. `fd` is currently absent. Remember that rg normally skips ignored/hidden files; inspect those explicitly when the task requires it. |
+| Read/transform JSON | `jq` → a small Node script using `JSON.parse` / `JSON.stringify`. Do not parse structured JSON with grep/sed. |
+| Version control | `git`; inspect status, diff and history first. Preserve the branch/push rules in section 15. No destructive fallback. |
+| GitHub Issues, PRs and CI | `gh` → `pnpm gh` (repository portable wrapper) → Git for Git operations and browser/read-only API inspection where sufficient. Report unsupported actions or missing authentication rather than extracting credentials. |
+| Node version | `fnm` with `.nvmrc` → an already-installed Node satisfying `package.json#engines` (or an existing version manager). Use Node 24 here; never select a new major merely because it is latest. In a shell without fnm initialization, use `fnm exec --using=24 -- node ...` or initialize fnm explicitly. |
+| Dependencies and scripts | `pnpm` at `package.json#packageManager` → an already-provisioned compatible Corepack shim. If neither exists, report the bootstrap requirement; do not substitute npm/yarn, rewrite the lockfile or auto-download an arbitrary CLI. Prefer frozen-lockfile installs for verification. |
+| Temporary JS/TS | `node` for JS/ESM and Node 24 native erasable TypeScript (`.mts`/`.ts`) → existing local `pnpm exec tsx` when TSX or unsupported TS syntax is needed. `tsx` is currently absent; use an appropriate existing TypeScript/Vitest workflow or justify adding it. Native Node does not typecheck or implement tsconfig path aliases/TSX. Avoid implicit `npx ...@latest` downloads. |
+| Browser/UI verification | Configured Playwright MCP for interactive inspection; `pnpm test:e2e` for repeatable regression checks → the installed `@playwright/test` browser API for a focused script. Use the offline harness and browser-review Skill. HTTP checks with curl/Node are useful but do not replace browser, console, responsive or interaction checks. |
+
+Do not default to Python for ordinary frontend file edits, JSON processing,
+automation or temporary scripts. Use Node/shell and the tools above. Python is
+appropriate only when the task demonstrably benefits from it, such as an existing
+Python workflow or specialized data tooling; explain that choice briefly.
+
+Do not install a large toolchain just to satisfy a preferred command. Check
+existing equivalents first. For necessary updates, check official sources,
+compatibility and checksums, preserve existing installations/configuration and
+re-run relevant checks. Stop the affected step for administrator privileges,
+account login/OAuth, API keys or potentially destructive environment changes.

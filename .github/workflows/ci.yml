@@ -41,3 +41,31 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  storybook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build-storybook
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:storybook
+      - uses: actions/upload-artifact@v4
+        with:
+          name: storybook-static-${{ github.sha }}
+          path: storybook-static/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: storybook-browser-report
+          path: |
+            playwright-report/storybook/
+            test-results/storybook/
+          retention-days: 7

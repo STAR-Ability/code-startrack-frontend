@@ -20,6 +20,30 @@ try {
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  for (const width of [1440, 320]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const [route, heading] of [
+      ["/product", "从一次提交"],
+      ["/product/profile", "看见积累"],
+      ["/product/recommendations", "把注意力"],
+      ["/about", "每一小步"],
+    ]) {
+      await page.goto(`${origin}${route}`);
+      await expect(page.getByRole("heading", { level: 1 })).toContainText(
+        heading,
+      );
+      assert.ok(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+        `${route} overflows at ${width}px`,
+      );
+    }
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(`${origin}/dashboard`);
   await expect(page.getByLabel("当前 Codeforces 账号")).toHaveValue(
     "9007199254740993",

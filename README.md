@@ -1,11 +1,15 @@
 # codeStartrack Frontend
 
-**码练星轨 (codeStartrack) V0.11** incrementally extends the existing Next.js App Router application. It retains Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
+**码练星轨 (codeStartrack) V0.12** unifies the visual system and adds public product pages and Storybook component documentation while retaining the V0.11 backend contract. It uses Next.js App Router, Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
 
 The public landing page and `/demo` use local illustrations and synthetic fixtures. Workspace shells, including `/practice`, are browsable without login. Personal data and actions require a backend Session and the `STUDENT` role; visitors see login prompts within those panels. Empty responses preserve card/list structure; failed reads show safe placeholders, a visible error and retry without blocking navigation:
 
 | Route                                    | Purpose                                                                            |
 | ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| `/product`                               | Public product capabilities and the current training loop                          |
+| `/product/profile`                       | Illustrative profile and guidance for interpreting account evidence                |
+| `/product/recommendations`               | Public recommendation modes and a clearly labeled synthetic example                |
+| `/about`                                 | Product principles, current capabilities and future boundaries                     |
 | `/dashboard`                             | All-bound-CF-account totals/list and account-specific next action                  |
 | `/data`                                  | Windowed overview, attempted problems, submissions and rating changes              |
 | `/profile`                               | Six-dimensional account profile on a fixed 0–100 scale                             |
@@ -56,6 +60,21 @@ See the [Mock runbook and endpoint audit](docs/development/mock-api-audit.md) fo
 failure/empty scenarios, fixture semantics, authentication limitations and all 31
 endpoint consumers. Live failures never automatically select synthetic data.
 
+## Component documentation
+
+```bash
+pnpm storybook
+# http://127.0.0.1:6006
+pnpm build-storybook
+pnpm test:storybook
+```
+
+Storybook contains 73 states across 12 component groups, including real primitives,
+charts, account profiles and recommendations. It shares production tokens, fonts,
+providers and locale behavior. CI tests the standalone build and preserves a
+deployable `storybook-static-<commit>` artifact for 14 days. See the
+[Storybook guide](docs/development/storybook.md) for coverage and contribution rules.
+
 ## Build and serve
 
 ```bash
@@ -81,6 +100,8 @@ pnpm test
 pnpm build
 pnpm exec playwright install chromium
 pnpm test:e2e
+pnpm build-storybook
+pnpm test:storybook
 pnpm test:container
 ```
 

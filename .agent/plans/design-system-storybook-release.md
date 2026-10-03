@@ -88,7 +88,12 @@ Do not reset history, remove volumes, or recreate the backend.
 - [x] Stage 5: extracted FormInput/recommendation presentation, localized primitive labels and removed orphan styles; pnpm check passed; focused E2E 29 passed, one existing mobile-only skip.
 - [x] Stage 6: official Next.js Vite Storybook, isolated providers, local Geist fonts and semantic toolbar; pnpm check, static build and browser startup/theme/locale checks passed.
 - [x] Stage 7: 73 stories / 12 component docs, typed controls and local fixtures; pnpm check, Storybook build and 180 desktop/mobile/interaction/accessibility checks passed. Fixed error-token contrast (including hover) and profile definition-list semantics found by the addon.
-- [ ] Stages 8–9 implemented and validated.
+- [x] Stage 8: independent Storybook CI job/artifact; release workflow tests the exact
+      image before immutable version/SHA/latest publication; V0.12.0 version. Local
+      frozen install, lint, formatting, strict typecheck, 73 unit tests, production
+      build, 114 E2E passes (one existing mobile skip), 180 Storybook checks and
+      supplied-image Docker acceptance passed.
+- [ ] Stage 9: final validation and fixes.
 - [ ] Release and deployment documentation verified.
 
 ## Decisions / Deviations
@@ -101,3 +106,12 @@ Do not reset history, remove volumes, or recreate the backend.
   links into workspaces. Replace these with public routes and accessible mobile navigation.
 - Existing login/practice decorative loops run indefinitely. Bound their duration;
   retain the explicit pause control for the landing strip.
+
+- Stage 8 isolates E2E artifacts under `test-results/e2e` and
+  `playwright-report/e2e`. Concurrent local E2E startup had deleted Storybook trace
+  files; all 180 Storybook checks passed after isolation. CI jobs already use
+  separate runners; publication runs suites sequentially.
+- The release uses an isolated dev worktree to preserve unrelated user edits and
+  document removals. Colima does not expose `/tmp` bind mounts; move this worktree
+  under `/Users/jack5/QLluckGithub` for final container acceptance. The initial
+  supplied-image acceptance passed using the repository's mapped fixture paths.

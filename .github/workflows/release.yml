@@ -15,7 +15,7 @@ jobs:
   publish:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,8 +25,15 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - run: pnpm build-storybook
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+      - run: pnpm test:storybook
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-storybook-${{ github.sha }}
+          path: storybook-static/
+          retention-days: 14
       - name: Authenticate to GHCR
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,10 +51,23 @@ jobs:
             --label "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" \
             --label "org.opencontainers.image.revision=$GITHUB_SHA" \
             --label "org.opencontainers.image.version=$VERSION" \
-            --tag "$IMAGE:$VERSION" --tag "$IMAGE:sha-$GITHUB_SHA" .
+            --tag "$IMAGE:$VERSION" --tag "$IMAGE:sha-$GITHUB_SHA" --tag "$IMAGE:latest" .
+          CONTAINER_TEST_IMAGE="$IMAGE:$VERSION" pnpm test:container
           docker push "$IMAGE:sha-$GITHUB_SHA"
           docker push "$IMAGE:$VERSION"
-          echo "Published $IMAGE:$VERSION and $IMAGE:sha-$GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          docker push "$IMAGE:latest"
+          echo "Published $IMAGE:$VERSION, $IMAGE:sha-$GITHUB_SHA and $IMAGE:latest" >> "$GITHUB_STEP_SUMMARY"
+          DIGEST="$(docker manifest inspect --verbose "$IMAGE:$VERSION" | jq -r '.Descriptor.digest')"
+          echo "Digest: $IMAGE@$DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          echo "Source commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: release-browser-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
       - name: Clear runner registry credentials
         if: always()
         run: docker logout ghcr.io

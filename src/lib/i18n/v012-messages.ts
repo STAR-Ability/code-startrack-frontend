@@ -1,4 +1,11 @@
 export const v012Zh = {
+  "v12.navLearning": "概览与学习",
+  "v12.navTeams": "团队协作",
+  "v12.navCoach": "教练工作区",
+  "v12.navAccounts": "账号与数据",
+  "v12.navSettings": "个人设置",
+  "v12.discoverTeams": "发现团队",
+
   "v12.activityNote": "活动日期与统计窗口使用快照提供的数据。",
   "v12.aggregate": "个人汇总画像",
   "v12.aggregateNote": "所有已绑定 Codeforces 账号由后端去重汇总。",
@@ -160,6 +167,13 @@ export const v012Zh = {
   "v12.status.SENT": "已发送",
 } as const;
 export const v012En = {
+  "v12.navLearning": "Overview & learning",
+  "v12.navTeams": "Teams & collaboration",
+  "v12.navCoach": "Coach workspace",
+  "v12.navAccounts": "Accounts & data",
+  "v12.navSettings": "Personal settings",
+  "v12.discoverTeams": "Discover teams",
+
   "v12.activityNote":
     "Activity dates and the reporting window come from the snapshot.",
   "v12.aggregate": "Personal aggregate profile",

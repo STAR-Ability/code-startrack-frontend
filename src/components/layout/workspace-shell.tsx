@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { usePathname } from "next/navigation";
+import { Suspense, useState, useSyncExternalStore } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   HomeIcon,
   UsersRoundIcon,
@@ -14,6 +14,10 @@ import {
   BellIcon,
   LockKeyholeIcon,
   GraduationCapIcon,
+  CompassIcon,
+  ClipboardListIcon,
+  MailIcon,
+  ChevronDownIcon,
 } from "lucide-react";
 import { useLocale } from "./locale-provider";
 import { Brand, SkipLink } from "./brand";
@@ -25,6 +29,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -38,131 +43,176 @@ import { WorkspaceSessionProvider } from "@/components/workspace/account-provide
 import { AccountSwitcher } from "@/components/workspace/workspace-page";
 import { MockNotice } from "@/components/workspace/mock-notice";
 import { cn } from "@/lib/utils";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
+import { isWorkspaceLinkActive } from "@/lib/navigation/workspace";
 
-function Navigation({ mobile = false }: { mobile?: boolean }) {
-  const { t, locale } = useLocale();
+type NavigationLink = [string, CopyKey, typeof HomeIcon];
+type NavigationSection = { label: CopyKey; links: NavigationLink[] };
+
+function Navigation() {
+  const { t } = useLocale();
   const pathname = usePathname();
-  const navigation = useRef<HTMLElement>(null);
-  useEffect(() => {
-    if (!mobile) return;
-    const element = navigation.current;
-    const current = element?.querySelector<HTMLElement>(
-      '[aria-current="page"]',
-    );
-    if (!element || !current) return;
-    let frameId = 0;
-    const keepCurrentVisible = () => {
-      cancelAnimationFrame(frameId);
-      frameId = requestAnimationFrame(() => {
-        const frame = element.getBoundingClientRect();
-        const item = current.getBoundingClientRect();
-        element.scrollLeft +=
-          item.left - frame.left - (frame.width - item.width) / 2;
-      });
-    };
-    const observer = new ResizeObserver(keepCurrentVisible);
-    observer.observe(element);
-    observer.observe(current);
-    keepCurrentVisible();
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(frameId);
-    };
-  }, [pathname, mobile, locale]);
+  const searchParams = useSearchParams();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const { data: user } = useWorkspaceSession();
-  const links: Array<[string, CopyKey, typeof HomeIcon]> = [
-    ["/dashboard", "v.dashboard", HomeIcon],
-    ["/data", "v.data", ChartNoAxesCombinedIcon],
-    ["/analysis", "v.analysis", HistoryIcon],
-    ["/profile", "v.profile", RadarIcon],
-    ["/practice", "nav.practice", CodeXmlIcon],
-    ["/accounts", "v.accounts", UsersRoundIcon],
-    ["/teams", "v12.teams", UsersRoundIcon],
-    ["/privacy", "v12.privacy", LockKeyholeIcon],
-    ["/notifications", "v12.notifications", BellIcon],
-    ["/security", "v.security", ShieldCheckIcon],
+  const sections: NavigationSection[] = [
+    {
+      label: "v12.navLearning",
+      links: [
+        ["/dashboard", "v.dashboard", HomeIcon],
+        ["/profile", "v.profile", RadarIcon],
+        ["/analysis", "v12.reports", HistoryIcon],
+        ["/practice", "nav.practice", CodeXmlIcon],
+      ],
+    },
+    {
+      label: "v12.navTeams",
+      links: [
+        ["/teams", "v12.myTeams", UsersRoundIcon],
+        ["/teams?tab=search", "v12.discoverTeams", CompassIcon],
+        ["/teams?tab=applications", "v12.applications", ClipboardListIcon],
+        ["/teams?tab=invitations", "v12.invitations", MailIcon],
+      ],
+    },
     ...(user?.roles.includes("COACH")
-      ? ([
-          ["/coach", "v12.coach", GraduationCapIcon],
-          ["/coach/teams", "v12.manage", UsersRoundIcon],
-        ] as Array<[string, CopyKey, typeof HomeIcon]>)
+      ? [
+          {
+            label: "v12.navCoach" as const,
+            links: [
+              ["/coach", "v12.coach", GraduationCapIcon],
+              ["/coach/teams", "v12.manage", UsersRoundIcon],
+              [
+                "/coach/teams?task=applications",
+                "v12.pendingApplications",
+                ClipboardListIcon,
+              ],
+              ["/coach/teams?task=invitations", "v12.invitations", MailIcon],
+            ] as NavigationLink[],
+          },
+        ]
       : []),
+    {
+      label: "v12.navAccounts",
+      links: [
+        ["/accounts", "v.accounts", UsersRoundIcon],
+        ["/data", "v.data", ChartNoAxesCombinedIcon],
+      ],
+    },
+    {
+      label: "v12.navSettings",
+      links: [
+        ["/security", "v.security", ShieldCheckIcon],
+        ["/privacy", "v12.privacy", LockKeyholeIcon],
+        ["/notifications", "v12.notifications", BellIcon],
+      ],
+    },
   ];
+  const collapsed = state === "collapsed" && !isMobile;
   return (
-    <nav
-      ref={navigation}
-      aria-label={t("nav.workspace")}
-      className={cn(mobile && "max-w-full overflow-x-auto")}
-    >
-      <SidebarMenu
-        className={cn(
-          mobile ? "w-max min-w-full flex-row flex-nowrap" : "gap-1",
-        )}
-      >
-        {links.map(([href, label, Icon]) => {
-          const active =
-            pathname === href ||
-            (href !== "/coach" && pathname.startsWith(`${href}/`));
-          const link = (
-            <Link
-              href={href}
-              prefetch={false}
-              aria-label={t(label)}
-              aria-current={active ? "page" : undefined}
-              className={cn("workspace-nav", mobile && "workspace-nav-mobile")}
-            >
-              <Icon className="size-4 shrink-0" aria-hidden="true" />
-              <span>{t(label)}</span>
-            </Link>
-          );
-          return (
-            <SidebarMenuItem
-              key={href}
-              className={cn(mobile && "w-20 shrink-0")}
-            >
-              {mobile ? (
-                link
-              ) : (
-                <SidebarMenuButton
-                  render={link}
-                  isActive={active}
-                  tooltip={t(label)}
+    <nav aria-label={t("nav.workspace")}>
+      {sections.map((section, index) => {
+        const links = (
+          <SidebarMenu className="gap-1">
+            {section.links.map(([href, label, Icon]) => {
+              const active = isWorkspaceLinkActive(
+                href,
+                pathname,
+                searchParams,
+              );
+              return (
+                <SidebarMenuItem key={href}>
+                  <SidebarMenuButton
+                    isActive={active}
+                    tooltip={t(label)}
+                    render={
+                      <Link
+                        href={href}
+                        prefetch={false}
+                        aria-label={t(label)}
+                        aria-current={active ? "page" : undefined}
+                        className="workspace-nav"
+                        onClick={() => setOpenMobile(false)}
+                      >
+                        <Icon className="size-4 shrink-0" aria-hidden="true" />
+                        <span>{t(label)}</span>
+                      </Link>
+                    }
+                  />
+                </SidebarMenuItem>
+              );
+            })}
+          </SidebarMenu>
+        );
+        return (
+          <SidebarGroup
+            key={section.label}
+            className={cn(
+              "px-3 py-2",
+              section.label === "v12.navCoach" && "bg-primary/5",
+            )}
+          >
+            {index > 0 && <Separator className="mb-2 opacity-60" />}
+            {collapsed ? (
+              links
+            ) : (
+              <Collapsible
+                defaultOpen
+                key={`${section.label}:${pathname}:${searchParams.toString()}`}
+              >
+                <SidebarGroupLabel
+                  render={
+                    <CollapsibleTrigger className="mb-1 w-full justify-between focus-visible:ring-2">
+                      <span>{t(section.label)}</span>
+                      <ChevronDownIcon
+                        aria-hidden="true"
+                        className="transition-transform duration-200 in-data-open:rotate-180 motion-reduce:transition-none"
+                      />
+                    </CollapsibleTrigger>
+                  }
                 />
-              )}
-            </SidebarMenuItem>
-          );
-        })}
-      </SidebarMenu>
+                <CollapsibleContent>{links}</CollapsibleContent>
+              </Collapsible>
+            )}
+          </SidebarGroup>
+        );
+      })}
     </nav>
   );
 }
-function DesktopSidebar() {
+function WorkspaceSidebar() {
   const { t, locale, setLocale } = useLocale();
-  const { state, open } = useSidebar();
+  const { state, open, isMobile, openMobile } = useSidebar();
   return (
-    <aside className="hidden shrink-0 md:block">
+    <aside className="shrink-0">
       <Sidebar collapsible="icon" id="workspace-sidebar">
-        <SidebarHeader className="gap-3 p-3 pb-4">
+        <SidebarHeader className="gap-3 p-3 pb-2">
           <div className="sidebar-brand">
             <Brand />
           </div>
           <SidebarTrigger
-            aria-label={t(open ? "sidebar.collapse" : "sidebar.expand")}
-            aria-expanded={open}
+            aria-label={t(
+              isMobile
+                ? "ui.toggleSidebar"
+                : open
+                  ? "sidebar.collapse"
+                  : "sidebar.expand",
+            )}
+            aria-expanded={isMobile ? openMobile : open}
             aria-controls="workspace-sidebar"
-            title={t(open ? "sidebar.collapse" : "sidebar.expand")}
           />
         </SidebarHeader>
         <SidebarContent>
-          <SidebarGroup className="px-3">
-            <p className="sidebar-copy px-2 pb-3 text-xs text-muted-foreground">
-              {t("nav.workspace")}
-            </p>
+          <Suspense>
             <Navigation />
-          </SidebarGroup>
+          </Suspense>
         </SidebarContent>
-        <SidebarFooter className="p-3">
-          {state === "expanded" ? (
+        <SidebarFooter className="border-t p-3">
+          {state === "expanded" || isMobile ? (
             <LocaleSwitch />
           ) : (
             <Button
@@ -210,11 +260,14 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           } as React.CSSProperties
         }
       >
-        <DesktopSidebar />
+        <WorkspaceSidebar />
         <div className="workspace-surface flex min-w-0 flex-1 flex-col">
           <MockNotice />
           <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-background/90 px-5 py-3 md:hidden">
-            <Brand />
+            <div className="flex min-w-0 items-center gap-2">
+              <SidebarTrigger aria-label={t("ui.mobileNavigation")} />
+              <Brand />
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <LocaleSwitch />
               <Link href="/security" prefetch={false} className="text-sm">
@@ -224,9 +277,6 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
           </header>
           <AccountSwitcher />
           {children}
-          <div className="mobile-navigation sticky bottom-0 mt-auto border-t bg-background/95 px-3 py-2 backdrop-blur-md md:hidden">
-            <Navigation mobile />
-          </div>
         </div>
       </SidebarProvider>
     </WorkspaceSessionProvider>

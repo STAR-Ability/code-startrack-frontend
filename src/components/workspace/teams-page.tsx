@@ -1,6 +1,6 @@
 "use client";
 import { useState, useId } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { v012 } from "@/lib/api/v012";
 import {
   applicationStatuses,
@@ -26,9 +26,8 @@ type Tab = (typeof tabs)[number];
 export function TeamsPage({ managed = false }: { managed?: boolean }) {
   const params = useSearchParams();
   const chosen = params.get("tab");
-  const [tab, setTab] = useState<Tab>(
-    tabs.includes(chosen as Tab) ? (chosen as Tab) : "mine",
-  );
+  const router = useRouter();
+  const tab: Tab = tabs.includes(chosen as Tab) ? (chosen as Tab) : "mine";
   const [page, setPage] = useState(1);
   const [q, setQ] = useState("");
   const [search, setSearch] = useState("");
@@ -84,7 +83,10 @@ export function TeamsPage({ managed = false }: { managed?: boolean }) {
         aria-label={t("v12.teams")}
         onValueChange={(value) => {
           if (tabs.includes(value[0] as Tab)) {
-            setTab(value[0] as Tab);
+            router.push(
+              `${managed ? "/coach/teams" : "/teams"}?tab=${value[0]}`,
+              { scroll: false },
+            );
             setPage(1);
             setStatus("");
           }

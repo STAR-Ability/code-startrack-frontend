@@ -97,7 +97,7 @@ export function BatchView({
       {batch.stale && (
         <Alert>
           <AlertDescription>
-            <Badge variant="secondary">{t("v.stale")}</Badge>
+            <Badge variant="warning">{t("v.stale")}</Badge>
             <p>{t("v.staleNote")}</p>
           </AlertDescription>
         </Alert>
@@ -143,7 +143,7 @@ export function BatchView({
                 </Badge>
               ))}
               {item.solvedSinceGeneration && (
-                <Badge>{t("v.solvedSince")}</Badge>
+                <Badge variant="success">{t("v.solvedSince")}</Badge>
               )}
               {item.problem.isGym && <Badge variant="outline">Gym</Badge>}
               {item.problem.catalogSource === "INFERRED" && (

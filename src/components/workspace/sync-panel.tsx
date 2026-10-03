@@ -16,6 +16,7 @@ import type {
 } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
+import { jobTone } from "@/lib/ui/status";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -168,7 +169,9 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
         {latestJob ? (
           <div className="flex flex-col gap-3" aria-live="polite">
             <div className="flex flex-wrap gap-2">
-              <Badge>{t(`v.job.${latestJob.status}`)}</Badge>
+              <Badge variant={jobTone[latestJob.status]}>
+                {t(`v.job.${latestJob.status}`)}
+              </Badge>
               {latestJob.stage && (
                 <Badge variant="outline">
                   {t(`v.stage.${latestJob.stage}`)}

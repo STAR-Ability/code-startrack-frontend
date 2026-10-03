@@ -10,6 +10,14 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const metricTones: Partial<Record<CopyKey, string>> = {
+  "v.solved": "success",
+  "v.accepted": "success",
+  "v.failed": "danger",
+  "v.pendingCount": "warning",
+  "v.overallScore": "info",
+  "v.rating": "info",
+};
 export type Metric = readonly [CopyKey, number | string | null];
 export function MetricPanel({
   title,
@@ -42,7 +50,7 @@ export function MetricPanel({
       <CardContent className="flex flex-col gap-3">
         <dl className="metric-strip">
           {metrics.map(([label, v]) => (
-            <div key={label}>
+            <div key={label} data-tone={metricTones[label]}>
               <dt>{t(label)}</dt>
               <dd>{loading ? <Skeleton className="h-7 w-12" /> : value(v)}</dd>
             </div>

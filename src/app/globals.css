@@ -1005,3 +1005,34 @@
     margin-left: 3rem;
   }
 }
+
+@layer components {
+  .chart-surface {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--canvas) 45%, transparent),
+      transparent
+    );
+  }
+  .metric-strip > [data-tone="success"] {
+    border-color: color-mix(in srgb, var(--success) 40%, var(--border));
+  }
+  .metric-strip > [data-tone="info"] {
+    border-color: color-mix(in srgb, var(--info) 40%, var(--border));
+  }
+  .metric-strip > [data-tone="warning"] {
+    border-color: color-mix(in srgb, var(--warning) 40%, var(--border));
+  }
+  .metric-strip > [data-tone="danger"] {
+    border-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
+  }
+  [data-tone="success"] dd {
+    color: var(--success);
+  }
+  [data-tone="warning"] dd {
+    color: var(--warning);
+  }
+  [data-tone="danger"] dd {
+    color: var(--destructive);
+  }
+}

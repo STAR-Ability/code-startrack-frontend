@@ -129,7 +129,7 @@ export function AnalysisView({
             </>
           )}
         </p>
-        {analysis?.stale && <Badge variant="secondary">{t("v.stale")}</Badge>}
+        {analysis?.stale && <Badge variant="warning">{t("v.stale")}</Badge>}
       </div>
       {analysis?.stale && (
         <Alert>
@@ -157,6 +157,7 @@ export function AnalysisView({
             <CardContent>
               {daily.length ? (
                 <Chart
+                  palette="activity"
                   label={t("v.activityStats")}
                   option={trendOption(
                     daily.map((item) => item.date),
@@ -195,6 +196,7 @@ export function AnalysisView({
                 {tags.length ? (
                   <>
                     <Chart
+                      palette="distribution"
                       label={t("v.tagStats")}
                       option={distributionOption(
                         tags.slice(0, 10).map((item) => item.tag),
@@ -241,6 +243,7 @@ export function AnalysisView({
                 {difficulty.length ? (
                   <>
                     <Chart
+                      palette="distribution"
                       label={t("v.difficultyStats")}
                       option={distributionOption(
                         difficulty.map(
@@ -285,6 +288,7 @@ export function AnalysisView({
           </CardHeader>
           <CardContent className="grid min-w-0 items-center gap-4 lg:grid-cols-2">
             <Chart
+              palette="ability"
               label={t("v.dimensions")}
               option={{
                 radar: {
@@ -336,7 +340,7 @@ export function AnalysisView({
                     className="h-1 overflow-hidden rounded-full bg-muted"
                   >
                     <div
-                      className="h-full rounded-full bg-link"
+                      className="h-full rounded-full bg-insight"
                       style={{ width: `${item.score}%` }}
                     />
                   </div>

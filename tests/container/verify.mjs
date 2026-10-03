@@ -1,9 +1,11 @@
 // All writes are to an ephemeral fixture on an internal Docker network.
 import { spawn } from "node:child_process";
-const project = `codestartrack-v011-check-${process.pid}`;
+const project = `codestartrack-check-${process.pid}`;
+const suppliedImage = process.env.CONTAINER_TEST_IMAGE;
 const environment = {
   ...process.env,
-  FRONTEND_IMAGE: `codestartrack-frontend:check-${process.pid}`,
+  FRONTEND_IMAGE:
+    suppliedImage || `codestartrack-frontend:check-${process.pid}`,
   BACKEND_BASE_URL: "http://backend:8081",
   FRONTEND_PORT: "3300",
   FRONTEND_BIND_ADDRESS: "127.0.0.1",
@@ -32,12 +34,20 @@ function run(args) {
 }
 // Fail before changing anything when Docker is unavailable.
 await run(["info", "--format", "{{.ServerVersion}}"]);
+if (suppliedImage)
+  await run(["image", "inspect", suppliedImage, "--format", "{{.Id}}"]);
 try {
   await run([...compose, "config", "--quiet"]);
-  await run([...compose, "build", "frontend", "browser-check"]);
+  await run([
+    ...compose,
+    "build",
+    ...(suppliedImage ? [] : ["frontend"]),
+    "browser-check",
+  ]);
   await run([
     ...compose,
     "up",
+    "--no-build",
     "-d",
     "--wait",
     "--wait-timeout",
@@ -53,7 +63,7 @@ try {
     "frontend",
     "sh",
     "-c",
-    "test -f /usr/share/nginx/html/dashboard.html && test ! -d /usr/share/nginx/html/src && test ! -f /usr/share/nginx/html/.env.local",
+    "test -f /usr/share/nginx/html/dashboard.html && test -f /usr/share/nginx/html/product/profile.html && test -f /usr/share/nginx/html/about.html && test ! -d /usr/share/nginx/html/src && test ! -d /usr/share/nginx/html/storybook-static && test ! -f /usr/share/nginx/html/.env.local",
   ]);
   await run([...compose, "run", "--rm", "--no-deps", "browser-check"]);
   await run([...compose, "stop", "backend"]);

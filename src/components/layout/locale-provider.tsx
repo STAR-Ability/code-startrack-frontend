@@ -66,6 +66,10 @@ export function LocaleProvider({
             : "metadata.homeTitle",
     );
     const routeTitles = {
+      "/product": "showcase.features.label",
+      "/product/profile": "showcase.profile.label",
+      "/product/recommendations": "showcase.recommendations.label",
+      "/about": "showcase.about.label",
       "/data": "v.data",
       "/analysis": "v.analysis",
       "/accounts": "v.accounts",

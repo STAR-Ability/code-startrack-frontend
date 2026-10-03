@@ -1,7 +1,12 @@
+import { showcaseZh, showcaseEn } from "./showcase-messages";
 import { workspaceZh, workspaceEn } from "./workspace-messages";
 
 export const zhCN = {
   ...workspaceZh,
+  "ui.close": "关闭",
+  "ui.toggleSidebar": "切换侧边栏",
+  "ui.mobileNavigation": "移动端工作区导航",
+  ...showcaseZh,
   "motion.pause": "暂停滚动",
   "motion.play": "继续滚动",
   "landing.days": "天",
@@ -164,6 +169,10 @@ export type CopyKey = keyof typeof zhCN;
 
 export const en = {
   ...workspaceEn,
+  "ui.close": "Close",
+  "ui.toggleSidebar": "Toggle sidebar",
+  "ui.mobileNavigation": "Mobile workspace navigation",
+  ...showcaseEn,
   "motion.pause": "Pause scrolling",
   "motion.play": "Resume scrolling",
   "landing.days": "DAYS",

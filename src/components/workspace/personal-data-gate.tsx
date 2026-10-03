@@ -16,7 +16,7 @@ import {
 import { useOptionalAccounts, useWorkspaceSession } from "./account-provider";
 import { EmptyState, ErrorNotice, QueryFeedback } from "./feedback";
 import { AnalysisView } from "./analysis-view";
-import { BatchView } from "./recommendations-page";
+import { BatchView } from "./recommendation-card";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { MetricPanel } from "./metric-panel";
 

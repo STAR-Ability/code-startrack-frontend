@@ -5,28 +5,13 @@ import {
   ArrowRightIcon,
   ArrowUpRightIcon,
   CheckCircle2Icon,
-  EyeIcon,
-  EyeOffIcon,
   KeyRoundIcon,
   LockKeyholeIcon,
   MailIcon,
   RefreshCwIcon,
   ShieldCheckIcon,
   UserRoundIcon,
-  type LucideIcon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  InputGroup,
-  InputGroupInput,
-  InputGroupAddon,
-  InputGroupButton,
-} from "@/components/ui/input-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Spinner } from "@/components/ui/spinner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -40,13 +25,9 @@ import { ApiError } from "@/lib/api/errors";
 import { keys } from "@/lib/query/keys";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { FormInput } from "@/components/ui/form-input";
 import { Input } from "@/components/ui/input";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldDescription,
-} from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
   Card,
   CardHeader,
@@ -63,91 +44,6 @@ import {
 } from "@/components/workspace/feedback";
 import { clearSession } from "@/components/training/query-provider";
 
-export function FormInput({
-  label,
-  error,
-  hint,
-  icon: Icon,
-  labelAction,
-  comfortable = false,
-  type,
-  ...props
-}: React.ComponentProps<typeof Input> & {
-  label: string;
-  error?: string;
-  hint?: string;
-  icon?: LucideIcon;
-  labelAction?: React.ReactNode;
-  comfortable?: boolean;
-}) {
-  const id = useId();
-  const { t } = useLocale();
-  const [visible, setVisible] = useState(false);
-  const isPassword = type === "password";
-  const inputProps = {
-    ...props,
-    id,
-    type: isPassword && visible ? "text" : type,
-    "aria-invalid": !!error,
-    "aria-describedby": error || hint ? `${id}-description` : undefined,
-  };
-  return (
-    <Field data-invalid={!!error} data-disabled={props.disabled}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <FieldLabel htmlFor={id}>{label}</FieldLabel>
-        {labelAction}
-      </div>
-      {Icon || isPassword ? (
-        <InputGroup className={cn(comfortable && "h-12")}>
-          {Icon && (
-            <InputGroupAddon>
-              <Icon aria-hidden="true" />
-            </InputGroupAddon>
-          )}
-          <InputGroupInput
-            {...inputProps}
-            className={cn(comfortable && "h-12")}
-          />
-          {isPassword && (
-            <InputGroupAddon align="inline-end">
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <InputGroupButton
-                      size="icon-sm"
-                      aria-label={t(
-                        visible ? "ui.hidePassword" : "ui.showPassword",
-                      )}
-                      aria-pressed={visible}
-                      disabled={props.disabled}
-                      onClick={() => setVisible(!visible)}
-                    />
-                  }
-                >
-                  {visible ? (
-                    <EyeOffIcon aria-hidden="true" />
-                  ) : (
-                    <EyeIcon aria-hidden="true" />
-                  )}
-                </TooltipTrigger>
-                <TooltipContent>
-                  {t(visible ? "ui.hidePassword" : "ui.showPassword")}
-                </TooltipContent>
-              </Tooltip>
-            </InputGroupAddon>
-          )}
-        </InputGroup>
-      ) : (
-        <Input {...inputProps} className={cn(comfortable && "h-12")} />
-      )}
-      {(error || hint) && (
-        <FieldDescription id={`${id}-description`}>
-          {error ?? hint}
-        </FieldDescription>
-      )}
-    </Field>
-  );
-}
 export function Captcha({
   onChange,
   refresh = 0,

@@ -44,7 +44,7 @@ test("personal data exposes nullable Gym data, pending team submissions and MiB 
   await expect(drawer).toContainText("等待判题");
   await expect(drawer).toContainText("Synthetic team");
   await expect(drawer).toContainText("1.00");
-  await drawer.getByRole("button", { name: "Close", exact: true }).click();
+  await drawer.getByRole("button", { name: "关闭", exact: true }).click();
   await page
     .getByRole("button", { name: "比赛与 Rating（当前页）", exact: true })
     .click();

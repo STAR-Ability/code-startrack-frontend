@@ -22,6 +22,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { accountTone } from "@/lib/ui/status";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -31,7 +32,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
-import { FormInput } from "@/components/auth/auth-form";
+import { FormInput } from "@/components/ui/form-input";
 import {
   EmptyState,
   ErrorNotice,
@@ -199,7 +200,9 @@ function AccountCard({ account }: { account: OjAccountDto }) {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <Badge variant="outline">{account.bindStatus}</Badge>
+        <Badge variant={accountTone[account.bindStatus]}>
+          {account.bindStatus}
+        </Badge>
         <p>
           {t("v.rating")}: {account.rating ?? t("v.unrated")}
         </p>

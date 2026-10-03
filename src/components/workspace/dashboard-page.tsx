@@ -14,7 +14,7 @@ import { useLocale } from "@/components/layout/locale-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { DataRegion, ErrorNotice, useCountdown } from "./feedback";
-import { BatchView } from "./recommendations-page";
+import { BatchView } from "./recommendation-card";
 import { AccountPortfolio } from "./account-portfolio";
 import { PersonalDataGate } from "./personal-data-gate";
 import { SyncPanel } from "./sync-panel";

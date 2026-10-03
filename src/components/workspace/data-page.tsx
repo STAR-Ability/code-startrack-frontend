@@ -11,6 +11,7 @@ import {
 } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
+import { verdictTone } from "@/lib/ui/status";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -31,12 +32,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { FormInput } from "@/components/auth/auth-form";
+import { FormInput } from "@/components/ui/form-input";
 import { WindowSelector } from "./analysis-page";
 import { AnalysisView } from "./analysis-view";
 import { useAccountQuery } from "./use-account-query";
 import { QueryFeedback, DataRegion, EmptyState, Pagination } from "./feedback";
-import { ProblemLink } from "./recommendations-page";
+import { ProblemLink } from "./recommendation-card";
 import { Chart } from "./chart";
 
 export function DataPage() {
@@ -194,7 +195,7 @@ function Problems() {
                 {item.problem.difficulty ?? t("v.unrated")} · {t("v.attempts")}:{" "}
                 {item.progress.attemptCount}
               </p>
-              <Badge variant={item.progress.accepted ? "default" : "outline"}>
+              <Badge variant={item.progress.accepted ? "success" : "outline"}>
                 {t(
                   item.progress.accepted
                     ? "v.status.SOLVED"
@@ -357,7 +358,7 @@ function Submission({ item }: { item: SubmissionDto }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <Badge variant={item.verdict === "ACCEPTED" ? "default" : "outline"}>
+        <Badge variant={verdictTone[item.verdict]}>
           {item.verdict === "PENDING" ? t("v.pending") : item.verdict}
         </Badge>
         <dl className="grid grid-cols-2 gap-3 text-sm">

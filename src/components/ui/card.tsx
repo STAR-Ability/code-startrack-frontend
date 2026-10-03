@@ -16,8 +16,8 @@ function Card({
       data-size={size}
       data-interaction={interaction}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        "shadow-sm transition-[box-shadow,translate,transform] duration-200 ease-out data-[interaction=surface]:hover:shadow-md data-[interaction=surface]:hover:ring-foreground/20 data-[interaction=lift]:hover:shadow-lg data-[interaction=lift]:hover:ring-foreground/20 motion-safe:data-[interaction=lift]:hover:-translate-y-1 focus-within:ring-ring/50 focus-within:shadow-md motion-reduce:transition-none",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-border [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "shadow-surface transition-[box-shadow,translate,transform] duration-200 ease-out data-[interaction=surface]:hover:shadow-raised data-[interaction=surface]:hover:ring-foreground/20 data-[interaction=lift]:hover:shadow-raised data-[interaction=lift]:hover:ring-foreground/20 motion-safe:data-[interaction=lift]:hover:-translate-y-1 focus-within:ring-ring/50 focus-within:shadow-md motion-reduce:transition-none",
         size === "lg" &&
           "rounded-2xl [--card-spacing:--spacing(6)] sm:[--card-spacing:--spacing(8)]",
         className,

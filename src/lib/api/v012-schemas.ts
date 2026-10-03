@@ -6,6 +6,7 @@ import {
   instantSchema,
   problemSchema,
   summarySchema,
+  submissionSchema,
   uuidSchema,
   windows,
 } from "./schemas.ts";
@@ -370,3 +371,13 @@ export type NotificationType = NotificationDto["type"];
 export type TeamReasonCode = TeamRecommendationItemDto["reasonCode"];
 export type TeamDimensionScoreDto = z.infer<typeof teamDimensionSchema>;
 export type TeamActivityStatDto = z.infer<typeof teamActivitySchema>;
+
+export const userSubmissionSchema = z.object({
+  sourceAccount: z.object({
+    accountId: idSchema,
+    platform: z.literal("codeforces"),
+    username: z.string(),
+  }),
+  submission: submissionSchema,
+});
+export type UserSubmissionDto = z.infer<typeof userSubmissionSchema>;

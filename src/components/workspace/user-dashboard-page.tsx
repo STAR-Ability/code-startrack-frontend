@@ -122,7 +122,7 @@ export function UserDashboardPage() {
         <Panel title="v12.notifications">
           <QueryFeedback query={unread} />
           <p>
-            {t("v12.unread")}: {unread.data?.unreadCount ?? "—"}
+            {t("v12.unread")}: {unread.data?.count ?? "—"}
           </p>
           <Link href="/notifications">{t("v12.open")}</Link>
         </Panel>

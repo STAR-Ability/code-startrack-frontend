@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { readData, readPage, request, queryString } from "./client";
-import { submissionSchema, uuidSchema, type AnalysisWindow } from "./schemas";
+import { uuidSchema, type AnalysisWindow } from "./schemas";
 import {
   aiJobSchema,
   applicationSchema,
@@ -17,6 +17,7 @@ import {
   teamMemberSchema,
   teamSummarySchema,
   userAnalysisSchema,
+  userSubmissionSchema,
   type JoinApplicationStatus,
   type PrivacySettingsDto,
   type TeamAnalysisAudience,
@@ -141,7 +142,14 @@ export const v012 = {
     readData(
       team(teamId),
       teamDetailSchema,
-      { method: "PATCH", body },
+      {
+        method: "PATCH",
+        body: {
+          ...body,
+          ...(body.description === null ? { description: "" } : {}),
+          ...(body.avatarUrl === null ? { avatarUrl: "" } : {}),
+        },
+      },
       undefined,
       { teamId },
     ),
@@ -320,7 +328,7 @@ export const v012 = {
   ) =>
     readPage(
       `${member(teamId, publicId)}/submissions${queryString(paging)}`,
-      submissionSchema,
+      userSubmissionSchema,
       signal,
     ),
   memberReports: (
@@ -442,7 +450,7 @@ export const v012 = {
   unreadCount: (signal?: AbortSignal) =>
     readData(
       "/notifications/unread-count",
-      z.object({ unreadCount: z.number().int().nonnegative() }),
+      z.object({ count: z.number().int().nonnegative().safe() }),
       { signal },
     ),
   readNotification: (id: string) => action(`/notifications/${uuid(id)}/read`),

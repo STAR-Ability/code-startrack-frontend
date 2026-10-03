@@ -296,7 +296,7 @@ export function createV012Mock() {
       return true;
     }
     if (path === "/notifications/unread-count") {
-      data({ unreadCount: notifications.filter((item) => !item.read).length });
+      data({ count: notifications.filter((item) => !item.read).length });
       return true;
     }
     if (path === "/notifications") {
@@ -882,7 +882,17 @@ export function createV012Mock() {
       if (resource === "training/overview")
         data(sharedTrainingSchema.parse(source));
       else if (resource === "profile") data(sharedProfileSchema.parse(source));
-      else if (resource === "submissions") paginated(demoSubmissions());
+      else if (resource === "submissions")
+        paginated(
+          demoSubmissions().map((submission) => ({
+            sourceAccount: {
+              accountId: submission.accountId,
+              platform: "codeforces",
+              username: "TrainingPeer",
+            },
+            submission,
+          })),
+        );
       else if (resource === "reports") paginated(reports);
       else if (resource?.startsWith("reports/")) {
         const report = reports.find(

@@ -96,9 +96,7 @@
   "paths": {
     "/api/v1/admin/users/{publicId}/roles/COACH": {
       "put": {
-        "tags": [
-          "管理员-角色"
-        ],
+        "tags": ["管理员-角色"],
         "summary": "授予 COACH",
         "description": "已有 COACH 仍返回 200；STUDENT 不会被移除。",
         "operationId": "grantCoach",
@@ -126,9 +124,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "管理员-角色"
-        ],
+        "tags": ["管理员-角色"],
         "summary": "撤销 COACH",
         "description": "该用户仍是任一未解散团队的负责人时返回 409 COACH_OWNS_TEAM。",
         "operationId": "revokeCoach",
@@ -151,9 +147,7 @@
     },
     "/api/v1/teams": {
       "post": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "创建团队",
         "description": "需要 COACH 角色；创建者自动成为唯一 OWNER。",
         "operationId": "create",
@@ -183,9 +177,7 @@
     },
     "/api/v1/teams/{teamId}/transfer": {
       "post": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "转让团队负责人",
         "description": "新负责人必须是该团队的成员且拥有 COACH 角色。",
         "operationId": "transfer",
@@ -225,9 +217,7 @@
     },
     "/api/v1/teams/{teamId}/recommendations/generate": {
       "post": {
-        "tags": [
-          "团队推荐"
-        ],
+        "tags": ["团队推荐"],
         "summary": "生成团队推荐",
         "description": "audience 必填（COACH/MEMBER）；画像没有能力样本或等级样本时分别返回 409。",
         "operationId": "generate",
@@ -266,9 +256,7 @@
     },
     "/api/v1/teams/{teamId}/leave": {
       "post": {
-        "tags": [
-          "团队成员"
-        ],
+        "tags": ["团队成员"],
         "summary": "退出团队",
         "description": "OWNER 会得到 409 TEAM_OWNER_CANNOT_LEAVE。",
         "operationId": "leave",
@@ -291,9 +279,7 @@
     },
     "/api/v1/teams/{teamId}/invitations": {
       "get": {
-        "tags": [
-          "团队邀请"
-        ],
+        "tags": ["团队邀请"],
         "summary": "团队的邀请列表",
         "description": "仅 OWNER；包含 inviteeEmail 与邮件交付状态。",
         "operationId": "byTeam",
@@ -347,9 +333,7 @@
         }
       },
       "post": {
-        "tags": [
-          "团队邀请"
-        ],
+        "tags": ["团队邀请"],
         "summary": "邀请加入团队",
         "description": "邮箱可以是未注册的；对方用同一邮箱注册后会自动绑定这条邀请。",
         "operationId": "create",
@@ -389,9 +373,7 @@
     },
     "/api/v1/teams/{teamId}/dissolve": {
       "post": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "解散团队",
         "description": "confirmation 必须精确等于团队名称。不可恢复。",
         "operationId": "dissolve",
@@ -430,9 +412,7 @@
     },
     "/api/v1/teams/{teamId}/archive": {
       "post": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "归档团队",
         "description": "同时取消全部待处理的申请与邀请。",
         "operationId": "archive",
@@ -462,9 +442,7 @@
     },
     "/api/v1/teams/{teamId}/applications": {
       "get": {
-        "tags": [
-          "加入申请"
-        ],
+        "tags": ["加入申请"],
         "summary": "团队的加入申请",
         "description": "仅 OWNER；status 默认 PENDING。",
         "operationId": "byTeam",
@@ -518,9 +496,7 @@
         }
       },
       "post": {
-        "tags": [
-          "加入申请"
-        ],
+        "tags": ["加入申请"],
         "summary": "申请加入团队",
         "description": "同一团队同一用户只能有一个 PENDING。",
         "operationId": "apply",
@@ -559,9 +535,7 @@
     },
     "/api/v1/teams/{teamId}/analysis/rebuild": {
       "post": {
-        "tags": [
-          "团队画像"
-        ],
+        "tags": ["团队画像"],
         "summary": "重建团队画像",
         "description": "仅 OWNER；系统也会在成员或隐私变化后自动触发。",
         "operationId": "rebuild",
@@ -591,9 +565,7 @@
     },
     "/api/v1/teams/{teamId}/activate": {
       "post": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "重新启用团队",
         "description": "被归档时取消的申请与邀请不会自动恢复，需要重新提交。",
         "operationId": "activate",
@@ -623,9 +595,7 @@
     },
     "/api/v1/team-invitations/{invitationId}/resend": {
       "post": {
-        "tags": [
-          "团队邀请"
-        ],
+        "tags": ["团队邀请"],
         "summary": "重发邀请",
         "description": "更新本行而不是新建；过频返回 429。",
         "operationId": "resend",
@@ -655,9 +625,7 @@
     },
     "/api/v1/team-invitations/{invitationId}/reject": {
       "post": {
-        "tags": [
-          "团队邀请"
-        ],
+        "tags": ["团队邀请"],
         "summary": "拒绝邀请",
         "operationId": "reject",
         "parameters": [
@@ -686,9 +654,7 @@
     },
     "/api/v1/team-invitations/{invitationId}/cancel": {
       "post": {
-        "tags": [
-          "团队邀请"
-        ],
+        "tags": ["团队邀请"],
         "summary": "撤销邀请",
         "operationId": "cancel",
         "parameters": [
@@ -717,9 +683,7 @@
     },
     "/api/v1/team-invitations/{invitationId}/accept": {
       "post": {
-        "tags": [
-          "团队邀请"
-        ],
+        "tags": ["团队邀请"],
         "summary": "接受邀请",
         "description": "同一事务里创建 ACTIVE 成员关系。",
         "operationId": "accept",
@@ -749,9 +713,7 @@
     },
     "/api/v1/team-applications/{applicationId}/reject": {
       "post": {
-        "tags": [
-          "加入申请"
-        ],
+        "tags": ["加入申请"],
         "summary": "拒绝加入申请",
         "operationId": "reject",
         "parameters": [
@@ -789,9 +751,7 @@
     },
     "/api/v1/team-applications/{applicationId}/cancel": {
       "post": {
-        "tags": [
-          "加入申请"
-        ],
+        "tags": ["加入申请"],
         "summary": "取消加入申请",
         "operationId": "cancel",
         "parameters": [
@@ -820,9 +780,7 @@
     },
     "/api/v1/team-applications/{applicationId}/approve": {
       "post": {
-        "tags": [
-          "加入申请"
-        ],
+        "tags": ["加入申请"],
         "summary": "通过加入申请",
         "description": "同一事务里创建 ACTIVE 成员关系。",
         "operationId": "approve",
@@ -852,9 +810,7 @@
     },
     "/api/v1/oj-accounts": {
       "get": {
-        "tags": [
-          "OJ 账号"
-        ],
+        "tags": ["OJ 账号"],
         "summary": "列出我的 OJ 账号",
         "description": "默认只返回 ACTIVE 与 INVALID 的绑定；UNBOUND 需要显式 includeUnbound=true。",
         "operationId": "list",
@@ -900,9 +856,7 @@
         }
       },
       "post": {
-        "tags": [
-          "OJ 账号"
-        ],
+        "tags": ["OJ 账号"],
         "summary": "绑定 OJ 账号",
         "description": "用公开的 user.info 校验 handle。同一有效 handle 只能属于一个用户；自己重复绑定返回 409 并在 details.accountId 里给出已有记录。",
         "operationId": "bind",
@@ -932,9 +886,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/sync": {
       "post": {
-        "tags": [
-          "OJ 账号"
-        ],
+        "tags": ["OJ 账号"],
         "summary": "手动同步",
         "description": "已有在途任务时返回同一任务。每账号 60 秒内只能触发一次，超限返回 429。",
         "operationId": "sync",
@@ -964,9 +916,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/recommendations/generate": {
       "post": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "生成推荐",
         "description": "必须带 Idempotency-Key（UUID）。首次返回 201，同 key 重放返回 200 与原批次。",
         "operationId": "generate",
@@ -1013,9 +963,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/analysis/rebuild": {
       "post": {
-        "tags": [
-          "OJ 账号"
-        ],
+        "tags": ["OJ 账号"],
         "summary": "重建分析",
         "description": "不访问 Codeforces，只用当前已同步的数据重算画像。INVALID 的绑定不能重建（返回 409）。",
         "operationId": "rebuildAnalysis",
@@ -1045,9 +993,7 @@
     },
     "/api/v1/notifications/{notificationId}/read": {
       "post": {
-        "tags": [
-          "通知"
-        ],
+        "tags": ["通知"],
         "summary": "标记通知已读",
         "operationId": "read",
         "parameters": [
@@ -1076,9 +1022,7 @@
     },
     "/api/v1/notifications/read-all": {
       "post": {
-        "tags": [
-          "通知"
-        ],
+        "tags": ["通知"],
         "summary": "全部标记已读",
         "operationId": "readAll",
         "responses": {
@@ -1097,9 +1041,7 @@
     },
     "/api/v1/me/reports/generate": {
       "post": {
-        "tags": [
-          "个人报告"
-        ],
+        "tags": ["个人报告"],
         "summary": "手动生成报告",
         "description": "已有在途任务时返回同一个 job；过频返回 429 REPORT_RATE_LIMITED。",
         "operationId": "generate",
@@ -1119,9 +1061,7 @@
     },
     "/api/v1/me/password/change": {
       "post": {
-        "tags": [
-          "当前用户"
-        ],
+        "tags": ["当前用户"],
         "summary": "修改密码",
         "description": "需要当前密码。成功后该用户的全部会话被撤销，前端应跳回登录页。",
         "operationId": "changePassword",
@@ -1151,9 +1091,7 @@
     },
     "/api/v1/me/email/change": {
       "post": {
-        "tags": [
-          "当前用户"
-        ],
+        "tags": ["当前用户"],
         "summary": "更改绑定邮箱",
         "description": "需要当前密码 + 旧邮箱验证码 + 新邮箱验证码。成功后全部会话被撤销。",
         "operationId": "changeEmail",
@@ -1183,9 +1121,7 @@
     },
     "/api/v1/me/analysis/rebuild": {
       "post": {
-        "tags": [
-          "用户画像"
-        ],
+        "tags": ["用户画像"],
         "summary": "重建我的画像",
         "description": "已有在途任务时返回同一个 job；距上次成功构建不足 60 秒返回 429。",
         "operationId": "rebuild",
@@ -1205,9 +1141,7 @@
     },
     "/api/v1/coach-invite-codes/redeem": {
       "post": {
-        "tags": [
-          "教练邀请码"
-        ],
+        "tags": ["教练邀请码"],
         "summary": "兑换教练邀请码",
         "description": "成功后 /me 同时包含 STUDENT 与 COACH；失败统一返回 400。",
         "operationId": "redeem",
@@ -1237,9 +1171,7 @@
     },
     "/api/v1/auth/register": {
       "post": {
-        "tags": [
-          "认证"
-        ],
+        "tags": ["认证"],
         "summary": "注册",
         "description": "需要邮箱验证码与用户名。注册成功即登录，默认 STUDENT 角色。",
         "operationId": "register",
@@ -1269,9 +1201,7 @@
     },
     "/api/v1/auth/password/reset": {
       "post": {
-        "tags": [
-          "认证"
-        ],
+        "tags": ["认证"],
         "summary": "找回密码",
         "description": "用邮箱验证码换一次改密码的机会。成功后撤销该用户的全部会话。",
         "operationId": "resetPassword",
@@ -1301,9 +1231,7 @@
     },
     "/api/v1/auth/logout": {
       "post": {
-        "tags": [
-          "认证"
-        ],
+        "tags": ["认证"],
         "summary": "退出登录",
         "description": "只撤销当前会话。没有有效会话时也返回成功。",
         "operationId": "logout",
@@ -1316,9 +1244,7 @@
     },
     "/api/v1/auth/logout-all": {
       "post": {
-        "tags": [
-          "认证"
-        ],
+        "tags": ["认证"],
         "summary": "退出全部设备",
         "description": "撤销该用户的全部有效会话。",
         "operationId": "logoutAll",
@@ -1338,9 +1264,7 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "tags": [
-          "认证"
-        ],
+        "tags": ["认证"],
         "summary": "登录",
         "description": "account 可填用户名或邮箱。账号不存在与密码错误返回同一个 INVALID_CREDENTIALS。",
         "operationId": "login",
@@ -1370,9 +1294,7 @@
     },
     "/api/v1/auth/email-codes": {
       "post": {
-        "tags": [
-          "认证"
-        ],
+        "tags": ["认证"],
         "summary": "发送邮箱验证码",
         "description": "注册与找回密码匿名可用；换邮箱的两个用途必须登录。同邮箱跨用途 60 秒内只能发一次，超限返回 429 并带 Retry-After。",
         "operationId": "sendEmailCode",
@@ -1402,9 +1324,7 @@
     },
     "/api/v1/auth/captcha": {
       "post": {
-        "tags": [
-          "认证"
-        ],
+        "tags": ["认证"],
         "summary": "获取图形验证码",
         "description": "返回 challengeId 与图片（PNG data URL）。有效 180 秒、一次性；校验失败或提交后必须重新获取。",
         "operationId": "captcha",
@@ -1424,9 +1344,7 @@
     },
     "/api/v1/admin/coach-invite-codes": {
       "get": {
-        "tags": [
-          "教练邀请码"
-        ],
+        "tags": ["教练邀请码"],
         "summary": "教练邀请码列表",
         "description": "只返回前缀，不返回明文。",
         "operationId": "list",
@@ -1472,9 +1390,7 @@
         }
       },
       "post": {
-        "tags": [
-          "教练邀请码"
-        ],
+        "tags": ["教练邀请码"],
         "summary": "创建教练邀请码",
         "description": "明文 code 仅此一次返回。",
         "operationId": "create",
@@ -1504,9 +1420,7 @@
     },
     "/api/v1/teams/{teamId}": {
       "get": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "团队详情",
         "operationId": "detail",
         "parameters": [
@@ -1533,9 +1447,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "修改团队资料",
         "description": "省略的字段不修改；传空字符串表示清空简介或头像。",
         "operationId": "update",
@@ -1575,9 +1487,7 @@
     },
     "/api/v1/me/privacy": {
       "get": {
-        "tags": [
-          "隐私设置"
-        ],
+        "tags": ["隐私设置"],
         "summary": "查询隐私设置",
         "operationId": "get",
         "responses": {
@@ -1594,9 +1504,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "隐私设置"
-        ],
+        "tags": ["隐私设置"],
         "summary": "修改隐私设置",
         "description": "取值 PRIVATE / TEAM_COACH / TEAM_MEMBER / PUBLIC。",
         "operationId": "update",
@@ -1626,9 +1534,7 @@
     },
     "/api/v1/admin/coach-invite-codes/{codeId}": {
       "patch": {
-        "tags": [
-          "教练邀请码"
-        ],
+        "tags": ["教练邀请码"],
         "summary": "启用或停用邀请码",
         "description": "只能改启用状态，不能改次数与有效期。",
         "operationId": "update",
@@ -1668,9 +1574,7 @@
     },
     "/health": {
       "get": {
-        "tags": [
-          "health-controller"
-        ],
+        "tags": ["health-controller"],
         "operationId": "health",
         "responses": {
           "200": {
@@ -1691,9 +1595,7 @@
     },
     "/api/v1/teams/{teamId}/recommendations/{batchId}": {
       "get": {
-        "tags": [
-          "团队推荐"
-        ],
+        "tags": ["团队推荐"],
         "summary": "指定团队推荐批次",
         "description": "COACH 批次仅 OWNER 可见；MEMBER 批次所有 ACTIVE 成员可见。",
         "operationId": "byId",
@@ -1731,9 +1633,7 @@
     },
     "/api/v1/teams/{teamId}/recommendations/latest": {
       "get": {
-        "tags": [
-          "团队推荐"
-        ],
+        "tags": ["团队推荐"],
         "summary": "最新团队推荐",
         "description": "省略 audience 时 OWNER 默认 COACH、普通成员固定 MEMBER。",
         "operationId": "latest",
@@ -1780,9 +1680,7 @@
     },
     "/api/v1/teams/{teamId}/recommendations/history": {
       "get": {
-        "tags": [
-          "团队推荐"
-        ],
+        "tags": ["团队推荐"],
         "summary": "团队推荐历史",
         "operationId": "history",
         "parameters": [
@@ -1845,9 +1743,7 @@
     },
     "/api/v1/teams/{teamId}/members": {
       "get": {
-        "tags": [
-          "团队成员"
-        ],
+        "tags": ["团队成员"],
         "summary": "团队成员名单",
         "description": "仅 OWNER 可读；dataAccess 表示该成员向教练开放了哪几项。",
         "operationId": "members",
@@ -1903,9 +1799,7 @@
     },
     "/api/v1/teams/{teamId}/members/{memberPublicId}/training/overview": {
       "get": {
-        "tags": [
-          "成员数据共享"
-        ],
+        "tags": ["成员数据共享"],
         "summary": "成员的基础训练概览",
         "description": "受 basicTraining 控制；不返回综合分与六维。",
         "operationId": "trainingOverview",
@@ -1943,9 +1837,7 @@
     },
     "/api/v1/teams/{teamId}/members/{memberPublicId}/submissions": {
       "get": {
-        "tags": [
-          "成员数据共享"
-        ],
+        "tags": ["成员数据共享"],
         "summary": "成员的提交记录",
         "description": "受 detailedSubmissions 控制；跨账号重复的同一提交只返回一次。",
         "operationId": "submissions",
@@ -2033,9 +1925,7 @@
     },
     "/api/v1/teams/{teamId}/members/{memberPublicId}/reports": {
       "get": {
-        "tags": [
-          "成员数据共享"
-        ],
+        "tags": ["成员数据共享"],
         "summary": "成员的分析报告列表",
         "description": "受 analysisReport 控制。",
         "operationId": "reports",
@@ -2091,9 +1981,7 @@
     },
     "/api/v1/teams/{teamId}/members/{memberPublicId}/reports/{reportId}": {
       "get": {
-        "tags": [
-          "成员数据共享"
-        ],
+        "tags": ["成员数据共享"],
         "summary": "成员的分析报告详情",
         "operationId": "report",
         "parameters": [
@@ -2138,9 +2026,7 @@
     },
     "/api/v1/teams/{teamId}/members/{memberPublicId}/profile": {
       "get": {
-        "tags": [
-          "成员数据共享"
-        ],
+        "tags": ["成员数据共享"],
         "summary": "成员的能力画像",
         "description": "受 abilityProfile 控制；不返回汇总统计与标签/难度分布。",
         "operationId": "profile",
@@ -2178,9 +2064,7 @@
     },
     "/api/v1/teams/{teamId}/analysis/latest": {
       "get": {
-        "tags": [
-          "团队画像"
-        ],
+        "tags": ["团队画像"],
         "summary": "团队最新画像",
         "description": "includedMemberCount=0 时前端应显示「当前没有成员允许共享能力画像」。",
         "operationId": "latest",
@@ -2210,9 +2094,7 @@
     },
     "/api/v1/teams/{teamId}/analysis/history": {
       "get": {
-        "tags": [
-          "团队画像"
-        ],
+        "tags": ["团队画像"],
         "summary": "团队画像历史",
         "operationId": "history",
         "parameters": [
@@ -2259,9 +2141,7 @@
     },
     "/api/v1/teams/search": {
       "get": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "搜索团队",
         "description": "按名称模糊匹配，不返回已解散的团队。",
         "operationId": "search",
@@ -2309,9 +2189,7 @@
     },
     "/api/v1/teams/mine": {
       "get": {
-        "tags": [
-          "团队"
-        ],
+        "tags": ["团队"],
         "summary": "我的团队",
         "description": "scope 默认 ALL：我管理的与我加入的并集。",
         "operationId": "mine",
@@ -2359,9 +2237,7 @@
     },
     "/api/v1/sync-jobs/{jobId}": {
       "get": {
-        "tags": [
-          "同步任务"
-        ],
+        "tags": ["同步任务"],
         "summary": "查询同步任务",
         "description": "只能查询自己账号的任务；不属于自己的返回 404。",
         "operationId": "get",
@@ -2391,9 +2267,7 @@
     },
     "/api/v1/oj-accounts/{accountId}": {
       "get": {
-        "tags": [
-          "OJ 账号"
-        ],
+        "tags": ["OJ 账号"],
         "summary": "查询单个 OJ 账号",
         "description": "可以读自己已解绑的历史记录。",
         "operationId": "get",
@@ -2421,9 +2295,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "OJ 账号"
-        ],
+        "tags": ["OJ 账号"],
         "summary": "解绑 OJ 账号",
         "description": "软解绑：记录与历史都保留，绑定状态变为 UNBOUND。重复调用返回成功。",
         "operationId": "unbind",
@@ -2446,9 +2318,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/training/overview": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "训练概览",
         "description": "返回完整的 AnalysisDto；未生成时 data 为 null。",
         "operationId": "trainingOverview",
@@ -2487,9 +2357,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/sync-status": {
       "get": {
-        "tags": [
-          "OJ 账号"
-        ],
+        "tags": ["OJ 账号"],
         "summary": "查询同步状态",
         "description": "包含最近一次任务（含在途的）。",
         "operationId": "syncStatus",
@@ -2519,9 +2387,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/submissions": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "提交列表",
         "description": "from 包含、to 不包含；按 submittedAt 与 submissionId 倒序。",
         "operationId": "submissions",
@@ -2601,9 +2467,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/recommendations/{batchId}": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "查询指定推荐批次",
         "description": "非法或不属于该账号返回 404。",
         "operationId": "recommendationById",
@@ -2641,9 +2505,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/recommendations/latest": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "最新推荐批次",
         "description": "没有生成过时 data 为 null。",
         "operationId": "latestRecommendations",
@@ -2682,9 +2544,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/recommendations/history": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "推荐历史",
         "description": "按 generatedAt 与 batchId 倒序。",
         "operationId": "recommendationHistory",
@@ -2740,9 +2600,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/rating-changes": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "Rating 变化列表",
         "description": "按 occurredAt 与 contestId 倒序。",
         "operationId": "ratingChanges",
@@ -2790,9 +2648,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/problems": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "做题列表",
         "description": "只含该账号有提交的题。SOLVED 为全历史至少一次 AC；难度过滤时 null 不匹配，两个边界都包含。",
         "operationId": "problems",
@@ -2882,9 +2738,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/dashboard": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "账号总览",
         "description": "一次返回绑定、同步状态、最新画像与推荐。",
         "operationId": "dashboard",
@@ -2914,9 +2768,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/analysis/{snapshotId}": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "查询指定画像快照",
         "description": "不存在或不属于该账号返回 404。",
         "operationId": "analysisById",
@@ -2954,9 +2806,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/analysis/latest": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "最新画像",
         "operationId": "latestAnalysis",
         "parameters": [
@@ -2994,9 +2844,7 @@
     },
     "/api/v1/oj-accounts/{accountId}/analysis/history": {
       "get": {
-        "tags": [
-          "账号数据"
-        ],
+        "tags": ["账号数据"],
         "summary": "画像历史",
         "description": "按 dataCutoffAt、createdAt、snapshotId 倒序。",
         "operationId": "analysisHistory",
@@ -3053,9 +2901,7 @@
     },
     "/api/v1/notifications": {
       "get": {
-        "tags": [
-          "通知"
-        ],
+        "tags": ["通知"],
         "summary": "我的通知列表",
         "operationId": "list",
         "parameters": [
@@ -3103,9 +2949,7 @@
     },
     "/api/v1/notifications/unread-count": {
       "get": {
-        "tags": [
-          "通知"
-        ],
+        "tags": ["通知"],
         "summary": "未读通知数",
         "operationId": "unreadCount",
         "responses": {
@@ -3124,9 +2968,7 @@
     },
     "/api/v1/me": {
       "get": {
-        "tags": [
-          "当前用户"
-        ],
+        "tags": ["当前用户"],
         "summary": "查询当前登录用户",
         "operationId": "me",
         "responses": {
@@ -3145,9 +2987,7 @@
     },
     "/api/v1/me/training/overview": {
       "get": {
-        "tags": [
-          "用户画像"
-        ],
+        "tags": ["用户画像"],
         "summary": "我的训练概览",
         "description": "多账号聚合：currentRating 是各账号的最大值，明细见 ratingAccounts。",
         "operationId": "overview",
@@ -3178,9 +3018,7 @@
     },
     "/api/v1/me/team-invitations": {
       "get": {
-        "tags": [
-          "团队邀请"
-        ],
+        "tags": ["团队邀请"],
         "summary": "我的邀请",
         "operationId": "mine",
         "parameters": [
@@ -3227,9 +3065,7 @@
     },
     "/api/v1/me/team-applications": {
       "get": {
-        "tags": [
-          "加入申请"
-        ],
+        "tags": ["加入申请"],
         "summary": "我的加入申请",
         "operationId": "mine",
         "parameters": [
@@ -3276,9 +3112,7 @@
     },
     "/api/v1/me/roles": {
       "get": {
-        "tags": [
-          "当前用户"
-        ],
+        "tags": ["当前用户"],
         "summary": "查询当前用户的角色",
         "description": "primaryRole 按 ADMIN 大于 COACH 大于 STUDENT 的优先级选出。",
         "operationId": "roles",
@@ -3298,9 +3132,7 @@
     },
     "/api/v1/me/reports": {
       "get": {
-        "tags": [
-          "个人报告"
-        ],
+        "tags": ["个人报告"],
         "summary": "我的报告历史",
         "operationId": "history",
         "parameters": [
@@ -3339,9 +3171,7 @@
     },
     "/api/v1/me/reports/{reportId}": {
       "get": {
-        "tags": [
-          "个人报告"
-        ],
+        "tags": ["个人报告"],
         "summary": "我的指定报告",
         "description": "不存在或不属于我时返回 404 REPORT_NOT_FOUND。",
         "operationId": "byId",
@@ -3371,9 +3201,7 @@
     },
     "/api/v1/me/reports/latest": {
       "get": {
-        "tags": [
-          "个人报告"
-        ],
+        "tags": ["个人报告"],
         "summary": "我的最新报告",
         "operationId": "latest",
         "responses": {
@@ -3392,9 +3220,7 @@
     },
     "/api/v1/me/analysis/{snapshotId}": {
       "get": {
-        "tags": [
-          "用户画像"
-        ],
+        "tags": ["用户画像"],
         "summary": "我的指定画像快照",
         "description": "不存在或不属于我时返回 404。",
         "operationId": "byId",
@@ -3424,9 +3250,7 @@
     },
     "/api/v1/me/analysis/latest": {
       "get": {
-        "tags": [
-          "用户画像"
-        ],
+        "tags": ["用户画像"],
         "summary": "我的最新画像",
         "operationId": "latest",
         "parameters": [
@@ -3456,9 +3280,7 @@
     },
     "/api/v1/me/analysis/history": {
       "get": {
-        "tags": [
-          "用户画像"
-        ],
+        "tags": ["用户画像"],
         "summary": "我的画像历史",
         "operationId": "history",
         "parameters": [
@@ -3506,9 +3328,7 @@
     },
     "/api/v1/coach/dashboard": {
       "get": {
-        "tags": [
-          "教练工作台"
-        ],
+        "tags": ["教练工作台"],
         "summary": "教练工作台",
         "description": "需要 COACH 角色。",
         "operationId": "dashboard",
@@ -3528,9 +3348,7 @@
     },
     "/api/v1/ai-jobs/{jobId}": {
       "get": {
-        "tags": [
-          "AI 任务"
-        ],
+        "tags": ["AI 任务"],
         "summary": "查询 AI 任务",
         "description": "他人与不存在的任务统一返回 404 AI_JOB_NOT_FOUND。",
         "operationId": "get",
@@ -3560,9 +3378,7 @@
     },
     "/api/v1/teams/{teamId}/members/{memberPublicId}": {
       "delete": {
-        "tags": [
-          "团队成员"
-        ],
+        "tags": ["团队成员"],
         "summary": "移除成员",
         "description": "被移除的用户会收到站内通知。",
         "operationId": "removeMember",
@@ -3602,9 +3418,7 @@
     },
     "/error": {
       "get": {
-        "tags": [
-          "api-error-controller"
-        ],
+        "tags": ["api-error-controller"],
         "operationId": "handle",
         "responses": {
           "200": {
@@ -3620,9 +3434,7 @@
         }
       },
       "put": {
-        "tags": [
-          "api-error-controller"
-        ],
+        "tags": ["api-error-controller"],
         "operationId": "handle",
         "responses": {
           "200": {
@@ -3638,9 +3450,7 @@
         }
       },
       "post": {
-        "tags": [
-          "api-error-controller"
-        ],
+        "tags": ["api-error-controller"],
         "operationId": "handle",
         "responses": {
           "200": {
@@ -3656,9 +3466,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "api-error-controller"
-        ],
+        "tags": ["api-error-controller"],
         "operationId": "handle",
         "responses": {
           "200": {
@@ -3674,9 +3482,7 @@
         }
       },
       "options": {
-        "tags": [
-          "api-error-controller"
-        ],
+        "tags": ["api-error-controller"],
         "operationId": "handle",
         "responses": {
           "200": {
@@ -3692,9 +3498,7 @@
         }
       },
       "head": {
-        "tags": [
-          "api-error-controller"
-        ],
+        "tags": ["api-error-controller"],
         "operationId": "handle",
         "responses": {
           "200": {
@@ -3710,9 +3514,7 @@
         }
       },
       "patch": {
-        "tags": [
-          "api-error-controller"
-        ],
+        "tags": ["api-error-controller"],
         "operationId": "handle",
         "responses": {
           "200": {
@@ -3852,11 +3654,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "ARCHIVED",
-              "DISSOLVED"
-            ],
+            "enum": ["ACTIVE", "ARCHIVED", "DISSOLVED"],
             "refType": null
           },
           "owner": {
@@ -3880,31 +3678,17 @@
           },
           "myMembershipRole": {
             "type": "string",
-            "enum": [
-              "OWNER",
-              "MEMBER"
-            ],
+            "enum": ["OWNER", "MEMBER"],
             "refType": null
           },
           "myJoinApplicationStatus": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "APPROVED",
-              "REJECTED",
-              "CANCELLED"
-            ],
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
             "refType": null
           },
           "myInvitationStatus": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "ACCEPTED",
-              "REJECTED",
-              "EXPIRED",
-              "CANCELLED"
-            ],
+            "enum": ["PENDING", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"],
             "refType": null
           },
           "creator": {
@@ -3988,21 +3772,12 @@
           },
           "triggerType": {
             "type": "string",
-            "enum": [
-              "MANUAL",
-              "SCHEDULED",
-              "SYSTEM"
-            ],
+            "enum": ["MANUAL", "SCHEDULED", "SYSTEM"],
             "refType": null
           },
           "status": {
             "type": "string",
-            "enum": [
-              "QUEUED",
-              "RUNNING",
-              "SUCCESS",
-              "FAILED"
-            ],
+            "enum": ["QUEUED", "RUNNING", "SUCCESS", "FAILED"],
             "refType": null
           },
           "resultId": {
@@ -4106,13 +3881,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "ACCEPTED",
-              "REJECTED",
-              "EXPIRED",
-              "CANCELLED"
-            ],
+            "enum": ["PENDING", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"],
             "refType": null
           },
           "createdAt": {
@@ -4137,11 +3906,7 @@
           },
           "emailDeliveryStatus": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "SENT",
-              "FAILED"
-            ],
+            "enum": ["PENDING", "SENT", "FAILED"],
             "refType": null
           },
           "emailDeliveryErrorCode": {
@@ -4171,11 +3936,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "ARCHIVED",
-              "DISSOLVED"
-            ],
+            "enum": ["ACTIVE", "ARCHIVED", "DISSOLVED"],
             "refType": null
           },
           "owner": {
@@ -4199,31 +3960,17 @@
           },
           "myMembershipRole": {
             "type": "string",
-            "enum": [
-              "OWNER",
-              "MEMBER"
-            ],
+            "enum": ["OWNER", "MEMBER"],
             "refType": null
           },
           "myJoinApplicationStatus": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "APPROVED",
-              "REJECTED",
-              "CANCELLED"
-            ],
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
             "refType": null
           },
           "myInvitationStatus": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "ACCEPTED",
-              "REJECTED",
-              "EXPIRED",
-              "CANCELLED"
-            ],
+            "enum": ["PENDING", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"],
             "refType": null
           }
         }
@@ -4274,12 +4021,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "PENDING",
-              "APPROVED",
-              "REJECTED",
-              "CANCELLED"
-            ],
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
             "refType": null
           },
           "message": {
@@ -5294,42 +5036,22 @@
         "properties": {
           "basicTraining": {
             "type": "string",
-            "enum": [
-              "PRIVATE",
-              "TEAM_COACH",
-              "TEAM_MEMBER",
-              "PUBLIC"
-            ],
+            "enum": ["PRIVATE", "TEAM_COACH", "TEAM_MEMBER", "PUBLIC"],
             "refType": null
           },
           "abilityProfile": {
             "type": "string",
-            "enum": [
-              "PRIVATE",
-              "TEAM_COACH",
-              "TEAM_MEMBER",
-              "PUBLIC"
-            ],
+            "enum": ["PRIVATE", "TEAM_COACH", "TEAM_MEMBER", "PUBLIC"],
             "refType": null
           },
           "detailedSubmissions": {
             "type": "string",
-            "enum": [
-              "PRIVATE",
-              "TEAM_COACH",
-              "TEAM_MEMBER",
-              "PUBLIC"
-            ],
+            "enum": ["PRIVATE", "TEAM_COACH", "TEAM_MEMBER", "PUBLIC"],
             "refType": null
           },
           "analysisReport": {
             "type": "string",
-            "enum": [
-              "PRIVATE",
-              "TEAM_COACH",
-              "TEAM_MEMBER",
-              "PUBLIC"
-            ],
+            "enum": ["PRIVATE", "TEAM_COACH", "TEAM_MEMBER", "PUBLIC"],
             "refType": null
           },
           "updatedAt": {
@@ -5428,18 +5150,12 @@
           },
           "audience": {
             "type": "string",
-            "enum": [
-              "COACH",
-              "MEMBER"
-            ],
+            "enum": ["COACH", "MEMBER"],
             "refType": null
           },
           "mode": {
             "type": "string",
-            "enum": [
-              "WEAKNESS",
-              "HYBRID"
-            ],
+            "enum": ["WEAKNESS", "HYBRID"],
             "refType": null
           },
           "targetRating": {
@@ -5609,19 +5325,12 @@
           },
           "role": {
             "type": "string",
-            "enum": [
-              "OWNER",
-              "MEMBER"
-            ],
+            "enum": ["OWNER", "MEMBER"],
             "refType": null
           },
           "status": {
             "type": "string",
-            "enum": [
-              "ACTIVE",
-              "LEFT",
-              "REMOVED"
-            ],
+            "enum": ["ACTIVE", "LEFT", "REMOVED"],
             "refType": null
           },
           "joinedAt": {
@@ -6400,10 +6109,7 @@
           },
           "audience": {
             "type": "string",
-            "enum": [
-              "COACH",
-              "MEMBER"
-            ],
+            "enum": ["COACH", "MEMBER"],
             "refType": null
           },
           "memberCount": {

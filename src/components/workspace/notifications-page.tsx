@@ -96,7 +96,7 @@ export function NotificationsPage() {
           {t("v12.readAll")}
         </Button>
         <span>
-          {t("v12.unread")}: {unread.data?.unreadCount ?? "—"}
+          {t("v12.unread")}: {unread.data?.count ?? "—"}
         </span>
       </div>
       <ErrorNotice error={mutation.error} />

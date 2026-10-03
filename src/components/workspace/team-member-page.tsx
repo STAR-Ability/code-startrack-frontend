@@ -354,7 +354,7 @@ function MemberData({
       )}{" "}
       {view === "detailedSubmissions" && (
         <Panel title="v12.detailedSubmissions">
-          {submissions.data?.data.map((item) => (
+          {submissions.data?.data.map(({ submission: item, sourceAccount }) => (
             <article
               key={item.submissionId}
               className="flex flex-col gap-2 border-b py-3"
@@ -363,6 +363,9 @@ function MemberData({
               <p>
                 {item.verdict === "PENDING" ? t("v.pending") : item.verdict} ·{" "}
                 {item.programmingLanguage ?? "—"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {sourceAccount.username}
               </p>
               <time dateTime={item.submittedAt}>{item.submittedAt}</time>
             </article>

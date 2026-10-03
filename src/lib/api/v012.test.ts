@@ -7,7 +7,7 @@ import {
   v012Teams,
   v012Job,
 } from "../demo/v012-fixtures";
-import { fixtureUuid } from "../demo/fixtures";
+import { fixtureUuid, demoSubmissions } from "../demo/fixtures";
 import {
   personalReportSchema,
   sharedProfileSchema,
@@ -31,6 +31,43 @@ function response(data: unknown) {
   return fetch;
 }
 describe("V0.12 public contract", () => {
+  it("reads deployed count and wrapped member submissions", async () => {
+    response({ count: 3 });
+    expect(await v012.unreadCount()).toEqual({ count: 3 });
+    response({ unreadCount: 3 });
+    await expect(v012.unreadCount()).rejects.toMatchObject({
+      code: "INVALID_RESPONSE",
+    });
+    const submission = demoSubmissions()[0];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            data: [
+              {
+                sourceAccount: {
+                  accountId: submission.accountId,
+                  platform: "codeforces",
+                  username: "TrainingPeer",
+                },
+                submission,
+              },
+            ],
+            meta: { page: 1, pageSize: 20, total: 1, hasNext: false },
+            requestId: fixtureUuid(9999),
+          }),
+        ),
+      ),
+    );
+    const page = await v012.memberSubmissions(
+      v012Teams[0].teamId,
+      fixtureUuid(1101),
+      { page: 1 },
+    );
+    expect(page.data[0].submission).toEqual(submission);
+    expect(page.data[0].sourceAccount.username).toBe("TrainingPeer");
+  });
   it("accepts complete user profiles, frozen reports and split minimal shared DTOs", () => {
     const profile = v012Analysis();
     expect(userAnalysisSchema.parse(profile)).toEqual(profile);

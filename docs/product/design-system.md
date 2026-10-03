@@ -1,3 +1,58 @@
+# Active visual system — October 2026
+
+The current V0.11 UI preserves Base UI / Nova and the static Next.js architecture.
+This section supersedes historical palette and page assumptions below.
+
+## Foundations
+
+White cards sit on a cool neutral canvas. Ink primary actions, restrained borders,
+soft elevation and generous section spacing establish hierarchy. Colors communicate
+meaning, never platform identity. All color values live in src/app/globals.css.
+
+| Token | Purpose |
+| --- | --- |
+| background / card / canvas / muted | White page, white surface, neutral canvas, inset surface |
+| foreground / muted-foreground | Primary text and readable supporting text |
+| primary / primary-hover | Ink action and hover state |
+| info / info-soft | Core data, links and informational badges |
+| success / success-soft | Accepted, solved and successful completion |
+| warning / warning-soft | Stale, pending and attention states |
+| destructive / danger-soft | Errors and failed operations |
+| insight / insight-soft | Ability dimensions and explanatory accents |
+| support / support-soft | Secondary data distinctions |
+| shadow-surface / shadow-raised | Quiet resting elevation and purposeful hover |
+
+Chart series use these same computed CSS tokens. A chart has at most four primary
+colors; most use blue plus gray, with green reserved for solved/accepted values.
+Always retain labels, icons or explicit status text so color is not the only cue.
+Dark token counterparts remain supported; the product defaults to light.
+
+## Composition and motion
+
+Keep the existing compact workspace and accessible Base UI primitives. Public
+product pages may use larger type, editorial layouts and faint orbit/grid details.
+Decorations are noninteractive and hidden from assistive technology. Cards preserve
+white content surfaces; insets and chart regions may use the canvas tone.
+Hover uses small elevation/translation changes. Entrance animations run once.
+Respect reduced-motion, preserve visible content without JavaScript and provide
+keyboard equivalents for meaningful interactions. No new animation dependency.
+
+## Audit findings and decisions
+
+- src/components/layout/app-header.tsx:32 — public links currently target anchors
+  and private workspaces; replace with distinct public routes and mobile navigation.
+- src/components/workspace/chart.tsx:27 — chart palette differs from global tokens;
+  centralize semantic palettes and resolve CSS values for ECharts.
+- src/app/globals.css — preserve the orbit motif, reduce blue surface tint, bound
+  decorative authentication/practice loops, and define shared surface elevation.
+- src/components/ui/badge.tsx — add semantic variants; preserve text/status codes.
+- src/components/workspace/recommendations-page.tsx — extract existing display card
+  for reuse and documentation without moving queries or mutation logic.
+- Existing forms, Session handling, query keys, validation, Mock transport and API
+  contracts are retained. Existing loading/empty/error UI remains authoritative.
+
+---
+
 # codeStartrack V0.1 Design Direction
 
 ## Approved UI redesign — 2026-09-30

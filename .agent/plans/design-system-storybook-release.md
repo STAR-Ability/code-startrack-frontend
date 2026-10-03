@@ -82,7 +82,9 @@ Do not reset history, remove volumes, or recreate the backend.
 - [x] Audit: structure, tokens, landing/workspace, data components, motion, CI and Docker.
 - [x] Baseline: lint, formatting, typecheck, 73 unit tests and static build passed.
 - [x] Stage 1: semantic tokens and elevation; pnpm check passed; commit 31f0ec4.
-- [ ] Stages 2–9 implemented and validated.
+- [x] Stage 2: surfaces and bounded motion; pnpm check and 1440/390/320px checks passed; commit c83f0c1.
+- [x] Stage 3: four public pages and navigation. pnpm check passed. Full E2E: 113 passed, one existing skip, one new 200% zoom overflow found. Fixed grid min-width; rebuilt and all eight product/accessibility tests passed. API/Mock source unchanged.
+- [ ] Stages 4–9 implemented and validated.
 - [ ] Release and deployment documentation verified.
 
 ## Decisions / Deviations

@@ -2,15 +2,28 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { ArrowUpRightIcon } from "lucide-react";
+import { ArrowUpRightIcon, MenuIcon } from "lucide-react";
 import { useLocale } from "./locale-provider";
 import { LocaleSwitch } from "./locale-switch";
 import { Brand, SkipLink } from "./brand";
 import { LoginDialog } from "./login-dialog";
+import { usePathname } from "next/navigation";
+import { productLinks } from "@/components/showcase/product-index";
 import { buttonVariants } from "@/components/ui/button";
 
 export function AppHeader() {
   const { t } = useLocale();
+  const pathname = usePathname();
+  const links = productLinks.map(([href, key]) => (
+    <Link
+      key={href}
+      href={href}
+      className="nav-link"
+      aria-current={pathname === href ? "page" : undefined}
+    >
+      {t(`showcase.${key}.label`)}
+    </Link>
+  ));
   const header = useRef<HTMLElement>(null);
   useEffect(() => {
     const sync = () =>
@@ -29,18 +42,7 @@ export function AppHeader() {
             aria-label={t("nav.features")}
             className="hidden items-center gap-6 text-sm text-muted-foreground xl:flex"
           >
-            <a className="nav-link" href="#features">
-              {t("nav.features")}
-            </a>
-            <Link className="nav-link" href="/profile" prefetch={false}>
-              {t("profile.title")}
-            </Link>
-            <Link className="nav-link" href="/practice" prefetch={false}>
-              {t("recommendation.title")}
-            </Link>
-            <a className="nav-link" href="#about">
-              {t("nav.about")}
-            </a>
+            {links}
           </nav>
           <div className="flex flex-wrap items-center gap-2">
             <LocaleSwitch />
@@ -54,6 +56,21 @@ export function AppHeader() {
               <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />
             </Link>
           </div>
+          <details
+            className="w-full rounded-lg border bg-card px-3 py-2 xl:hidden"
+            key={pathname}
+          >
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm">
+              <span>{t("showcase.menu")}</span>
+              <MenuIcon className="size-4" aria-hidden="true" />
+            </summary>
+            <nav
+              aria-label={t("showcase.menu")}
+              className="grid grid-cols-2 gap-x-4 gap-y-1 pt-3 text-sm text-muted-foreground"
+            >
+              {links}
+            </nav>
+          </details>
         </div>
       </header>
     </>

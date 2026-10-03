@@ -9,7 +9,6 @@ import {
   FingerprintIcon,
   RouteIcon,
   CodeXmlIcon,
-  ActivityIcon,
   OrbitIcon,
   PauseIcon,
   PlayIcon,
@@ -19,16 +18,11 @@ import { useLocale } from "@/components/layout/locale-provider";
 import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ProductPreview } from "./product-preview";
 import { Journey } from "./journey";
+import { ProductIndex } from "@/components/showcase/product-index";
 import { cn } from "@/lib/utils";
 
 export function LandingPage() {
@@ -188,106 +182,7 @@ export function LandingPage() {
             <p className="section-description mt-4">
               {t("landing.featuresDescription")}
             </p>
-            <div className="bento-grid mt-12">
-              {(
-                [
-                  ["profile", FingerprintIcon],
-                  ["recommend", RouteIcon],
-                  ["sources", LayersIcon],
-                  ["activity", ActivityIcon],
-                  ["journey", OrbitIcon],
-                ] as const
-              ).map(([key, Icon]) => (
-                <Card
-                  key={key}
-                  interaction="lift"
-                  className={cn(
-                    "bento-card [--card-spacing:--spacing(6)]",
-                    `bento-${key}`,
-                  )}
-                >
-                  <CardHeader>
-                    <Icon
-                      className="mb-6 size-6 text-muted-foreground"
-                      aria-hidden="true"
-                    />
-                    <CardTitle>
-                      <h3>{t(`feature.${key}`)}</h3>
-                    </CardTitle>
-                    <CardDescription>{t(`feature.${key}Note`)}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="mt-auto">
-                    {key === "profile" && (
-                      <div className="profile-illustration" aria-hidden="true">
-                        <div className="profile-orbit">
-                          <FingerprintIcon className="size-10" />
-                        </div>
-                        <span className="profile-source">Codeforces</span>
-                        <div className="illustration-line" />
-                        <span className="profile-one">01</span>
-                      </div>
-                    )}
-                    {key === "recommend" && (
-                      <Link
-                        href="/practice"
-                        prefetch={false}
-                        className={buttonVariants({
-                          variant: "link",
-                          wrap: true,
-                        })}
-                      >
-                        <span className="min-w-0">{t("nav.practice")}</span>
-                        <ArrowUpRightIcon
-                          data-icon="inline-end"
-                          aria-hidden="true"
-                        />
-                      </Link>
-                    )}
-                    {key === "sources" && (
-                      <div className="flex flex-wrap gap-2">
-                        <Badge variant="outline">Codeforces</Badge>
-                        <Badge variant="secondary" wrap>
-                          {t("landing.futureSources")}
-                        </Badge>
-                      </div>
-                    )}
-                    {key === "activity" && (
-                      <div className="flex flex-wrap gap-2" aria-hidden="true">
-                        {[7, 30].map((day) => (
-                          <span
-                            className="flex flex-1 flex-col rounded-lg border bg-muted p-4 font-mono text-3xl"
-                            key={day}
-                          >
-                            {day}
-                            <span className="mt-2 text-xs text-muted-foreground">
-                              {t("landing.days")}
-                            </span>
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {key === "journey" && (
-                      <svg
-                        className="bento-track"
-                        viewBox="0 0 500 100"
-                        fill="none"
-                        aria-hidden="true"
-                      >
-                        <path d="M10 80 C120 80 110 20 220 50 S330 65 490 10" />
-                        {[
-                          [10, 80],
-                          [160, 45],
-                          [300, 55],
-                          [490, 10],
-                        ].map(([x, y]) => (
-                          <circle key={x} cx={x} cy={y} r="5" />
-                        ))}
-                      </svg>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ProductIndex />
           </section>
         </div>
         <Journey />
@@ -316,7 +211,7 @@ export function LandingPage() {
               <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />
             </Link>
             <Link
-              href="/profile"
+              href="/product/profile"
               prefetch={false}
               className={buttonVariants({
                 variant: "outline",

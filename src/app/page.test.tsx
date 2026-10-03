@@ -27,7 +27,7 @@ test("separates public local Demo from authenticated learner routes", () => {
   );
   expect(screen.getByRole("link", { name: "查看个人画像" })).toHaveAttribute(
     "href",
-    "/profile",
+    "/product/profile",
   );
   expect(
     screen.getAllByText("交互示意 · 非真实学习者数据").length,

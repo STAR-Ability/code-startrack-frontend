@@ -1,7 +1,9 @@
+import { showcaseZh, showcaseEn } from "./showcase-messages";
 import { workspaceZh, workspaceEn } from "./workspace-messages";
 
 export const zhCN = {
   ...workspaceZh,
+  ...showcaseZh,
   "motion.pause": "暂停滚动",
   "motion.play": "继续滚动",
   "landing.days": "天",
@@ -164,6 +166,7 @@ export type CopyKey = keyof typeof zhCN;
 
 export const en = {
   ...workspaceEn,
+  ...showcaseEn,
   "motion.pause": "Pause scrolling",
   "motion.play": "Resume scrolling",
   "landing.days": "DAYS",

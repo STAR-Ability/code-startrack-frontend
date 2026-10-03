@@ -46,6 +46,12 @@ export function SecurityPage() {
   return (
     <>
       <IdentityCard />
+      <Link href="/privacy" className="underline">
+        {t("v12.privacy")}
+      </Link>
+      <Link href="/security/coach" className="underline">
+        {t("v12.redeem")}
+      </Link>
       <Card size="sm" interaction="none">
         <CardHeader>
           <CardTitle>

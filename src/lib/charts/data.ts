@@ -9,7 +9,9 @@ function dateKey(instant: string, timezone: string) {
   }).format(new Date(instant));
 }
 // Only chart presentation fills gaps; the DTO and persisted counts remain untouched.
-export function activitySeries(analysis: AnalysisDto) {
+export function activitySeries(
+  analysis: Pick<AnalysisDto, "activityStats" | "period" | "timezone">,
+) {
   const stats = analysis.activityStats;
   if (!stats.length) return [];
   const start = analysis.period.start

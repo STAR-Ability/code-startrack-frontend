@@ -21,9 +21,10 @@ test("anonymous workspace offers real captcha login and returns to the workspace
     .fill("abcd");
   await page.getByRole("button", { name: "登录", exact: true }).click();
   await expect(page).toHaveURL("/dashboard");
-  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveValue(
-    "9007199254740993",
-  );
+  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
+  await expect(
+    page.getByRole("main").getByText("DemoAlpha", { exact: true }),
+  ).toBeVisible();
   const login = (await upstreamCalls()).find(
     (call) => call.path === "/api/v1/auth/login",
   );

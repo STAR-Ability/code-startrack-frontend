@@ -22,6 +22,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/toast";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Skeleton } from "@/components/ui/skeleton";
+import { v012Zh } from "@/lib/i18n/v012-messages";
+import type { CopyKey } from "@/lib/i18n/messages";
 import type { PageMeta } from "@/lib/api/schemas";
 import { dataState, useMockMode, type DataQuery } from "@/lib/api/data-state";
 
@@ -66,6 +68,10 @@ export function useSlowRequest(pending: boolean) {
 
 function errorMessage(error: unknown) {
   const apiError = error instanceof ApiError ? error : null;
+  const v12Code =
+    apiError?.code === "PRIVACY_DENIED" ? "PRIVATE_DENIED" : apiError?.code;
+  const key = `v12.${v12Code}`;
+  if (key in v012Zh) return key as CopyKey;
   if (apiError?.code === "PROFILE_NOT_READY") return "v.profileNotReady";
   if (
     ["OJ_ACCOUNT_OWNERSHIP_CONFLICT", "OJ_ACCOUNT_ALREADY_BOUND"].includes(
@@ -103,7 +109,15 @@ export function ErrorNotice({
   const id = useId();
   const apiError = error instanceof ApiError ? error : null;
   const remaining = useCountdown(apiError?.retryAt ?? 0);
-  const message = t(dataError ? "ui.connectionHint" : errorMessage(error));
+  const message = t(
+    dataError &&
+      !(
+        error instanceof ApiError &&
+        (`v12.${error.code}` in v012Zh || error.code === "PRIVACY_DENIED")
+      )
+      ? "ui.connectionHint"
+      : errorMessage(error),
+  );
   const title = t("ui.errorTitle");
   const active = !!error && !pending && apiError?.status !== 401;
   const signature = apiError?.code ?? (error ? "UNKNOWN" : "");

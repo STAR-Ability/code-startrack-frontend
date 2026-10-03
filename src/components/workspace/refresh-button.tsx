@@ -40,6 +40,7 @@ export function RefreshButton({
       return (
         key[2] === "accounts" ||
         key[2] === "roles" ||
+        key[2] !== "account" ||
         (key[2] === "account" &&
           (key[3] === accountId || key[4] === "portfolio-overview"))
       );

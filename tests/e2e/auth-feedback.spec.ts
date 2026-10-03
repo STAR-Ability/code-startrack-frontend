@@ -119,7 +119,7 @@ test("a slow account query is dismissed on switch and never becomes another acco
       await route.continue();
     },
   );
-  await page.goto("/profile");
+  await page.goto("/accounts/profile");
   await expect(page.getByLabel("当前 Codeforces 账号")).toHaveValue(
     "9007199254740993",
   );

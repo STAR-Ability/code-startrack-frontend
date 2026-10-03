@@ -11,6 +11,9 @@ import {
   HistoryIcon,
   ShieldCheckIcon,
   LanguagesIcon,
+  BellIcon,
+  LockKeyholeIcon,
+  GraduationCapIcon,
 } from "lucide-react";
 import { useLocale } from "./locale-provider";
 import { Brand, SkipLink } from "./brand";
@@ -29,6 +32,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import type { CopyKey } from "@/lib/i18n/messages";
+import { useWorkspaceSession } from "@/components/workspace/account-provider";
 import { WorkspaceSessionProvider } from "@/components/workspace/account-provider";
 import { AccountSwitcher } from "@/components/workspace/workspace-page";
 import { MockNotice } from "@/components/workspace/mock-notice";
@@ -64,15 +69,25 @@ function Navigation({ mobile = false }: { mobile?: boolean }) {
       cancelAnimationFrame(frameId);
     };
   }, [pathname, mobile, locale]);
-  const links = [
+  const { data: user } = useWorkspaceSession();
+  const links: Array<[string, CopyKey, typeof HomeIcon]> = [
     ["/dashboard", "v.dashboard", HomeIcon],
     ["/data", "v.data", ChartNoAxesCombinedIcon],
     ["/analysis", "v.analysis", HistoryIcon],
     ["/profile", "v.profile", RadarIcon],
     ["/practice", "nav.practice", CodeXmlIcon],
     ["/accounts", "v.accounts", UsersRoundIcon],
+    ["/teams", "v12.teams", UsersRoundIcon],
+    ["/privacy", "v12.privacy", LockKeyholeIcon],
+    ["/notifications", "v12.notifications", BellIcon],
     ["/security", "v.security", ShieldCheckIcon],
-  ] as const;
+    ...(user?.roles.includes("COACH")
+      ? ([
+          ["/coach", "v12.coach", GraduationCapIcon],
+          ["/coach/teams", "v12.manage", UsersRoundIcon],
+        ] as Array<[string, CopyKey, typeof HomeIcon]>)
+      : []),
+  ];
   return (
     <nav
       ref={navigation}
@@ -85,7 +100,9 @@ function Navigation({ mobile = false }: { mobile?: boolean }) {
         )}
       >
         {links.map(([href, label, Icon]) => {
-          const active = pathname === href || pathname.startsWith(`${href}/`);
+          const active =
+            pathname === href ||
+            (href !== "/coach" && pathname.startsWith(`${href}/`));
           const link = (
             <Link
               href={href}

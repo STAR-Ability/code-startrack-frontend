@@ -1,6 +1,11 @@
 // Server-only scenarios. Never select synthetic data from a failed live request.
 export const mockScenarios = {
   success: {},
+  coach: { coach: true },
+  "no-sharing": { noSharing: true },
+  "no-report": { noReport: true },
+  "ai-failed": { aiFailed: true },
+  "mixed-privacy": { mixedPrivacy: true },
   visitor: { loggedOut: true },
   "no-accounts": { noAccounts: true },
   empty: { emptyRecords: true, zero: true, emptyCandidates: true },

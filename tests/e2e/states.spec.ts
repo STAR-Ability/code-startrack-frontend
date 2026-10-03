@@ -4,7 +4,7 @@ test("null analysis, zero evidence and stale results are distinct", async ({
   page,
 }) => {
   await configureUpstream({ noAnalysis: true });
-  await page.goto("/profile");
+  await page.goto("/accounts/profile");
   await expect(page.getByText("尚未生成分析")).toBeVisible();
   await configureUpstream({ zero: true, stale: true });
   await page.reload();
@@ -16,7 +16,7 @@ test("null analysis, zero evidence and stale results are distinct", async ({
 });
 test("account-mismatched response is discarded", async ({ page }) => {
   await configureUpstream({ mismatch: true });
-  await page.goto("/profile");
+  await page.goto("/accounts/profile");
   await expect(page.getByText("内容暂未加载", { exact: true })).toBeVisible();
   await expect(page.getByText("ACCOUNT_MISMATCH")).not.toBeVisible();
   await page.getByText("查看问题详情", { exact: true }).click();
@@ -30,7 +30,7 @@ test("sync task polls to PARTIAL, preserves data and offers analysis rebuild", a
   page,
 }) => {
   await configureUpstream({ partial: true, nextAction: "SYNC" });
-  await page.goto("/dashboard");
+  await page.goto("/accounts/profile");
   await page
     .getByRole("button", { name: "同步数据", exact: true })
     .first()
@@ -56,7 +56,7 @@ test("sync task polls to PARTIAL, preserves data and offers analysis rebuild", a
 });
 test("429 cooldown prevents repeated sync writes", async ({ page }) => {
   await configureUpstream({ rateLimit: true });
-  await page.goto("/profile");
+  await page.goto("/accounts/profile");
   const sync = page.getByRole("button", { name: "同步数据", exact: true });
   await sync.click();
   await expect(page.locator('[data-slot="alert"]')).toContainText(

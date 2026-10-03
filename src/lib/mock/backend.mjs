@@ -16,10 +16,12 @@ import {
 import { uuidSchema, windows, modes } from "../api/schemas.ts";
 import { scenarioConfig } from "./scenarios.mjs";
 import { mockCaptchaImage } from "./captcha.mjs";
+import { createV012Mock } from "./v012-backend.mjs";
 import { validateMockRequest } from "./requests.mjs";
 
 // Isolated, in-memory single-learner service. No provider, DB or network calls.
 export function createMockBackend({ scenario = "success" } = {}) {
+  const collaboration = createV012Mock();
   let config,
     calls,
     bound,
@@ -35,6 +37,12 @@ export function createMockBackend({ scenario = "success" } = {}) {
     config = { ...scenarioConfig(scenario), ...options };
     calls = [];
     user = structuredClone(demoUser);
+    if (config.coach) {
+      user.roles = ["STUDENT", "COACH"];
+      user.primaryRole = "COACH";
+    }
+    if (config.publicId) user.publicId = config.publicId;
+    collaboration.reset(config);
     bound = config.noAccounts
       ? []
       : structuredClone([...demoAccounts, demoUnbound]);
@@ -234,7 +242,10 @@ export function createMockBackend({ scenario = "success" } = {}) {
       error("INTERNAL_ERROR", 503);
       return;
     }
-    if (config.errorPath === path) {
+    if (
+      config.errorPath === path ||
+      (config.errorResource && path.endsWith(config.errorResource))
+    ) {
       error(config.errorCode ?? "INTERNAL_ERROR", config.errorStatus ?? 503);
       return;
     }
@@ -351,6 +362,22 @@ export function createMockBackend({ scenario = "success" } = {}) {
       error("FORBIDDEN", 403);
       return;
     }
+    if (
+      collaboration.handle({
+        path,
+        method: request.method,
+        body,
+        query,
+        config,
+        user,
+        bound,
+        data,
+        paginated,
+        error,
+        noContent,
+      })
+    )
+      return;
     if (path === "/oj-accounts") {
       if (request.method === "POST") {
         const existing = bound.find(

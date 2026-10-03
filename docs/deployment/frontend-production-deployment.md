@@ -1,11 +1,12 @@
 # codeStartrack frontend production deployment
 
-This guide records the `startrack-prod` setup inspected on 2026-10-03 and the
-V0.12.0 image publication. This release published an image and documentation;
-it did **not** replace the production frontend. The commands under upgrade and
-rollback are operator instructions, not operations performed during this release.
+This guide records the existing `startrack-prod` architecture and historical
+V0.12.0 publication. V0.12.1 subsequently replaced the frontend using this process;
+see the [V0.12.1 production receipt](v0.12.1-production-release.md) for the current
+image, deployment evidence, retained rollback and pending public acceptance.
+The V0.12.0 evidence below remains a historical publication record.
 
-## Architecture and current host
+## Architecture and host inspected before V0.12.1
 
 ```text
 Browser: https://acm.qlluck.com
@@ -51,7 +52,7 @@ presence does not establish usable analysis/recommendations; their unavailabilit
 is outside this frontend release gate. Keep null, empty, error and partial-sync
 states. Do not invent responses or reconfigure that service.
 
-## Published release and evidence
+## Historical V0.12.0 publication and evidence
 
 | Item                                  | Value                                                                                                                  |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
@@ -68,8 +69,8 @@ states. Do not invent responses or reconfigure that service.
 | Previous compatible version           | `v0.11.0`                                                                                                              |
 | Previous immutable rollback reference | `ghcr.io/star-ability/code-startrack-frontend@sha256:036c3fb29a4eec9df67cafb65acac471a1c463fb935f08841045b7fb731517f0` |
 
-The old version/digest was checked against the registry and remains the current
-production frontend. The release workflow refuses to overwrite an existing
+The old version/digest was checked against the registry and was the production
+frontend at that inspection. The release workflow refuses to overwrite an existing
 version tag. A later documentation-only commit records this receipt; the image's
 OCI revision always identifies the build commit above.
 
@@ -345,7 +346,7 @@ release. Do not roll back the backend, database or volumes as a side effect.
 - **Public HTTP 468:** complete normal human verification and check loopback/API
   independently; leave SafeLine, OpenResty, 1Panel and SSH configuration unchanged.
 
-All actual server work for this release was inspection/GET only. Upgrade and
+All server work for the historical V0.12.0 publication was inspection/GET only. Upgrade and
 rollback commands target only the frontend. Never delete databases, Docker volumes,
 old releases/images, or unrelated containers; never use project-wide backend
 cleanup. Real login/email/account mutations remain separately authorized tests.

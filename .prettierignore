@@ -11,3 +11,5 @@ skills-lock.json
 .agents/
 .codex/
 .tools/
+
+/storybook-static/

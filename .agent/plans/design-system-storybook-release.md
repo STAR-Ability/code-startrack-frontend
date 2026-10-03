@@ -86,7 +86,8 @@ Do not reset history, remove volumes, or recreate the backend.
 - [x] Stage 3: four public pages and navigation. pnpm check passed. Full E2E: 113 passed, one existing skip, one new 200% zoom overflow found. Fixed grid min-width; rebuilt and all eight product/accessibility tests passed. API/Mock source unchanged.
 - [x] Stage 4: semantic chart palettes, status maps and metric accents; pnpm check and desktop/320px chart inspection passed.
 - [x] Stage 5: extracted FormInput/recommendation presentation, localized primitive labels and removed orphan styles; pnpm check passed; focused E2E 29 passed, one existing mobile-only skip.
-- [ ] Stages 6–9 implemented and validated.
+- [x] Stage 6: official Next.js Vite Storybook, isolated providers, local Geist fonts and semantic toolbar; pnpm check, static build and browser startup/theme/locale checks passed.
+- [ ] Stages 7–9 implemented and validated.
 - [ ] Release and deployment documentation verified.
 
 ## Decisions / Deviations

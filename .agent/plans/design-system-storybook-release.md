@@ -33,11 +33,11 @@ deployment documentation; no server replacement was requested in this task.
 
 ## Acceptance Criteria
 
-- [ ] Public product links reach four distinct pages, with honest capability boundaries.
-- [ ] Tokens drive UI/chart colors; motion respects reduced-motion and keyboard use.
-- [ ] Storybook documents primitives and business states using real components.
-- [ ] Mock preview, all quality gates, E2E and Docker acceptance pass.
-- [ ] Verified dev is merged into main, immutable image published, guide records evidence.
+- [x] Public product links reach four distinct pages, with honest capability boundaries.
+- [x] Tokens drive UI/chart colors; motion respects reduced-motion and keyboard use.
+- [x] Storybook documents primitives and business states using real components.
+- [x] Mock preview, all quality gates, E2E and Docker acceptance pass.
+- [x] Verified dev is merged into main, immutable image published, guide records evidence.
 
 ## Implementation Stages
 
@@ -101,7 +101,17 @@ Do not reset history, remove volumes, or recreate the backend.
       loading/empty/error/disabled states. Production Docker build and exact-image
       acceptance passed. API client/schemas/endpoints, Mock protocol and nginx proxy
       have no diff from the pre-design baseline. Stage 8 commit: c92debd.
-- [ ] Release and deployment documentation verified.
+- [x] Stage 10: final dev 82ee707 and its remote CI passed; clean worktree.
+      Merged without conflicts to main 545d366; identical dev/main code tree.
+      Re-ran `pnpm check`, Storybook build and 17 critical E2E tests before main push.
+      Main CI passed both jobs. Built/tested a local main image with OCI revision.
+      Publication run 37119658178 independently passed 73 unit / 114 E2E (one
+      existing skip) / 180 Storybook tests and exact-image Docker acceptance.
+- [x] Stage 11: added `docs/deployment/frontend-production-deployment.md` from
+      read-only current host inspection; includes actual Compose paths/network/ports,
+      GHCR auth, immutable receipt, executable frontend-only lifecycle/upgrade/rollback,
+      health/API/page checks, troubleshooting and data-safety boundaries. No production
+      frontend replacement, backend change or live business mutation was performed.
 
 ## Decisions / Deviations
 
@@ -133,3 +143,13 @@ Do not reset history, remove volumes, or recreate the backend.
   Host inspection confirmed standalone frontend Compose, loopback port 3000,
   host-gateway backend on 8081 and OpenResty forwarding to 127.0.0.1:3000.
   Public edge GET still returns the pre-existing SafeLine HTTP 468.
+
+- Published `ghcr.io/star-ability/code-startrack-frontend:v0.12.0`,
+  `sha-545d3669ae012d6f56ff099745c975bb72eac703` and `latest`; all three registry manifests resolve to
+  `sha256:83b425ed01a9737b3f8c5c393b5bfeb91ba071f3f71fd3cb82174152ddc55491`. The registry image config ID matches the exact-image acceptance
+  output. The old `v0.11.0` registry digest is unchanged. Source image commit is
+  main `545d3669ae012d6f56ff099745c975bb72eac703`; subsequent docs-only integration is excluded from Docker inputs.
+- Final dev/main source review found no release-blocking issue. The inherited
+  mobile-only test skip, SafeLine HTTP 468 automation limit, unavailable analysis
+  and existing Actions Node 20/runner migration notices remain non-blocking.
+  All 33 unrelated original-worktree changes remain byte-for-byte preserved.

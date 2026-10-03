@@ -108,3 +108,10 @@ pnpm test:container
 E2E uses the production export, a local HTTP proxy on `127.0.0.1:3100` and a synthetic V0.11 backend on `127.0.0.1:3210`. It never uses `.env.local` to choose an upstream. Desktop/mobile tests cover locale, keyboard and narrow layouts, authentication, bigint IDs, delayed account switching, unbinding, readonly history, analysis windows, nullable data, recommendation idempotency and task states. They also cover partial portfolio failures, sidebar persistence and independent password/email verification. Browser network guards reject external requests and old API paths. Container checks require a running Docker daemon.
 
 The [execution plan](.agent/plans/v0.11-frontend.md) records migration decisions, validation and remaining integration risks. Real backend compatibility, mail delivery, provider sync and Algorithm operation must still be verified against the deployed V0.11 services.
+
+## Production deployment
+
+The verified V0.12.0 image is published to GHCR; this release does not replace the
+production frontend automatically. See the [production deployment guide](docs/deployment/frontend-production-deployment.md)
+for the inspected server topology, immutable image receipt, frontend-only upgrade
+commands and V0.11.0 rollback.

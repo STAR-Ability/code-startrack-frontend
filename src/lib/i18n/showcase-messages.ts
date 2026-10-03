@@ -6,7 +6,7 @@ export const showcaseZh = {
   "showcase.note": "本页为产品展示，示例数据不代表真实账号或分析结果。",
   "showcase.available": "当前支持",
   "showcase.planned": "未来方向",
-  "showcase.service": "分析与推荐依赖算法服务；当前生产环境尚未部署该服务。",
+  "showcase.service": "当前分析与推荐能力尚不可用；这里仅展示训练思路。",
   "showcase.features.label": "产品能力",
   "showcase.features.title": "从一次提交，走向下一次进步。",
   "showcase.features.description":
@@ -86,7 +86,7 @@ export const showcaseZh = {
   "showcase.about.nowNote":
     "界面能做什么，服务已支持什么，未来想做什么，分别说明。",
   "showcase.about.accounts": "多账号管理、训练数据与记录浏览",
-  "showcase.about.analysis": "画像与推荐界面 · 等待算法服务部署",
+  "showcase.about.analysis": "画像与推荐界面 · 分析能力尚不可用",
   "showcase.about.agent": "渐进式 Agent 辅助与更多数据源",
   "showcase.about.open": "从一次练习开始。",
 } as const;
@@ -101,7 +101,7 @@ export const showcaseEn = {
   "showcase.available": "Available today",
   "showcase.planned": "Future direction",
   "showcase.service":
-    "Analysis and recommendations require the algorithm service, which is not yet deployed in production.",
+    "Analysis and recommendations are currently unavailable. This page illustrates the training approach.",
   "showcase.features.label": "Capabilities",
   "showcase.features.title": "From one submission to your next step.",
   "showcase.features.description":
@@ -182,7 +182,7 @@ export const showcaseEn = {
     "Distinguish the interface, deployed services and future intentions.",
   "showcase.about.accounts": "Multiple accounts, practice data and history",
   "showcase.about.analysis":
-    "Profile and recommendation UI · algorithm deployment pending",
+    "Profile and recommendation UI · analysis currently unavailable",
   "showcase.about.agent": "Progressive Agent assistance and more data sources",
   "showcase.about.open": "Start with one practice session.",
 } satisfies Record<keyof typeof showcaseZh, string>;

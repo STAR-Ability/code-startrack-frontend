@@ -93,7 +93,14 @@ Do not reset history, remove volumes, or recreate the backend.
       frozen install, lint, formatting, strict typecheck, 73 unit tests, production
       build, 114 E2E passes (one existing mobile skip), 180 Storybook checks and
       supplied-image Docker acceptance passed.
-- [ ] Stage 9: final validation and fixes.
+- [x] Stage 9: `pnpm check` passed (73 unit tests), complete E2E passed
+      (114, one existing mobile skip), Storybook start/build and 180 checks passed.
+      `dev:mock` passed 50 public route/locale/viewport combinations at
+      1440/1280/768/390/320px; inspected desktop/mobile screenshots, keyboard skip
+      link/focus, chart rendering and reduced motion. Existing suites cover hover,
+      loading/empty/error/disabled states. Production Docker build and exact-image
+      acceptance passed. API client/schemas/endpoints, Mock protocol and nginx proxy
+      have no diff from the pre-design baseline. Stage 8 commit: c92debd.
 - [ ] Release and deployment documentation verified.
 
 ## Decisions / Deviations
@@ -115,3 +122,14 @@ Do not reset history, remove volumes, or recreate the backend.
   document removals. Colima does not expose `/tmp` bind mounts; move this worktree
   under `/Users/jack5/QLluckGithub` for final container acceptance. The initial
   supplied-image acceptance passed using the repository's mapped fixture paths.
+
+- Stage 9 corrects zh-CN/en showcase availability copy. A read-only host inspection
+  now finds an algorithm container, so the UI describes the user-specified
+  unavailable capability without asserting that no service was deployed. No
+  algorithm readiness or live business mutation is required for this release.
+- Stage 8 remote CI passed both quality and Storybook jobs (run 37118417359).
+  Existing production frontend remains v0.11.0, digest
+  `sha256:036c3fb29a4eec9df67cafb65acac471a1c463fb935f08841045b7fb731517f0`.
+  Host inspection confirmed standalone frontend Compose, loopback port 3000,
+  host-gateway backend on 8081 and OpenResty forwarding to 127.0.0.1:3000.
+  Public edge GET still returns the pre-existing SafeLine HTTP 468.

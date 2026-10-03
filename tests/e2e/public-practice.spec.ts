@@ -15,6 +15,7 @@ test.beforeEach(() => configureUpstream());
 
 test("visitors browse practice modes and navigate without private account reads", async ({
   page,
+  isMobile,
 }) => {
   await configureUpstream({ loggedOut: true });
   await page.goto("/practice");
@@ -35,14 +36,22 @@ test("visitors browse practice modes and navigate without private account reads"
   expect(
     (await upstreamCalls()).filter((call) => call.path.includes("oj-accounts")),
   ).toHaveLength(0);
+  if (isMobile)
+    await page
+      .getByRole("button", { name: "移动端工作区导航", exact: true })
+      .click();
   await page
+    .getByRole("navigation", { name: "训练工作区", exact: true })
     .getByRole("link", { name: "能力画像", exact: true })
-    .last()
     .click();
   await expect(page).toHaveURL("/profile");
   await expect(
     page.getByText("请登录查看更多数据", { exact: true }),
   ).toBeVisible();
+  if (isMobile) await expect(page.getByRole("dialog")).toBeHidden();
+  expect(
+    (await upstreamCalls()).filter((call) => call.path.includes("oj-accounts")),
+  ).toHaveLength(0);
 });
 
 for (const status of [404, 503]) {
@@ -247,11 +256,22 @@ test("guest practice fits narrow screens and respects reduced motion", async ({
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+  const navigationTrigger = page.getByRole("button", {
+    name: "Mobile workspace navigation",
+    exact: true,
+  });
   expect(
-    await page
-      .locator(".mobile-navigation")
-      .evaluate((element) => element.getBoundingClientRect().height),
+    await navigationTrigger.evaluate(
+      (element) => element.closest("header")!.getBoundingClientRect().height,
+    ),
   ).toBeLessThan(800 / 3);
+  await navigationTrigger.click();
+  const navigation = page.getByRole("dialog");
+  await expect(navigation).toBeVisible();
+  expect((await navigation.boundingBox())!.width).toBeLessThanOrEqual(320);
+  await page.keyboard.press("Escape");
+  await expect(navigation).toBeHidden();
+  await expect(navigationTrigger).toBeFocused();
   for (const item of await page
     .locator('[data-slot="toggle-group-item"]')
     .all()) {

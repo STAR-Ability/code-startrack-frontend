@@ -1,3 +1,4 @@
+import { teamSummarySchema } from "../api/v012-schemas.ts";
 import {
   demoUser,
   demoAccounts,
@@ -299,7 +300,7 @@ export const v012Applications: JoinApplicationDto[] = (
   ["PENDING", "APPROVED", "REJECTED", "CANCELLED"] as const
 ).map((status, index) => ({
   applicationId: fixtureUuid(1500 + index),
-  team: v012Teams[0],
+  team: teamSummarySchema.parse(v012Teams[0]),
   applicant: index === 1 ? v012Peer : v012Applicant,
   status,
   message: "希望加入训练",
@@ -312,7 +313,7 @@ export const v012Invitations: TeamInvitationDto[] = (
   ["PENDING", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"] as const
 ).map((status, index) => ({
   invitationId: fixtureUuid(1600 + index),
-  team: index === 1 ? v012Teams[1] : v012Teams[2],
+  team: teamSummarySchema.parse(index === 1 ? v012Teams[1] : v012Teams[2]),
   inviter: v012Peer,
   invitee: v012Owner,
   inviteeEmail: null,
@@ -328,7 +329,7 @@ export const v012Invitations: TeamInvitationDto[] = (
 export const v012OwnerInvitation: TeamInvitationDto = {
   ...v012Invitations[0],
   invitationId: fixtureUuid(1610),
-  team: v012Teams[0],
+  team: teamSummarySchema.parse(v012Teams[0]),
   inviter: v012Owner,
   invitee: null,
   inviteeEmail: "new-member@example.test",

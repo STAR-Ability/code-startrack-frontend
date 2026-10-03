@@ -77,6 +77,23 @@ describe("shared offline scenario boundary", () => {
         expect(result.response.headers.get("Retry-After")).toBe("3");
     },
   );
+  it("team summaries do not leak detail-only permissions into lists or records", async () => {
+    await reset({ coach: true });
+    const managed = (await call("/teams/mine?scope=MANAGED")).payload.data;
+    const applications = (await call(`/teams/${team}/applications`)).payload
+      .data;
+    const invitations = (await call(`/teams/${team}/invitations`)).payload.data;
+    for (const summary of [
+      ...managed,
+      ...applications.map((item: { team: unknown }) => item.team),
+      ...invitations.map((item: { team: unknown }) => item.team),
+    ]) {
+      expect(summary).not.toHaveProperty("canManage");
+      expect(summary).not.toHaveProperty("canLeave");
+      expect(summary).not.toHaveProperty("creator");
+    }
+    expect((await call(`/teams/${team}`)).payload.data.canManage).toBe(true);
+  });
   it("empty, stale, absent and sample-restricted team results conform to the DTOs", async () => {
     for (const scenario of [
       "team-no-ability",

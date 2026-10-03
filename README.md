@@ -57,7 +57,7 @@ pnpm preview:mock
 MOCK_SCENARIO=empty pnpm preview:mock
 ```
 
-The shared Mock labels synthetic data and serves the V0.11 and V0.12 endpoint families. See the [integration guide](docs/development/v0.12-integration.md) for scenarios and limitations. Live failures never automatically select synthetic data.
+The shared Mock labels synthetic data and serves the V0.11 and V0.12 endpoint families. The [scenario matrix](docs/development/v0.12-mock-scenarios.md) documents 85 deterministic presets and eight identities, shared by HTTP development, Vitest, Storybook and Playwright. Live failures never automatically select synthetic data.
 
 ## Component documentation
 
@@ -68,7 +68,7 @@ pnpm build-storybook
 pnpm test:storybook
 ```
 
-Storybook documents production primitives, charts, account/user profiles, frozen reports, shared member data and audience-specific team results. It shares production tokens, fonts, locale and providers; stories never require a backend.
+Storybook documents production primitives, charts, account/user profiles, frozen reports, shared member data and audience-specific team results. Interactive collaboration stories use the same mock request/state boundary for approval, privacy, invitation and confirmation workflows. It shares production tokens, fonts, locale and providers; stories never require a backend.
 
 ## Build and serve
 
@@ -102,7 +102,7 @@ pnpm test:container
 
 E2E uses the production export, a local HTTP proxy on `127.0.0.1:3100` and a synthetic V0.11/V0.12 backend on `127.0.0.1:3210`. It never uses `.env.local` to choose an upstream. Desktop/mobile tests cover locale, keyboard and narrow layouts, authentication, bigint IDs, delayed account switching, unbinding, readonly history, analysis windows, nullable data, recommendation idempotency and task states. They also cover frozen reports, application/invitation transitions, team lifecycle/ownership, privacy withdrawal, coach redemption and audience isolation. Browser network guards reject external requests and old API paths. Container checks require a running Docker daemon.
 
-The [execution plan](.agent/plans/v0.12-backend-integration.md) records implementation and validation. Real backend compatibility and the response gaps listed in the [integration guide](docs/development/v0.12-integration.md) still require service integration verification.
+The [workspace execution plan](.agent/plans/v0.12-workspace-redesign.md) and [delivery report](docs/development/v0.12-workspace-delivery.md) record implementation and validation. Live paths/schemas and unauthenticated responses were verified separately with Mock disabled. Authenticated real flows still require designated test credentials; see the [integration guide](docs/development/v0.12-integration.md) for precise results and contract discrepancies.
 
 ## Production deployment
 

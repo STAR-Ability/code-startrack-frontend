@@ -162,7 +162,7 @@ test("coach is additive, owner approves and invites, member access is backend sc
   await page.goto("/coach");
   await expect(
     page.getByRole("heading", { name: "教练主页", exact: true }),
-  ).toHaveCount(2);
+  ).toHaveCount(1);
   await expect(page.getByRole("main")).toBeVisible();
   await page.goto(`/teams/detail?teamId=${owner}&tab=applications`);
   await expect(

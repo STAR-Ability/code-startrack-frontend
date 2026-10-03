@@ -1,3 +1,4 @@
+import { teamSummarySchema } from "../api/v012-schemas.ts";
 import { demoUser, demoAccounts, fixtureUuid } from "./fixtures.ts";
 import {
   v012Teams,
@@ -268,13 +269,13 @@ export function collaborationFixture(
   }
   // Record references use the same canonical team, including owner and lifecycle.
   applications.forEach((item) => {
-    item.team = structuredClone(
+    item.team = teamSummarySchema.parse(
       teams.find((team) => team.teamId === item.team.teamId)!,
     );
     if (item.decidedBy) item.decidedBy = item.team.owner;
   });
   invitations.forEach((item) => {
-    item.team = structuredClone(
+    item.team = teamSummarySchema.parse(
       teams.find((team) => team.teamId === item.team.teamId)!,
     );
     item.inviter = item.team.owner;

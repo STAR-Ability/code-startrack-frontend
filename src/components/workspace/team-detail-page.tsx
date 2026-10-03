@@ -177,7 +177,7 @@ function TeamDetailContent({
           )}
           <nav
             aria-label={t("v12.teamNavigation")}
-            className="sticky top-0 z-10 flex flex-wrap gap-1 rounded-xl border bg-background/95 p-1 backdrop-blur-sm"
+            className="z-10 md:sticky md:top-0 flex flex-wrap gap-1 rounded-xl border bg-background/95 p-1 backdrop-blur-sm"
           >
             {sections.filter(visible).map((section) => (
               <Link
@@ -316,7 +316,7 @@ export function TeamOverview({ team }: { team: TeamDetailDto }) {
       label: "v12.teamAnalysis" as const,
       value:
         analysis.isFetching && !analysis.data
-          ? t("v12.processing")
+          ? t("v.loading")
           : analysis.error
             ? t("v12.unavailableState")
             : analysis.data

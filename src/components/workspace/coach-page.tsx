@@ -26,7 +26,7 @@ export function CoachPage() {
     <>
       <QueryFeedback query={query} />
       <MetricPanel
-        title="v12.coach"
+        title="v12.coachStats"
         loading={query.isFetching && query.data === undefined}
         metrics={[
           ["v12.managedTeams", query.data?.managedTeamCount ?? 0],

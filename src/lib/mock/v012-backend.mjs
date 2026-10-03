@@ -16,6 +16,7 @@ import {
   v012Job,
 } from "../demo/v012-fixtures.ts";
 import {
+  teamSummarySchema,
   sharedTrainingSchema,
   sharedProfileSchema,
 } from "../api/v012-schemas.ts";
@@ -212,6 +213,7 @@ export function createV012Mock() {
         canLeave: membership?.role === "MEMBER" && team.status !== "DISSOLVED",
       };
     };
+    const summaryDto = (team) => teamSummarySchema.parse(summary(team));
     const admin = (team) => {
       if (!summary(team).canManage) {
         error("TEAM_FORBIDDEN", 403);
@@ -552,7 +554,7 @@ export function createV012Mock() {
               activeMember(team) &&
               (query.scope !== "MANAGED" || summary(team).canManage),
           )
-          .map(summary),
+          .map(summaryDto),
       );
       return true;
     }
@@ -564,7 +566,7 @@ export function createV012Mock() {
               team.status === "ACTIVE" &&
               team.name.toLowerCase().includes((query.q ?? "").toLowerCase()),
           )
-          .map(summary),
+          .map(summaryDto),
       );
       return true;
     }
@@ -602,7 +604,9 @@ export function createV012Mock() {
           ),
         ).map((item) => ({
           ...item,
-          team: summary(teams.find((team) => team.teamId === item.team.teamId)),
+          team: summaryDto(
+            teams.find((team) => team.teamId === item.team.teamId),
+          ),
         })),
       );
       return true;
@@ -616,7 +620,9 @@ export function createV012Mock() {
         ).map((item) => ({
           ...item,
           inviteeEmail: null,
-          team: summary(teams.find((team) => team.teamId === item.team.teamId)),
+          team: summaryDto(
+            teams.find((team) => team.teamId === item.team.teamId),
+          ),
         })),
       );
       return true;
@@ -667,7 +673,7 @@ export function createV012Mock() {
         "APPLICATION",
         item.applicationId,
       );
-      data({ ...item, team: summary(team) });
+      data({ ...item, team: summaryDto(team) });
       return true;
     }
     const inviteAction = path.match(
@@ -733,7 +739,7 @@ export function createV012Mock() {
       data({
         ...item,
         inviteeEmail: ownerAction ? item.inviteeEmail : null,
-        team: summary(team),
+        team: summaryDto(team),
       });
       return true;
     }
@@ -858,7 +864,7 @@ export function createV012Mock() {
         const item = {
           ...v012Applications[0],
           applicationId: nextId(),
-          team: summary(team),
+          team: summaryDto(team),
           applicant: brief(),
           message: body.message ?? null,
           createdAt: now(),
@@ -902,7 +908,7 @@ export function createV012Mock() {
         const item = {
           ...v012OwnerInvitation,
           invitationId: nextId(),
-          team: summary(team),
+          team: summaryDto(team),
           inviter: brief(),
           invitee: body.email === user.email ? brief() : null,
           inviteeEmail: body.email,

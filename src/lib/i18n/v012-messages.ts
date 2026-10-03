@@ -1,4 +1,5 @@
 export const v012Zh = {
+  "v12.coachStats": "工作区概况",
   "v12.expires": "邀请到期",
   "v12.overview": "概览",
   "v12.teamSettings": "团队设置",
@@ -190,6 +191,7 @@ export const v012Zh = {
   "v12.status.SENT": "已发送",
 } as const;
 export const v012En = {
+  "v12.coachStats": "Workspace overview",
   "v12.expires": "Expires",
   "v12.overview": "Overview",
   "v12.teamSettings": "Team settings",

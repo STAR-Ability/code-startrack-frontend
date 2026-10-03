@@ -18,12 +18,7 @@ import {
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 
-export const productLinks = [
-  ["/product", "features"],
-  ["/product/profile", "profile"],
-  ["/product/recommendations", "recommendations"],
-  ["/about", "about"],
-] as const;
+import { productLinks } from "@/lib/ui/product-navigation";
 const icons = [LayersIcon, FingerprintIcon, RouteIcon, OrbitIcon];
 export function ProductIndex() {
   const { t } = useLocale();

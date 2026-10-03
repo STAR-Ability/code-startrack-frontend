@@ -8,7 +8,7 @@ import { LocaleSwitch } from "./locale-switch";
 import { Brand, SkipLink } from "./brand";
 import { LoginDialog } from "./login-dialog";
 import { usePathname } from "next/navigation";
-import { productLinks } from "@/components/showcase/product-index";
+import { productLinks } from "@/lib/ui/product-navigation";
 import { buttonVariants } from "@/components/ui/button";
 
 export function AppHeader() {

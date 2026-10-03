@@ -28,7 +28,8 @@ import {
   useCountdown,
   useSlowRequest,
 } from "@/components/workspace/feedback";
-import { EmailVerification, FormInput, type Verification } from "./auth-form";
+import { EmailVerification, type Verification } from "./auth-form";
+import { FormInput } from "@/components/ui/form-input";
 
 export function SecurityChangePage({ kind }: { kind: "password" | "email" }) {
   const { user } = useAccounts();

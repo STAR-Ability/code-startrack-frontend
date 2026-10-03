@@ -32,12 +32,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { FormInput } from "@/components/auth/auth-form";
+import { FormInput } from "@/components/ui/form-input";
 import { WindowSelector } from "./analysis-page";
 import { AnalysisView } from "./analysis-view";
 import { useAccountQuery } from "./use-account-query";
 import { QueryFeedback, DataRegion, EmptyState, Pagination } from "./feedback";
-import { ProblemLink } from "./recommendations-page";
+import { ProblemLink } from "./recommendation-card";
 import { Chart } from "./chart";
 
 export function DataPage() {

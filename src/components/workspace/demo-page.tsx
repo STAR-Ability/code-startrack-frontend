@@ -4,7 +4,7 @@ import { useLocale } from "@/components/layout/locale-provider";
 import { Badge } from "@/components/ui/badge";
 import { demoAnalysis, demoBatch } from "@/lib/demo/fixtures";
 import { AnalysisView } from "./analysis-view";
-import { BatchView } from "./recommendations-page";
+import { BatchView } from "./recommendation-card";
 export function DemoPage() {
   const { t } = useLocale();
   return (

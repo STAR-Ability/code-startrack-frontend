@@ -85,7 +85,8 @@ Do not reset history, remove volumes, or recreate the backend.
 - [x] Stage 2: surfaces and bounded motion; pnpm check and 1440/390/320px checks passed; commit c83f0c1.
 - [x] Stage 3: four public pages and navigation. pnpm check passed. Full E2E: 113 passed, one existing skip, one new 200% zoom overflow found. Fixed grid min-width; rebuilt and all eight product/accessibility tests passed. API/Mock source unchanged.
 - [x] Stage 4: semantic chart palettes, status maps and metric accents; pnpm check and desktop/320px chart inspection passed.
-- [ ] Stages 5–9 implemented and validated.
+- [x] Stage 5: extracted FormInput/recommendation presentation, localized primitive labels and removed orphan styles; pnpm check passed; focused E2E 29 passed, one existing mobile-only skip.
+- [ ] Stages 6–9 implemented and validated.
 - [ ] Release and deployment documentation verified.
 
 ## Decisions / Deviations

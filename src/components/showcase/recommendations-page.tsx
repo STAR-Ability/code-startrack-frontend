@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
 import { PracticeModePicker } from "@/components/workspace/practice-mode-picker";
-import { BatchView } from "@/components/workspace/recommendations-page";
+import { BatchView } from "@/components/workspace/recommendation-card";
 import { demoBatch } from "@/lib/demo/fixtures";
 import type { RecommendationMode } from "@/lib/api/schemas";
 import { Badge } from "@/components/ui/badge";

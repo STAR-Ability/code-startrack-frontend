@@ -32,7 +32,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { FieldGroup } from "@/components/ui/field";
-import { FormInput } from "@/components/auth/auth-form";
+import { FormInput } from "@/components/ui/form-input";
 import {
   EmptyState,
   ErrorNotice,

@@ -87,7 +87,8 @@ Do not reset history, remove volumes, or recreate the backend.
 - [x] Stage 4: semantic chart palettes, status maps and metric accents; pnpm check and desktop/320px chart inspection passed.
 - [x] Stage 5: extracted FormInput/recommendation presentation, localized primitive labels and removed orphan styles; pnpm check passed; focused E2E 29 passed, one existing mobile-only skip.
 - [x] Stage 6: official Next.js Vite Storybook, isolated providers, local Geist fonts and semantic toolbar; pnpm check, static build and browser startup/theme/locale checks passed.
-- [ ] Stages 7–9 implemented and validated.
+- [x] Stage 7: 73 stories / 12 component docs, typed controls and local fixtures; pnpm check, Storybook build and 180 desktop/mobile/interaction/accessibility checks passed. Fixed error-token contrast (including hover) and profile definition-list semantics found by the addon.
+- [ ] Stages 8–9 implemented and validated.
 - [ ] Release and deployment documentation verified.
 
 ## Decisions / Deviations

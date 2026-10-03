@@ -22,7 +22,8 @@
     "dev:mock": "node scripts/dev-offline.mjs",
     "preview:mock": "node tests/gateway-server.mjs",
     "storybook": "storybook dev --host 127.0.0.1 --port 6006 --ci --no-open",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "test:storybook": "playwright test --config playwright.storybook.config.ts"
   },
   "engines": {
     "node": ">=24 <25"

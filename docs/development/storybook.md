@@ -19,6 +19,8 @@ pnpm storybook
 # http://127.0.0.1:6006
 pnpm build-storybook
 # Standalone output: storybook-static/
+pnpm test:storybook
+# Serves that build on 127.0.0.1:6007 and runs desktop + 320px browser checks.
 ```
 
 Stories live under `stories/`; configuration lives under `.storybook/`. They
@@ -39,6 +41,35 @@ component actually supports; show loading/error/empty composition at the owning
 container when the primitive has no such state. Native hover and focus must be
 tested with browser input instead of copied CSS. Prefer component args and
 existing composition over adding production-only switches for documentation.
+
+## Coverage
+
+| Group       | Components                                           | States and behavior                                                                                                |
+| ----------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Foundations | Design tokens, Badge/status mappings, chart palettes | Light/dark, mobile, semantic swatches                                                                              |
+| Primitives  | Button, Card                                         | Variants, hover, loading, disabled, empty composition, mobile                                                      |
+| Primitives  | Dialog                                               | Open/close, pending confirmation, disabled trigger, scrolling, mobile                                              |
+| Primitives  | FormInput + FieldGroup                               | Hint, error, disabled, password reveal, pending form, RHF/Zod validation, mobile                                   |
+| Primitives  | Sidebar                                              | Expanded, collapsed, mobile drawer, keyboard toggle                                                                |
+| Workspace   | MetricPanel                                          | Populated, loading, zero evidence, unavailable, mobile                                                             |
+| Workspace   | Chart                                                | Activity, distribution, loading/empty/error composition, dark, mobile                                              |
+| Workspace   | AnalysisView                                         | Profile, statistics, loading, missing, zero evidence, stale, error, mobile                                         |
+| Workspace   | RecommendationCard / BatchView                       | Default, hover, completed, missing link, long content, loading, missing batch, no candidates, stale, error, mobile |
+| Workspace   | PracticeModePicker, feedback                         | Selection, disabled, empty, loading, retryable/forbidden error, mobile                                             |
+
+There are 73 named stories. The static browser suite renders every story at
+1440px and 320px, checks console errors, charts and horizontal overflow, blocks
+all backend and external requests, and tests real dialog focus, form validation,
+sidebar controls, mode selection, hover, reduced motion, locale and dark charts.
+It also checks the accessibility addon's result for each default story and its
+mobile-canvas equivalent, and
+verifies that autodocs exposes real component controls. The app's existing E2E
+suite continues to own authenticated requests and mutation behavior.
+
+When adding a story, keep the typed `Meta`/`StoryObj` pattern, descriptive args,
+component-level documentation, and synthetic fixtures. `index.json` drives the
+render sweep automatically. Run a fresh static build before the browser suite.
+The tests use a separate port and do not share or reset `dev:mock` data.
 
 References: [official Next.js adapter](https://storybook.js.org/docs/get-started/frameworks/nextjs-vite),
 [decorators](https://storybook.js.org/docs/writing-stories/decorators).

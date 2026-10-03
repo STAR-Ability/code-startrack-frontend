@@ -319,10 +319,10 @@ export function AnalysisView({
                 ],
               }}
             />
-            <dl className="flex min-w-0 flex-col gap-3">
+            <div className="flex min-w-0 flex-col gap-3">
               {scores.map((item) => (
                 <div key={item.code} className="flex flex-col gap-1">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
+                  <dl className="flex flex-wrap items-center justify-between gap-2">
                     <dt className="text-sm">
                       {t(`data.dimension.${item.code}`)}
                       {item.code === analysis?.weakestDimension && (
@@ -334,7 +334,7 @@ export function AnalysisView({
                     <dd className="font-mono text-sm tabular-nums">
                       {number(item.score)} / 100
                     </dd>
-                  </div>
+                  </dl>
                   <div
                     aria-hidden="true"
                     className="h-1 overflow-hidden rounded-full bg-muted"
@@ -346,7 +346,7 @@ export function AnalysisView({
                   </div>
                 </div>
               ))}
-            </dl>
+            </div>
           </CardContent>
         </Card>
       )}

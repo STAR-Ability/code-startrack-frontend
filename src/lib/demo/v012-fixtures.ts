@@ -237,7 +237,7 @@ export function v012Report(
       summary: all.summary,
       currentRating: all.currentRating,
       maxRating: all.maxRating,
-      sourceAccountCount: 2,
+      sourceAccountCount: all.sourceAccountCount,
       dataCutoffAt: all.dataCutoffAt,
     },
     profileSnapshot: {
@@ -349,9 +349,18 @@ export const v012Notifications: NotificationDto[] = (
 ).map((type, index) => ({
   notificationId: fixtureUuid(1700 + index),
   type,
-  title: `训练通知 ${index + 1}`,
+  title: [
+    "收到团队邀请",
+    "有新的加入申请",
+    "加入申请已通过",
+    "加入申请被拒绝",
+    "新成员加入团队",
+    "团队成员已移除",
+    "团队邀请已取消",
+    "加入申请已取消",
+  ][index],
   body: "团队状态已更新，请查看最新记录。",
-  teamId: v012Teams[index === 0 ? 2 : 0].teamId,
+  teamId: v012Teams[type.startsWith("TEAM_INVITATION") ? 2 : 0].teamId,
   actor: v012Peer,
   referenceType: type.startsWith("TEAM_INVITATION")
     ? "INVITATION"
@@ -360,10 +369,20 @@ export const v012Notifications: NotificationDto[] = (
       : "MEMBERSHIP",
   referenceId: fixtureUuid(
     type.startsWith("TEAM_INVITATION")
-      ? 1600
+      ? type === "TEAM_INVITATION_CANCELLED"
+        ? 1604
+        : 1600
       : type.startsWith("JOIN_APPLICATION")
-        ? 1500
-        : 1200,
+        ? type === "JOIN_APPLICATION_APPROVED"
+          ? 1501
+          : type === "JOIN_APPLICATION_REJECTED"
+            ? 1502
+            : type === "JOIN_APPLICATION_CANCELLED"
+              ? 1503
+              : 1500
+        : type === "MEMBER_REMOVED"
+          ? 3301
+          : 1201,
   ),
   payload: {},
   read: index > 1,
@@ -379,7 +398,11 @@ export function v012TeamAnalysis(
   return {
     snapshotId: fixtureUuid(
       1800 +
-        (teamId === v012Teams[1].teamId ? 10 : 0) +
+        Math.max(
+          0,
+          v012Teams.findIndex((team) => team.teamId === teamId),
+        ) *
+          10 +
         (audience === "MEMBER" ? 1 : 0),
     ),
     teamId,
@@ -425,7 +448,11 @@ export function v012TeamBatch(
   return {
     batchId: fixtureUuid(
       1900 +
-        (teamId === v012Teams[1].teamId ? 10 : 0) +
+        Math.max(
+          0,
+          v012Teams.findIndex((team) => team.teamId === teamId),
+        ) *
+          10 +
         (audience === "MEMBER" ? 1 : 0),
     ),
     teamId,
@@ -480,3 +507,14 @@ export function v012Job(
       : null,
   };
 }
+
+export const notificationReadFixtures = {
+  unread: v012Notifications.map((notification) => ({
+    ...notification,
+    read: false,
+  })),
+  read: v012Notifications.map((notification) => ({
+    ...notification,
+    read: true,
+  })),
+} satisfies Record<string, NotificationDto[]>;

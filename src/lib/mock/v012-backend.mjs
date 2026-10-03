@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { collaborationFixture } from "../demo/v012-scenarios.ts";
 import { demoSubmissions, fixtureUuid } from "../demo/fixtures.ts";
 import {
   v012Analysis,
@@ -7,7 +7,6 @@ import {
   v012Teams,
   v012Members,
   v012Applications,
-  v012Invitations,
   v012OwnerInvitation,
   v012Notifications,
   v012Privacy,
@@ -33,6 +32,13 @@ export function createV012Mock() {
     teamAnalyses,
     teamBatches,
     jobs;
+  let sequence = 10000;
+  const nextId = () => fixtureUuid(sequence++);
+  const timestamp = () =>
+    new Date(
+      Date.parse("2026-10-04T00:00:00Z") + sequence++ * 1000,
+    ).toISOString();
+  let configForSnapshots = {};
   function teamSnapshot(teamId, audience, noSharing) {
     const analysis = v012TeamAnalysis(teamId, audience, noSharing);
     analysis.memberCount = members.filter(
@@ -55,21 +61,62 @@ export function createV012Mock() {
     analysis.dimensions.forEach(
       (item) => (item.memberSampleCount = analysis.includedMemberCount),
     );
+    if (configForSnapshots.noAbility) {
+      analysis.includedMemberCount = 0;
+      analysis.excludedMemberCount = analysis.memberCount;
+      analysis.overallScore = 0;
+      analysis.dimensions.forEach((d) => {
+        d.score = 0;
+        d.memberSampleCount = 0;
+      });
+    }
+    if (configForSnapshots.noTraining) {
+      analysis.trainingMemberCount = 0;
+      analysis.activityStats = [];
+    }
+    if (configForSnapshots.noLevel || !analysis.trainingMemberCount)
+      analysis.levelMemberCount = 0;
+    if (!analysis.levelMemberCount) analysis.targetRating = null;
+    analysis.stale = !!configForSnapshots.stale;
     return analysis;
   }
   function reset(config) {
-    teams = structuredClone(v012Teams);
-    members = structuredClone(v012Members);
-    applications = structuredClone(v012Applications);
-    invitations = structuredClone([...v012Invitations, v012OwnerInvitation]);
+    sequence = 10000;
+    configForSnapshots = config;
+    const fixture = collaborationFixture(config);
+    ({ teams, members, applications, invitations } = fixture);
+    if (config.identity) {
+      const sourceAccounts = fixture.identity.accounts;
+      config.noAccounts = sourceAccounts.length === 0;
+    }
     privacy = structuredClone(
       config.mixedPrivacy ? v012MixedPrivacy : v012Privacy,
     );
-    notifications = structuredClone(v012Notifications);
+    notifications = config.noNotifications
+      ? []
+      : structuredClone(v012Notifications);
+    if (config.notificationsRead !== undefined)
+      notifications.forEach((item) => {
+        item.read = config.notificationsRead;
+      });
     analyses = ["7D", "30D", "365D", "ALL"].map((window) => ({
       ...v012Analysis(window, !!config.zero || !!config.emptyRecords),
       stale: !!config.stale || !!config.invalid,
     }));
+    if (config.identity || config.oneAccount || config.noAccounts) {
+      const accounts = config.identity
+        ? fixture.identity.accounts
+        : config.noAccounts
+          ? []
+          : v012Analysis().ratingAccounts.slice(0, 1);
+      analyses.forEach((item) => {
+        item.ratingAccounts = item.ratingAccounts.filter((a) =>
+          accounts.some((b) => b.accountId === a.accountId),
+        );
+        item.sourceAccountIds = item.ratingAccounts.map((a) => a.accountId);
+        item.sourceAccountCount = item.ratingAccounts.length;
+      });
+    }
     const previous = analyses.map((item) =>
       v012HistoricalAnalysis(item.window),
     );
@@ -104,9 +151,10 @@ export function createV012Mock() {
             audience,
             !!config.emptyCandidates,
           );
-          batch.batchId = randomUUID();
+          batch.batchId = nextId();
           batch.analysisSnapshotId = analysis.snapshotId;
           batch.mode = mode;
+          batch.stale = !!config.stale;
           teamBatches.push(batch);
         }
       }
@@ -124,7 +172,7 @@ export function createV012Mock() {
     error,
     noContent,
   }) {
-    const now = () => new Date().toISOString();
+    const now = timestamp;
     const brief = () => ({
       publicId: user.publicId,
       username: user.username,
@@ -188,7 +236,7 @@ export function createV012Mock() {
     const addMember = (team, userBrief) => {
       if (activeMember(team, userBrief.publicId)) return;
       members.push({
-        membershipId: randomUUID(),
+        membershipId: nextId(),
         teamId: team.teamId,
         user: userBrief,
         role: "MEMBER",
@@ -205,7 +253,7 @@ export function createV012Mock() {
     };
     const notify = (type, team, referenceType, referenceId) =>
       notifications.unshift({
-        notificationId: randomUUID(),
+        notificationId: nextId(),
         type,
         title: "团队状态已更新",
         body: "请查看最新团队记录。",
@@ -220,22 +268,32 @@ export function createV012Mock() {
     const userSource = (item) => ({
       ...item,
       publicId: config.mismatch ? fixtureUuid(999) : user.publicId,
-      ratingAccounts: bound
-        .filter((item) => item.bindStatus !== "UNBOUND" && item.lastSyncedAt)
-        .map((item) => ({
-          accountId: item.accountId,
-          platform: "codeforces",
-          username: item.username,
-          bindStatus: item.bindStatus,
-          currentRating: item.rating,
-          maxRating: item.maxRating,
-          lastSyncedAt: item.lastSyncedAt,
-        })),
-      sourceAccountIds: bound
-        .filter((item) => item.bindStatus !== "UNBOUND")
-        .map((item) => item.accountId),
-      sourceAccountCount: bound.filter((item) => item.bindStatus !== "UNBOUND")
-        .length,
+      ratingAccounts:
+        item.sourceFingerprint === "synthetic-user-source-old"
+          ? item.ratingAccounts
+          : bound
+              .filter(
+                (item) => item.bindStatus !== "UNBOUND" && item.lastSyncedAt,
+              )
+              .map((item) => ({
+                accountId: item.accountId,
+                platform: "codeforces",
+                username: item.username,
+                bindStatus: item.bindStatus,
+                currentRating: item.rating,
+                maxRating: item.maxRating,
+                lastSyncedAt: item.lastSyncedAt,
+              })),
+      sourceAccountIds:
+        item.sourceFingerprint === "synthetic-user-source-old"
+          ? item.sourceAccountIds
+          : bound
+              .filter((item) => item.bindStatus !== "UNBOUND")
+              .map((item) => item.accountId),
+      sourceAccountCount:
+        item.sourceFingerprint === "synthetic-user-source-old"
+          ? item.sourceAccountCount
+          : bound.filter((item) => item.bindStatus !== "UNBOUND").length,
       stale: item.stale || bound.some((item) => item.bindStatus === "INVALID"),
     });
     const startJob = (type, teamId, audience, mode) => {
@@ -243,6 +301,8 @@ export function createV012Mock() {
         (item) =>
           item.job.type === type &&
           item.teamId === teamId &&
+          item.audience === audience &&
+          item.mode === mode &&
           ["QUEUED", "RUNNING"].includes(item.job.status),
       );
       if (existing) {
@@ -251,7 +311,7 @@ export function createV012Mock() {
       }
       const job = {
         ...v012Job("QUEUED", type),
-        jobId: randomUUID(),
+        jobId: nextId(),
         requestedAt: now(),
       };
       jobs.set(job.jobId, { job, teamId, audience, mode, polls: 0 });
@@ -262,7 +322,7 @@ export function createV012Mock() {
     if (path === "/coach-invite-codes/redeem") {
       user.roles = ["STUDENT", "COACH"];
       user.primaryRole = "COACH";
-      noContent();
+      data(user);
       return true;
     }
     if (path === "/coach/dashboard") {
@@ -309,7 +369,7 @@ export function createV012Mock() {
     }
     if (path === "/notifications/read-all") {
       notifications.forEach((item) => (item.read = true));
-      noContent();
+      data({ count: notifications.length });
       return true;
     }
     const read = path.match(/^\/notifications\/([^/]+)\/read$/);
@@ -320,7 +380,7 @@ export function createV012Mock() {
       if (!item) error("RESOURCE_NOT_FOUND", 404);
       else {
         item.read = true;
-        noContent();
+        data(item);
       }
       return true;
     }
@@ -400,7 +460,8 @@ export function createV012Mock() {
         return true;
       }
       item.polls++;
-      if (config.aiFailed) {
+      if (config.keepQueued) item.job.status = "QUEUED";
+      else if (config.aiFailed) {
         item.job = {
           ...item.job,
           status: "FAILED",
@@ -420,14 +481,14 @@ export function createV012Mock() {
       } else if (item.job.status !== "SUCCESS") {
         item.job.status = "SUCCESS";
         item.job.finishedAt = now();
-        item.job.resultId = randomUUID();
+        item.job.resultId = nextId();
         if (item.job.type === "USER_ANALYSIS") {
           config.noAnalysis = false;
           const updated = ["7D", "30D", "365D", "ALL"].map((window) => ({
             ...structuredClone(
               analyses.find((analysis) => analysis.window === window),
             ),
-            snapshotId: window === "ALL" ? item.job.resultId : randomUUID(),
+            snapshotId: window === "ALL" ? item.job.resultId : nextId(),
             createdAt: now(),
             stale: false,
           }));
@@ -456,12 +517,13 @@ export function createV012Mock() {
               !!config.noSharing,
             );
             analysis.snapshotId =
-              audience === "COACH" ? item.job.resultId : randomUUID();
+              audience === "COACH" ? item.job.resultId : nextId();
             analysis.createdAt = now();
             teamAnalyses.unshift(analysis);
           }
         }
         if (item.job.type === "TEAM_RECOMMENDATION") {
+          config.noTeamBatch = false;
           const batch = v012TeamBatch(
             item.teamId,
             item.audience,
@@ -500,7 +562,7 @@ export function createV012Mock() {
           .filter(
             (team) =>
               team.status === "ACTIVE" &&
-              team.name.toLowerCase().includes(query.q.toLowerCase()),
+              team.name.toLowerCase().includes((query.q ?? "").toLowerCase()),
           )
           .map(summary),
       );
@@ -514,7 +576,7 @@ export function createV012Mock() {
       const team = {
         ...v012Teams[0],
         ...body,
-        teamId: randomUUID(),
+        teamId: nextId(),
         owner: brief(),
         creator: brief(),
         memberCount: 1,
@@ -526,7 +588,7 @@ export function createV012Mock() {
         ...v012Members[0],
         teamId: team.teamId,
         user: brief(),
-        membershipId: randomUUID(),
+        membershipId: nextId(),
         joinedAt: now(),
       });
       data(summary(team), 201);
@@ -660,12 +722,13 @@ export function createV012Mock() {
         if (action === "accept") {
           addMember(team, brief());
         }
-        notify(
-          action === "cancel" ? "TEAM_INVITATION_CANCELLED" : "MEMBER_JOINED",
-          team,
-          "INVITATION",
-          item.invitationId,
-        );
+        if (action !== "reject")
+          notify(
+            action === "cancel" ? "TEAM_INVITATION_CANCELLED" : "MEMBER_JOINED",
+            team,
+            "INVITATION",
+            item.invitationId,
+          );
       }
       data({
         ...item,
@@ -714,7 +777,15 @@ export function createV012Mock() {
           });
       } else if (tail === "transfer") {
         const target = activeMember(team, body.newOwnerPublicId);
-        if (!target || target.role === "OWNER") {
+        if (
+          !target ||
+          target.role === "OWNER" ||
+          !(
+            target.user.publicId === fixtureUuid(1101) ||
+            (target.user.publicId === user.publicId &&
+              user.roles.includes("COACH"))
+          )
+        ) {
           error("INVALID_ARGUMENT", 400);
           return true;
         }
@@ -722,6 +793,27 @@ export function createV012Mock() {
         target.role = "OWNER";
         team.owner = target.user;
       } else team.status = tail === "archive" ? "ARCHIVED" : "ACTIVE";
+      if (["archive", "dissolve"].includes(tail)) {
+        applications
+          .filter(
+            (item) =>
+              item.team.teamId === team.teamId && item.status === "PENDING",
+          )
+          .forEach((item) => {
+            item.status = "CANCELLED";
+            item.decidedAt = now();
+            item.decidedBy = null;
+          });
+        invitations
+          .filter(
+            (item) =>
+              item.team.teamId === team.teamId && item.status === "PENDING",
+          )
+          .forEach((item) => {
+            item.status = "CANCELLED";
+            item.respondedAt = now();
+          });
+      }
       team.updatedAt = now();
       data(summary(team));
       return true;
@@ -765,7 +857,7 @@ export function createV012Mock() {
         }
         const item = {
           ...v012Applications[0],
-          applicationId: randomUUID(),
+          applicationId: nextId(),
           team: summary(team),
           applicant: brief(),
           message: body.message ?? null,
@@ -809,7 +901,7 @@ export function createV012Mock() {
         }
         const item = {
           ...v012OwnerInvitation,
-          invitationId: randomUUID(),
+          invitationId: nextId(),
           team: summary(team),
           inviter: brief(),
           invitee: body.email === user.email ? brief() : null,
@@ -933,7 +1025,14 @@ export function createV012Mock() {
       }
       if (tail === "recommendations/generate") {
         if (!admin(team)) return true;
-        if (config.noSharing) {
+        const analysis = teamAnalyses.find(
+          (item) => item.teamId === team.teamId && item.audience === audience,
+        );
+        if (config.noTeamAnalysis || !analysis) {
+          error("TEAM_ANALYSIS_NOT_READY", 409);
+          return true;
+        }
+        if (!analysis.levelMemberCount) {
           error("TEAM_LEVEL_NOT_READY", 409);
           return true;
         }
@@ -946,8 +1045,10 @@ export function createV012Mock() {
           item.audience === audience &&
           (!query.mode || item.mode === query.mode),
       );
-      if (tail === "recommendations/latest") data(items[0] ?? null);
-      else if (tail === "recommendations/history") paginated(items);
+      if (tail === "recommendations/latest")
+        data(config.noTeamBatch ? null : (items[0] ?? null));
+      else if (tail === "recommendations/history")
+        paginated(config.noTeamBatch ? [] : items);
       else if (stored) data(stored);
       else error("RESOURCE_NOT_FOUND", 404);
       return true;

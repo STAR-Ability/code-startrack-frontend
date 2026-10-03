@@ -46,6 +46,7 @@ async function call(path: string, method = "GET", body?: unknown) {
 }
 describe("V0.12 synthetic service", () => {
   it("serves all new read DTO families through the public contract", async () => {
+    await control({ coach: true });
     for (const [path, schema, paged] of [
       ["/me/analysis/latest?window=ALL", userAnalysisSchema, false],
       ["/me/training/overview?window=30D", userAnalysisSchema, false],
@@ -84,6 +85,7 @@ describe("V0.12 synthetic service", () => {
     expect(member.payload.data.audience).toBe("MEMBER");
   });
   it("approval creates a membership and terminal applications reject repeated decisions", async () => {
+    await control({ coach: true });
     const result = await call(
       `/team-applications/${fixtureUuid(1500)}/approve`,
       "POST",
@@ -213,6 +215,7 @@ describe("V0.12 synthetic service", () => {
     ).toEqual(previousReport);
   });
   it("team rebuild results resolve to snapshots with current membership sample counts", async () => {
+    await control({ coach: true });
     const teamId = v012Teams[0].teamId;
     const before = teamAnalysisSchema.parse(
       (await call(`/teams/${teamId}/analysis/latest`)).payload.data,
@@ -270,7 +273,7 @@ describe("V0.12 synthetic service", () => {
     expect(single.trainingMemberCount).toBeLessThanOrEqual(1);
   });
   it("empty samples obey counts and never become false real zero ability", async () => {
-    await control({ noSharing: true });
+    await control({ noSharing: true, coach: true });
     const analysis = (
       await call(`/teams/${v012Teams[0].teamId}/analysis/latest`)
     ).payload.data;

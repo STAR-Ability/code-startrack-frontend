@@ -14,7 +14,8 @@ import {
   fixtureUuid,
 } from "../demo/fixtures.ts";
 import { uuidSchema, windows, modes } from "../api/schemas.ts";
-import { scenarioConfig } from "./scenarios.mjs";
+import { identityFixture } from "../demo/v012-scenarios.ts";
+import { scenarioConfig, mockScenarios } from "./scenarios.mjs";
 import { mockCaptchaImage } from "./captcha.mjs";
 import { createV012Mock } from "./v012-backend.mjs";
 import { validateMockRequest } from "./requests.mjs";
@@ -34,9 +35,11 @@ export function createMockBackend({ scenario = "success" } = {}) {
   let nextAccount = 9007199254740997n;
   let lastManualJob;
   function reset(options = {}) {
-    config = { ...scenarioConfig(scenario), ...options };
+    config = { ...scenarioConfig(options.scenario ?? scenario), ...options };
     calls = [];
-    user = structuredClone(demoUser);
+    user = structuredClone(
+      config.identity ? identityFixture(config.identity).user : demoUser,
+    );
     if (config.coach) {
       user.roles = ["STUDENT", "COACH"];
       user.primaryRole = "COACH";
@@ -45,7 +48,14 @@ export function createMockBackend({ scenario = "success" } = {}) {
     collaboration.reset(config);
     bound = config.noAccounts
       ? []
-      : structuredClone([...demoAccounts, demoUnbound]);
+      : structuredClone([
+          ...(config.identity
+            ? identityFixture(config.identity).accounts
+            : config.oneAccount
+              ? demoAccounts.slice(0, 1)
+              : demoAccounts),
+          demoUnbound,
+        ]);
     if (config.invalid && bound[0]) bound[0].bindStatus = "INVALID";
     jobs = new Map();
     lastManualJob = new Map();
@@ -193,7 +203,11 @@ export function createMockBackend({ scenario = "success" } = {}) {
         if (body?.preserveCalls) config = { ...config, ...body };
         else reset(body ?? {});
       }
-      json({ calls, scenario });
+      json({
+        calls,
+        scenario: config.scenario ?? scenario,
+        availableScenarios: Object.keys(mockScenarios),
+      });
       return;
     }
     calls.push({
@@ -238,6 +252,10 @@ export function createMockBackend({ scenario = "success" } = {}) {
     };
     if (config.delayMs)
       await new Promise((resolve) => setTimeout(resolve, config.delayMs));
+    if (config.networkFailure) {
+      response.destroy();
+      return;
+    }
     if (config.failReads && request.method === "GET") {
       error("INTERNAL_ERROR", 503);
       return;
@@ -246,7 +264,11 @@ export function createMockBackend({ scenario = "success" } = {}) {
       config.errorPath === path ||
       (config.errorResource && path.endsWith(config.errorResource))
     ) {
-      error(config.errorCode ?? "INTERNAL_ERROR", config.errorStatus ?? 503);
+      error(
+        config.errorCode ?? "INTERNAL_ERROR",
+        config.errorStatus ?? 503,
+        config.retryAfter ? { "Retry-After": String(config.retryAfter) } : {},
+      );
       return;
     }
     if (path === "/auth/captcha") {

@@ -1,6 +1,52 @@
 // Server-only scenarios. Never select synthetic data from a failed live request.
 export const mockScenarios = {
   success: {},
+  student: { identity: "student" },
+  "student-no-cf": { identity: "student-no-cf" },
+  "student-one-cf": { identity: "student-one-cf" },
+  "student-multiple-cf": { identity: "student-multiple-cf" },
+  "coach-no-teams": { identity: "coach-no-teams" },
+  "coach-one-team": { identity: "coach-one-team" },
+  "coach-multiple-teams": { identity: "coach-multiple-teams" },
+  "coach-owner-member": { identity: "coach-owner-member" },
+  "team-active": { coach: true, teamState: "ACTIVE" },
+  "team-archived": { coach: true, teamState: "ARCHIVED" },
+  "team-dissolved": { coach: true, teamState: "DISSOLVED" },
+  "applications-empty": { coach: true, noApplications: true },
+  "applications-many": { coach: true, manyApplications: true },
+  "invitations-empty": { coach: true, noInvitations: true },
+  "invitations-delivery": { coach: true },
+  "members-privacy-matrix": { coach: true, manyMembers: true },
+  "user-no-analysis": { noAnalysis: true },
+  "user-one-source": { oneAccount: true },
+  "user-insufficient": { zero: true },
+  "report-pending": { keepQueued: true },
+  "report-running": { keepRunning: true },
+  "report-failed-with-history": { aiFailed: true },
+  "team-no-analysis": { coach: true, noTeamAnalysis: true },
+  "team-no-ability": { coach: true, noAbility: true },
+  "team-no-training": { coach: true, noTraining: true },
+  "team-no-level": { coach: true, noLevel: true },
+  "team-no-recommendations": { coach: true, noTeamBatch: true },
+  "team-empty-recommendations": { coach: true, emptyCandidates: true },
+  "team-recommendations-running": { coach: true, keepRunning: true },
+  "team-recommendations-failed": { coach: true, aiFailed: true },
+  "ai-queued": { keepQueued: true },
+  "ai-running": { keepRunning: true },
+  "ai-success": {},
+  "notifications-read": { notificationsRead: true },
+  "notifications-unread": { notificationsRead: false },
+  "notifications-empty": { noNotifications: true },
+  "network-failure": { networkFailure: true },
+  "server-error": { failReads: true },
+  "member-private": { coach: true, memberPrivacy: "private" },
+  "member-training": { coach: true, memberPrivacy: "training" },
+  "member-ability": { coach: true, memberPrivacy: "ability" },
+  "member-submissions": { coach: true, memberPrivacy: "submissions" },
+  "member-reports": { coach: true, memberPrivacy: "reports" },
+  "member-all": { coach: true, memberPrivacy: "all" },
+  "member-mixed": { coach: true, memberPrivacy: "mixed" },
+
   coach: { coach: true },
   "no-sharing": { noSharing: true },
   "no-report": { noReport: true },
@@ -17,10 +63,51 @@ export const mockScenarios = {
   completed: { completed: true },
   error: { failReads: true },
   slow: { delayMs: 1500 },
+  "slow-coach": { coach: true, delayMs: 1500 },
+  "stale-coach": { coach: true, stale: true },
+  "members-server-error": {
+    coach: true,
+    errorResource: "/members",
+    errorCode: "INTERNAL_ERROR",
+    errorStatus: 503,
+  },
+  "owner-delivery-failed": { coach: true, ownerDeliveryFailed: true },
 };
 
 export function scenarioConfig(name) {
   if (!Object.hasOwn(mockScenarios, name))
     throw new Error(`Unknown Mock scenario: ${name}`);
   return structuredClone(mockScenarios[name]);
+}
+
+// Explicit fault presets use the same error envelope and request boundary as live APIs.
+export const mockApiErrors = {
+  SESSION_EXPIRED: 401,
+  ROLE_REQUIRED: 403,
+  TEAM_FORBIDDEN: 403,
+  PRIVACY_DENIED: 403,
+  TEAM_ALREADY_MEMBER: 409,
+  TEAM_NOT_JOINABLE: 409,
+  APPLICATION_ALREADY_PENDING: 409,
+  APPLICATION_ALREADY_PROCESSED: 409,
+  INVITATION_ALREADY_PENDING: 409,
+  INVITATION_ALREADY_PROCESSED: 409,
+  INVITATION_EXPIRED: 409,
+  TEAM_OWNER_CANNOT_LEAVE: 409,
+  USER_SOURCE_NOT_READY: 409,
+  USER_ANALYSIS_NOT_READY: 409,
+  TEAM_ANALYSIS_NOT_READY: 409,
+  TEAM_LEVEL_NOT_READY: 409,
+  TEAM_INVITE_RATE_LIMITED: 429,
+  REPORT_RATE_LIMITED: 429,
+  LLM_UNAVAILABLE: 503,
+};
+for (const [errorCode, errorStatus] of Object.entries(mockApiErrors)) {
+  mockScenarios[`error-${errorCode.toLowerCase().replaceAll("_", "-")}`] = {
+    coach: true,
+    errorResource: "/latest",
+    errorCode,
+    errorStatus,
+    ...(errorStatus === 429 ? { retryAfter: 3 } : {}),
+  };
 }

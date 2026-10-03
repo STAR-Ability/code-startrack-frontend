@@ -10,6 +10,7 @@ import { TooltipProvider } from "../src/components/ui/tooltip";
 import { Toaster } from "../src/components/ui/toast";
 import { resolveLocale, type Locale } from "../src/lib/i18n/locale";
 import "../src/app/globals.css";
+import { installStoryScenario } from "../stories/mock/request-interceptor";
 
 const sans = localFont({
   src: "./fonts/geist-latin.woff2",
@@ -69,6 +70,12 @@ function Providers({
 
 const preview: Preview = {
   tags: ["autodocs"],
+  loaders: [
+    (context) => {
+      installStoryScenario(context.parameters.mockScenario);
+      return {};
+    },
+  ],
   globalTypes: {
     locale: {
       description: "Product language",

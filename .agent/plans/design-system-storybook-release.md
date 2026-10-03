@@ -81,7 +81,8 @@ Do not reset history, remove volumes, or recreate the backend.
 
 - [x] Audit: structure, tokens, landing/workspace, data components, motion, CI and Docker.
 - [x] Baseline: lint, formatting, typecheck, 73 unit tests and static build passed.
-- [ ] Stages 1–9 implemented and validated.
+- [x] Stage 1: semantic tokens and elevation; pnpm check passed; commit 31f0ec4.
+- [ ] Stages 2–9 implemented and validated.
 - [ ] Release and deployment documentation verified.
 
 ## Decisions / Deviations

@@ -8,10 +8,10 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans:
-    var(--font-geist-sans), "PingFang SC", "Microsoft YaHei",
+    var(--font-geist-sans, Arial), "PingFang SC", "Microsoft YaHei",
     "Noto Sans CJK SC", sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-heading: var(--font-geist-sans);
+  --font-heading: var(--font-geist-sans, Arial), "PingFang SC", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -182,18 +182,60 @@
   }
 }
 
-/* Redesign: reuse the existing palette and radius scale throughout. */
+/* Surface hierarchy: white content, neutral canvas, quiet geometric context. */
 @layer components {
+  .brand-surface {
+    position: relative;
+    isolation: isolate;
+    background: var(--background);
+  }
+  .brand-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 54rem;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 80% 18%, var(--canvas), transparent 62%),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 95px,
+        color-mix(in srgb, var(--border) 32%, transparent) 95px 96px
+      );
+    mask-image: linear-gradient(black, transparent);
+  }
+  .brand-hero {
+    position: relative;
+  }
+  .brand-hero::before {
+    content: "";
+    position: absolute;
+    top: 12%;
+    right: 8%;
+    width: min(55vw, 42rem);
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 5rem color-mix(in srgb, var(--canvas) 48%, transparent);
+    z-index: -1;
+    pointer-events: none;
+  }
+  .section-wash {
+    background:
+      radial-gradient(ellipse at 10% 20%, var(--background), transparent 65%),
+      var(--canvas);
+  }
   .workspace-surface {
     position: relative;
     isolation: isolate;
     background:
       radial-gradient(
         ellipse 900px 420px at 90% 0%,
-        color-mix(in srgb, var(--accent) 80%, transparent),
+        color-mix(in srgb, var(--canvas) 85%, transparent),
         transparent
       ),
-      linear-gradient(170deg, var(--background), var(--muted) 65%);
+      linear-gradient(170deg, var(--background), var(--canvas) 65%);
   }
   .workspace-surface::before {
     content: "";
@@ -284,6 +326,7 @@
     @apply rounded-sm py-2 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4;
   }
   .hero-title {
+    text-wrap: balance;
     font-size: clamp(2.5rem, 4.3vw, 4.25rem);
     line-height: 1.18;
     font-weight: 600;
@@ -340,7 +383,7 @@
     isolation: isolate;
     background: radial-gradient(
       ellipse at var(--spot-x, 50%) var(--spot-y, 50%),
-      var(--accent),
+      var(--canvas),
       transparent 64%
     );
   }
@@ -713,13 +756,13 @@
     @apply animate-in fade-in-0 slide-in-from-bottom-2 duration-700;
   }
   .auth-orbit-label-first {
-    animation: auth-float 7s ease-in-out infinite;
+    animation: auth-float 4s ease-in-out 1;
   }
   .auth-orbit-label-last {
-    animation: auth-float 8s ease-in-out -3s infinite;
+    animation: auth-float 4s ease-in-out 1;
   }
   .auth-orbit-path {
-    animation: auth-path 24s linear infinite;
+    animation: auth-path 4s ease-out 1;
   }
   .feedback-enter {
     @apply animate-in fade-in-0 slide-in-from-bottom-1 duration-200;
@@ -792,7 +835,7 @@
     animation-delay: 90ms;
   }
   .practice-intro::after {
-    animation: auth-float 12s ease-in-out infinite;
+    animation: auth-float 4s ease-in-out 1;
   }
 }
 
@@ -833,6 +876,7 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .preview-cards,
   .metric-card:hover dd,
   .group\/button:hover [data-icon="inline-end"] {
     transform: none;

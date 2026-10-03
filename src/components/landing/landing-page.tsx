@@ -61,8 +61,13 @@ export function LandingPage() {
   return (
     <>
       <AppHeader />
-      <main id="main-content" tabIndex={-1} ref={main}>
-        <section className="mx-auto grid max-w-7xl items-center gap-12 px-5 pt-14 pb-20 sm:px-8 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24 lg:pb-28">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        ref={main}
+        className="brand-surface"
+      >
+        <section className="brand-hero mx-auto grid max-w-7xl items-center gap-12 px-5 pt-14 pb-20 sm:px-8 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24 lg:pb-28">
           <div className="flex min-w-0 flex-col items-start gap-7">
             <Badge variant="outline" wrap>
               <span className="size-1.5 shrink-0 rounded-full bg-link" />
@@ -171,7 +176,7 @@ export function LandingPage() {
             ))}
           </div>
         </section>
-        <div className="border-y bg-muted/60">
+        <div className="section-wash border-y">
           <section
             id="features"
             className="landing-section scroll-mt-32"

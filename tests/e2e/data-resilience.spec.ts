@@ -3,18 +3,13 @@ test.beforeEach(() => configureUpstream());
 
 for (const [route, resource, headings] of [
   [
-    "/dashboard",
-    "/dashboard",
-    ["下一步", "为你推荐", "全部 CF 账号 · 训练汇总"],
-  ],
-  [
     "/data",
     "/training/overview",
     ["训练概览", "知识标签", "难度分布", "每日训练", "做题记录"],
   ],
-  ["/profile", "/analysis/latest", ["能力摘要", "六维能力 · 0–100"]],
+  ["/accounts/profile", "/analysis/latest", ["能力摘要", "六维能力 · 0–100"]],
   [
-    "/analysis",
+    "/accounts/analysis",
     "/analysis/latest",
     ["画像指标", "六维能力 · 0–100", "分析历史"],
   ],
@@ -35,35 +30,22 @@ for (const [route, resource, headings] of [
     ).toBeVisible();
     const overview = page.locator('[data-slot="card"]').filter({
       has: page.getByRole("heading", {
-        name:
-          headings[0] === "下一步" ? "全部 CF 账号 · 训练汇总" : headings[0],
+        name: headings[0],
         exact: true,
       }),
     });
-    if (route === "/dashboard") {
-      await expect(
-        overview.locator("dd").filter({ hasText: /^8$/ }),
-      ).toHaveCount(1);
-    } else {
-      await expect(
-        overview.locator("dd").filter({ hasText: /^0$/ }),
-      ).toHaveCount(route === "/data" ? 10 : 4);
-      await expect(overview).toContainText("暂无");
-    }
+    await expect(overview.locator("dd").filter({ hasText: /^0$/ })).toHaveCount(
+      route === "/data" ? 10 : 4,
+    );
+    await expect(overview).toContainText("暂无");
     await configureUpstream({ errorResource: null }, true);
     await page
       .getByRole("button", { name: "重试", exact: true })
       .first()
       .click();
-    if (route === "/dashboard") {
-      await expect(
-        page.getByRole("heading", { name: "#1 A Small Step", exact: true }),
-      ).toBeVisible();
-    } else {
-      await expect(
-        overview.locator("dd").filter({ hasText: /^5$/ }),
-      ).toHaveCount(1);
-    }
+    await expect(overview.locator("dd").filter({ hasText: /^5$/ })).toHaveCount(
+      1,
+    );
     await expect(
       page.locator('section[data-state="mock"]').first(),
     ).toBeVisible();
@@ -133,9 +115,10 @@ test("a complete backend outage keeps safe workspace structures without invented
   ).toBe(true);
   await configureUpstream({ failReads: false }, true);
   await page.getByRole("button", { name: "重试", exact: true }).click();
-  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveValue(
-    "9007199254740993",
-  );
+  await expect(
+    page.getByRole("main").getByText("DemoAlpha", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
 });
 
 test("account details and roles use the two previously unused reads and recover independently", async ({

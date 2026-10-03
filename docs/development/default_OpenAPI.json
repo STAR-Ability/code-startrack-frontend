@@ -1,0 +1,7060 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "码练星轨 CodeStarTrack API",
+    "description": "面向高校 ACM 集训队的训练管理平台后端。\n\n**认证方式**：`POST /api/v1/auth/login` 成功后由服务端通过\n`Set-Cookie` 下发不透明会话 Cookie `cst_session`\n（HttpOnly、SameSite=Lax、7 天）。前端请求需要设置\n`credentials: \"include\"`，**不需要也不应该读取或保存任何令牌**。\n没有刷新接口；会话失效时服务端返回 401 `SESSION_EXPIRED`。\n\n**统一响应结构**：成功为 `{data, requestId}`，\n分页为 `{data, meta, requestId}`，错误为 `{error, requestId}`。\n客户端按 `error.code` 分支，**不要匹配 message 文案**。\n\n**边界说明**：\n- 只读取平台**公开**数据，不采集、不存储任何 OJ 平台的密码或 cookie\n- 除 `/auth/captcha`、`/auth/email-codes` 的注册与找回密码用途、\n  `/auth/register`、`/auth/login`、`/auth/logout`、\n  `/auth/password/reset` 之外，所有接口都需要登录\n- 所有 ID 都是**十进制字符串**，不要转成 JS number\n",
+    "version": "v0.11"
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "当前服务"
+    }
+  ],
+  "tags": [
+    {
+      "name": "团队成员",
+      "description": "名单、移除与退出"
+    },
+    {
+      "name": "教练邀请码",
+      "description": "ADMIN 创建与启停、登录用户兑换"
+    },
+    {
+      "name": "用户画像",
+      "description": "多 CF 聚合的训练总览、最新画像与历史"
+    },
+    {
+      "name": "个人报告",
+      "description": "LLM 生成的个人分析报告"
+    },
+    {
+      "name": "加入申请",
+      "description": "学生提交与取消、教练审批"
+    },
+    {
+      "name": "通知",
+      "description": "站内通知列表与已读"
+    },
+    {
+      "name": "成员数据共享",
+      "description": "按隐私设置开放的基础训练、能力画像、提交与报告"
+    },
+    {
+      "name": "团队邀请",
+      "description": "OWNER 发起与管理、被邀请人接受或拒绝"
+    },
+    {
+      "name": "OJ 账号",
+      "description": "绑定、解绑、同步、同步状态"
+    },
+    {
+      "name": "认证",
+      "description": "图形验证码、邮箱验证码、注册、登录、退出、找回密码"
+    },
+    {
+      "name": "同步任务",
+      "description": "查询同步任务的进度与结果"
+    },
+    {
+      "name": "团队推荐",
+      "description": "按受众隔离的团队题目推荐批次"
+    },
+    {
+      "name": "团队画像",
+      "description": "整体能力概览与历史"
+    },
+    {
+      "name": "团队",
+      "description": "创建、检索、资料修改与状态转换"
+    },
+    {
+      "name": "教练工作台",
+      "description": "我管理的团队概览"
+    },
+    {
+      "name": "账号数据",
+      "description": "做题列表、提交、Rating、画像、推荐、总览"
+    },
+    {
+      "name": "AI 任务",
+      "description": "画像、报告、团队分析与推荐的统一任务查询"
+    },
+    {
+      "name": "当前用户",
+      "description": "查看自己的信息与角色、修改密码、更改邮箱"
+    },
+    {
+      "name": "管理员-角色",
+      "description": "授予与撤销 COACH"
+    },
+    {
+      "name": "隐私设置",
+      "description": "我自己开放了哪些数据"
+    }
+  ],
+  "paths": {
+    "/api/v1/admin/users/{publicId}/roles/COACH": {
+      "put": {
+        "tags": ["管理员-角色"],
+        "summary": "授予 COACH",
+        "description": "已有 COACH 仍返回 200；STUDENT 不会被移除。",
+        "operationId": "grantCoach",
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["管理员-角色"],
+        "summary": "撤销 COACH",
+        "description": "该用户仍是任一未解散团队的负责人时返回 409 COACH_OWNS_TEAM。",
+        "operationId": "revokeCoach",
+        "parameters": [
+          {
+            "name": "publicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/teams": {
+      "post": {
+        "tags": ["团队"],
+        "summary": "创建团队",
+        "description": "需要 COACH 角色；创建者自动成为唯一 OWNER。",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTeamRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/transfer": {
+      "post": {
+        "tags": ["团队"],
+        "summary": "转让团队负责人",
+        "description": "新负责人必须是该团队的成员且拥有 COACH 角色。",
+        "operationId": "transfer",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferTeamRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/recommendations/generate": {
+      "post": {
+        "tags": ["团队推荐"],
+        "summary": "生成团队推荐",
+        "description": "audience 必填（COACH/MEMBER）；画像没有能力样本或等级样本时分别返回 409。",
+        "operationId": "generate",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateTeamRecommendationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAiJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/leave": {
+      "post": {
+        "tags": ["团队成员"],
+        "summary": "退出团队",
+        "description": "OWNER 会得到 409 TEAM_OWNER_CANNOT_LEAVE。",
+        "operationId": "leave",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/invitations": {
+      "get": {
+        "tags": ["团队邀请"],
+        "summary": "团队的邀请列表",
+        "description": "仅 OWNER；包含 inviteeEmail 与邮件交付状态。",
+        "operationId": "byTeam",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseTeamInvitationDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["团队邀请"],
+        "summary": "邀请加入团队",
+        "description": "邮箱可以是未注册的；对方用同一邮箱注册后会自动绑定这条邀请。",
+        "operationId": "create",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvitationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamInvitationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/dissolve": {
+      "post": {
+        "tags": ["团队"],
+        "summary": "解散团队",
+        "description": "confirmation 必须精确等于团队名称。不可恢复。",
+        "operationId": "dissolve",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DissolveTeamRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/archive": {
+      "post": {
+        "tags": ["团队"],
+        "summary": "归档团队",
+        "description": "同时取消全部待处理的申请与邀请。",
+        "operationId": "archive",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/applications": {
+      "get": {
+        "tags": ["加入申请"],
+        "summary": "团队的加入申请",
+        "description": "仅 OWNER；status 默认 PENDING。",
+        "operationId": "byTeam",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseJoinApplicationDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["加入申请"],
+        "summary": "申请加入团队",
+        "description": "同一团队同一用户只能有一个 PENDING。",
+        "operationId": "apply",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinApplicationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseJoinApplicationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/analysis/rebuild": {
+      "post": {
+        "tags": ["团队画像"],
+        "summary": "重建团队画像",
+        "description": "仅 OWNER；系统也会在成员或隐私变化后自动触发。",
+        "operationId": "rebuild",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAiJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/activate": {
+      "post": {
+        "tags": ["团队"],
+        "summary": "重新启用团队",
+        "description": "被归档时取消的申请与邀请不会自动恢复，需要重新提交。",
+        "operationId": "activate",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-invitations/{invitationId}/resend": {
+      "post": {
+        "tags": ["团队邀请"],
+        "summary": "重发邀请",
+        "description": "更新本行而不是新建；过频返回 429。",
+        "operationId": "resend",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamInvitationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-invitations/{invitationId}/reject": {
+      "post": {
+        "tags": ["团队邀请"],
+        "summary": "拒绝邀请",
+        "operationId": "reject",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamInvitationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-invitations/{invitationId}/cancel": {
+      "post": {
+        "tags": ["团队邀请"],
+        "summary": "撤销邀请",
+        "operationId": "cancel",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamInvitationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-invitations/{invitationId}/accept": {
+      "post": {
+        "tags": ["团队邀请"],
+        "summary": "接受邀请",
+        "description": "同一事务里创建 ACTIVE 成员关系。",
+        "operationId": "accept",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamInvitationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-applications/{applicationId}/reject": {
+      "post": {
+        "tags": ["加入申请"],
+        "summary": "拒绝加入申请",
+        "operationId": "reject",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecideApplicationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseJoinApplicationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-applications/{applicationId}/cancel": {
+      "post": {
+        "tags": ["加入申请"],
+        "summary": "取消加入申请",
+        "operationId": "cancel",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseJoinApplicationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-applications/{applicationId}/approve": {
+      "post": {
+        "tags": ["加入申请"],
+        "summary": "通过加入申请",
+        "description": "同一事务里创建 ACTIVE 成员关系。",
+        "operationId": "approve",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseJoinApplicationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts": {
+      "get": {
+        "tags": ["OJ 账号"],
+        "summary": "列出我的 OJ 账号",
+        "description": "默认只返回 ACTIVE 与 INVALID 的绑定；UNBOUND 需要显式 includeUnbound=true。",
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "includeUnbound",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseOjAccountDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["OJ 账号"],
+        "summary": "绑定 OJ 账号",
+        "description": "用公开的 user.info 校验 handle。同一有效 handle 只能属于一个用户；自己重复绑定返回 409 并在 details.accountId 里给出已有记录。",
+        "operationId": "bind",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindOjAccountRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseBindOjAccountResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/sync": {
+      "post": {
+        "tags": ["OJ 账号"],
+        "summary": "手动同步",
+        "description": "已有在途任务时返回同一任务。每账号 60 秒内只能触发一次，超限返回 429。",
+        "operationId": "sync",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSyncJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/recommendations/generate": {
+      "post": {
+        "tags": ["账号数据"],
+        "summary": "生成推荐",
+        "description": "必须带 Idempotency-Key（UUID）。首次返回 201，同 key 重放返回 200 与原批次。",
+        "operationId": "generate",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRecommendationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRecommendationBatchDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/analysis/rebuild": {
+      "post": {
+        "tags": ["OJ 账号"],
+        "summary": "重建分析",
+        "description": "不访问 Codeforces，只用当前已同步的数据重算画像。INVALID 的绑定不能重建（返回 409）。",
+        "operationId": "rebuildAnalysis",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSyncJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/{notificationId}/read": {
+      "post": {
+        "tags": ["通知"],
+        "summary": "标记通知已读",
+        "operationId": "read",
+        "parameters": [
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseNotificationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/read-all": {
+      "post": {
+        "tags": ["通知"],
+        "summary": "全部标记已读",
+        "operationId": "readAll",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUpdatedCountResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/reports/generate": {
+      "post": {
+        "tags": ["个人报告"],
+        "summary": "手动生成报告",
+        "description": "已有在途任务时返回同一个 job；过频返回 429 REPORT_RATE_LIMITED。",
+        "operationId": "generate",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAiJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/password/change": {
+      "post": {
+        "tags": ["当前用户"],
+        "summary": "修改密码",
+        "description": "需要当前密码。成功后该用户的全部会话被撤销，前端应跳回登录页。",
+        "operationId": "changePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseChangePasswordResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/email/change": {
+      "post": {
+        "tags": ["当前用户"],
+        "summary": "更改绑定邮箱",
+        "description": "需要当前密码 + 旧邮箱验证码 + 新邮箱验证码。成功后全部会话被撤销。",
+        "operationId": "changeEmail",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseChangeEmailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/analysis/rebuild": {
+      "post": {
+        "tags": ["用户画像"],
+        "summary": "重建我的画像",
+        "description": "已有在途任务时返回同一个 job；距上次成功构建不足 60 秒返回 429。",
+        "operationId": "rebuild",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAiJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/coach-invite-codes/redeem": {
+      "post": {
+        "tags": ["教练邀请码"],
+        "summary": "兑换教练邀请码",
+        "description": "成功后 /me 同时包含 STUDENT 与 COACH；失败统一返回 400。",
+        "operationId": "redeem",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemCoachInviteCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "注册",
+        "description": "需要邮箱验证码与用户名。注册成功即登录，默认 STUDENT 角色。",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRegisterResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "找回密码",
+        "description": "用邮箱验证码换一次改密码的机会。成功后撤销该用户的全部会话。",
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseResetPasswordResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "退出登录",
+        "description": "只撤销当前会话。没有有效会话时也返回成功。",
+        "operationId": "logout",
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout-all": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "退出全部设备",
+        "description": "撤销该用户的全部有效会话。",
+        "operationId": "logoutAll",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLogoutAllResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "登录",
+        "description": "account 可填用户名或邮箱。账号不存在与密码错误返回同一个 INVALID_CREDENTIALS。",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/email-codes": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "发送邮箱验证码",
+        "description": "注册与找回密码匿名可用；换邮箱的两个用途必须登录。同邮箱跨用途 60 秒内只能发一次，超限返回 429 并带 Retry-After。",
+        "operationId": "sendEmailCode",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendEmailCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSendEmailCodeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/captcha": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "获取图形验证码",
+        "description": "返回 challengeId 与图片（PNG data URL）。有效 180 秒、一次性；校验失败或提交后必须重新获取。",
+        "operationId": "captcha",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCaptchaResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/coach-invite-codes": {
+      "get": {
+        "tags": ["教练邀请码"],
+        "summary": "教练邀请码列表",
+        "description": "只返回前缀，不返回明文。",
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "enabled",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseCoachInviteCodeDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["教练邀请码"],
+        "summary": "创建教练邀请码",
+        "description": "明文 code 仅此一次返回。",
+        "operationId": "create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCoachInviteCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCoachInviteCodeCreatedDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}": {
+      "get": {
+        "tags": ["团队"],
+        "summary": "团队详情",
+        "operationId": "detail",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamDetailDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["团队"],
+        "summary": "修改团队资料",
+        "description": "省略的字段不修改；传空字符串表示清空简介或头像。",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeamRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamDetailDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/privacy": {
+      "get": {
+        "tags": ["隐私设置"],
+        "summary": "查询隐私设置",
+        "operationId": "get",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePrivacySettingsDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["隐私设置"],
+        "summary": "修改隐私设置",
+        "description": "取值 PRIVATE / TEAM_COACH / TEAM_MEMBER / PUBLIC。",
+        "operationId": "update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePrivacyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePrivacySettingsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/coach-invite-codes/{codeId}": {
+      "patch": {
+        "tags": ["教练邀请码"],
+        "summary": "启用或停用邀请码",
+        "description": "只能改启用状态，不能改次数与有效期。",
+        "operationId": "update",
+        "parameters": [
+          {
+            "name": "codeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCoachInviteCodeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCoachInviteCodeDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": ["health-controller"],
+        "operationId": "health",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/recommendations/{batchId}": {
+      "get": {
+        "tags": ["团队推荐"],
+        "summary": "指定团队推荐批次",
+        "description": "COACH 批次仅 OWNER 可见；MEMBER 批次所有 ACTIVE 成员可见。",
+        "operationId": "byId",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamRecommendationBatchDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/recommendations/latest": {
+      "get": {
+        "tags": ["团队推荐"],
+        "summary": "最新团队推荐",
+        "description": "省略 audience 时 OWNER 默认 COACH、普通成员固定 MEMBER。",
+        "operationId": "latest",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "audience",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "HYBRID"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamRecommendationBatchDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/recommendations/history": {
+      "get": {
+        "tags": ["团队推荐"],
+        "summary": "团队推荐历史",
+        "operationId": "history",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "audience",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseTeamRecommendationBatchDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/members": {
+      "get": {
+        "tags": ["团队成员"],
+        "summary": "团队成员名单",
+        "description": "仅 OWNER 可读；dataAccess 表示该成员向教练开放了哪几项。",
+        "operationId": "members",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseTeamMemberDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/members/{memberPublicId}/training/overview": {
+      "get": {
+        "tags": ["成员数据共享"],
+        "summary": "成员的基础训练概览",
+        "description": "受 basicTraining 控制；不返回综合分与六维。",
+        "operationId": "trainingOverview",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberPublicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSharedTrainingOverviewDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/members/{memberPublicId}/submissions": {
+      "get": {
+        "tags": ["成员数据共享"],
+        "summary": "成员的提交记录",
+        "description": "受 detailedSubmissions 控制；跨账号重复的同一提交只返回一次。",
+        "operationId": "submissions",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberPublicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "verdict",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "problemId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseUserSubmissionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/members/{memberPublicId}/reports": {
+      "get": {
+        "tags": ["成员数据共享"],
+        "summary": "成员的分析报告列表",
+        "description": "受 analysisReport 控制。",
+        "operationId": "reports",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberPublicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponsePersonalReportDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/members/{memberPublicId}/reports/{reportId}": {
+      "get": {
+        "tags": ["成员数据共享"],
+        "summary": "成员的分析报告详情",
+        "operationId": "report",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberPublicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePersonalReportDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/members/{memberPublicId}/profile": {
+      "get": {
+        "tags": ["成员数据共享"],
+        "summary": "成员的能力画像",
+        "description": "受 abilityProfile 控制；不返回汇总统计与标签/难度分布。",
+        "operationId": "profile",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberPublicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSharedAbilityProfileDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/analysis/latest": {
+      "get": {
+        "tags": ["团队画像"],
+        "summary": "团队最新画像",
+        "description": "includedMemberCount=0 时前端应显示「当前没有成员允许共享能力画像」。",
+        "operationId": "latest",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTeamAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/analysis/history": {
+      "get": {
+        "tags": ["团队画像"],
+        "summary": "团队画像历史",
+        "operationId": "history",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseTeamAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/search": {
+      "get": {
+        "tags": ["团队"],
+        "summary": "搜索团队",
+        "description": "按名称模糊匹配，不返回已解散的团队。",
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseTeamSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/mine": {
+      "get": {
+        "tags": ["团队"],
+        "summary": "我的团队",
+        "description": "scope 默认 ALL：我管理的与我加入的并集。",
+        "operationId": "mine",
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseTeamSummaryDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sync-jobs/{jobId}": {
+      "get": {
+        "tags": ["同步任务"],
+        "summary": "查询同步任务",
+        "description": "只能查询自己账号的任务；不属于自己的返回 404。",
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSyncJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}": {
+      "get": {
+        "tags": ["OJ 账号"],
+        "summary": "查询单个 OJ 账号",
+        "description": "可以读自己已解绑的历史记录。",
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseOjAccountDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["OJ 账号"],
+        "summary": "解绑 OJ 账号",
+        "description": "软解绑：记录与历史都保留，绑定状态变为 UNBOUND。重复调用返回成功。",
+        "operationId": "unbind",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/training/overview": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "训练概览",
+        "description": "返回完整的 AnalysisDto；未生成时 data 为 null。",
+        "operationId": "trainingOverview",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "30D"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/sync-status": {
+      "get": {
+        "tags": ["OJ 账号"],
+        "summary": "查询同步状态",
+        "description": "包含最近一次任务（含在途的）。",
+        "operationId": "syncStatus",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseSyncStatusDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/submissions": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "提交列表",
+        "description": "from 包含、to 不包含；按 submittedAt 与 submissionId 倒序。",
+        "operationId": "submissions",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "verdict",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "problemId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseSubmissionDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/recommendations/{batchId}": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "查询指定推荐批次",
+        "description": "非法或不属于该账号返回 404。",
+        "operationId": "recommendationById",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRecommendationBatchDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/recommendations/latest": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "最新推荐批次",
+        "description": "没有生成过时 data 为 null。",
+        "operationId": "latestRecommendations",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "HYBRID"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRecommendationBatchDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/recommendations/history": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "推荐历史",
+        "description": "按 generatedAt 与 batchId 倒序。",
+        "operationId": "recommendationHistory",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseRecommendationBatchDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/rating-changes": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "Rating 变化列表",
+        "description": "按 occurredAt 与 contestId 倒序。",
+        "operationId": "ratingChanges",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseRatingChangeDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/problems": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "做题列表",
+        "description": "只含该账号有提交的题。SOLVED 为全历史至少一次 AC；难度过滤时 null 不匹配，两个边界都包含。",
+        "operationId": "problems",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minDifficulty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "maxDifficulty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseProblemProgressDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/dashboard": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "账号总览",
+        "description": "一次返回绑定、同步状态、最新画像与推荐。",
+        "operationId": "dashboard",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseDashboardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/analysis/{snapshotId}": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "查询指定画像快照",
+        "description": "不存在或不属于该账号返回 404。",
+        "operationId": "analysisById",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/analysis/latest": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "最新画像",
+        "operationId": "latestAnalysis",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ALL"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/oj-accounts/{accountId}/analysis/history": {
+      "get": {
+        "tags": ["账号数据"],
+        "summary": "画像历史",
+        "description": "按 dataCutoffAt、createdAt、snapshotId 倒序。",
+        "operationId": "analysisHistory",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "tags": ["通知"],
+        "summary": "我的通知列表",
+        "operationId": "list",
+        "parameters": [
+          {
+            "name": "unreadOnly",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseNotificationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/notifications/unread-count": {
+      "get": {
+        "tags": ["通知"],
+        "summary": "未读通知数",
+        "operationId": "unreadCount",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCountResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "tags": ["当前用户"],
+        "summary": "查询当前登录用户",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/training/overview": {
+      "get": {
+        "tags": ["用户画像"],
+        "summary": "我的训练概览",
+        "description": "多账号聚合：currentRating 是各账号的最大值，明细见 ratingAccounts。",
+        "operationId": "overview",
+        "parameters": [
+          {
+            "name": "window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "30D"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/team-invitations": {
+      "get": {
+        "tags": ["团队邀请"],
+        "summary": "我的邀请",
+        "operationId": "mine",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseTeamInvitationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/team-applications": {
+      "get": {
+        "tags": ["加入申请"],
+        "summary": "我的加入申请",
+        "operationId": "mine",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseJoinApplicationDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/roles": {
+      "get": {
+        "tags": ["当前用户"],
+        "summary": "查询当前用户的角色",
+        "description": "primaryRole 按 ADMIN 大于 COACH 大于 STUDENT 的优先级选出。",
+        "operationId": "roles",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseRolesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/reports": {
+      "get": {
+        "tags": ["个人报告"],
+        "summary": "我的报告历史",
+        "operationId": "history",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponsePersonalReportDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/reports/{reportId}": {
+      "get": {
+        "tags": ["个人报告"],
+        "summary": "我的指定报告",
+        "description": "不存在或不属于我时返回 404 REPORT_NOT_FOUND。",
+        "operationId": "byId",
+        "parameters": [
+          {
+            "name": "reportId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePersonalReportDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/reports/latest": {
+      "get": {
+        "tags": ["个人报告"],
+        "summary": "我的最新报告",
+        "operationId": "latest",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponsePersonalReportDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/analysis/{snapshotId}": {
+      "get": {
+        "tags": ["用户画像"],
+        "summary": "我的指定画像快照",
+        "description": "不存在或不属于我时返回 404。",
+        "operationId": "byId",
+        "parameters": [
+          {
+            "name": "snapshotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/analysis/latest": {
+      "get": {
+        "tags": ["用户画像"],
+        "summary": "我的最新画像",
+        "operationId": "latest",
+        "parameters": [
+          {
+            "name": "window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ALL"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseUserAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/analysis/history": {
+      "get": {
+        "tags": ["用户画像"],
+        "summary": "我的画像历史",
+        "operationId": "history",
+        "parameters": [
+          {
+            "name": "window",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "ALL"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageResponseUserAnalysisDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/coach/dashboard": {
+      "get": {
+        "tags": ["教练工作台"],
+        "summary": "教练工作台",
+        "description": "需要 COACH 角色。",
+        "operationId": "dashboard",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCoachDashboardDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ai-jobs/{jobId}": {
+      "get": {
+        "tags": ["AI 任务"],
+        "summary": "查询 AI 任务",
+        "description": "他人与不存在的任务统一返回 404 AI_JOB_NOT_FOUND。",
+        "operationId": "get",
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseAiJobDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{teamId}/members/{memberPublicId}": {
+      "delete": {
+        "tags": ["团队成员"],
+        "summary": "移除成员",
+        "description": "被移除的用户会收到站内通知。",
+        "operationId": "removeMember",
+        "parameters": [
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memberPublicId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/error": {
+      "get": {
+        "tags": ["api-error-controller"],
+        "operationId": "handle",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["api-error-controller"],
+        "operationId": "handle",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["api-error-controller"],
+        "operationId": "handle",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["api-error-controller"],
+        "operationId": "handle",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "options": {
+        "tags": ["api-error-controller"],
+        "operationId": "handle",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "head": {
+        "tags": ["api-error-controller"],
+        "operationId": "handle",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["api-error-controller"],
+        "operationId": "handle",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApiResponseUserResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UserResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "UserDto": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "refType": null
+          },
+          "username": {
+            "type": "string",
+            "refType": null
+          },
+          "displayName": {
+            "type": "string",
+            "refType": null
+          },
+          "email": {
+            "type": "string",
+            "refType": null
+          },
+          "avatarUrl": {
+            "type": "string",
+            "refType": null
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "refType": null
+          },
+          "accountStatus": {
+            "type": "string",
+            "refType": null
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "refType": "string"
+          },
+          "primaryRole": {
+            "type": "string",
+            "refType": null
+          },
+          "locale": {
+            "type": "string",
+            "refType": null
+          },
+          "timezone": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserDto",
+            "refType": "UserDto"
+          }
+        }
+      },
+      "CreateTeamRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "refType": null
+          },
+          "description": {
+            "type": "string",
+            "refType": null
+          },
+          "avatarUrl": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseTeamDetailDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TeamDetailDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "TeamDetailDto": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "refType": null
+          },
+          "name": {
+            "type": "string",
+            "refType": null
+          },
+          "description": {
+            "type": "string",
+            "refType": null
+          },
+          "avatarUrl": {
+            "type": "string",
+            "refType": null
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "ARCHIVED", "DISSOLVED"],
+            "refType": null
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          },
+          "memberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "myMembershipRole": {
+            "type": "string",
+            "enum": ["OWNER", "MEMBER"],
+            "refType": null
+          },
+          "myJoinApplicationStatus": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
+            "refType": null
+          },
+          "myInvitationStatus": {
+            "type": "string",
+            "enum": ["PENDING", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"],
+            "refType": null
+          },
+          "creator": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          },
+          "canManage": {
+            "type": "boolean",
+            "refType": null
+          },
+          "canLeave": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "UserBriefDto": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "refType": null
+          },
+          "username": {
+            "type": "string",
+            "refType": null
+          },
+          "displayName": {
+            "type": "string",
+            "refType": null
+          },
+          "avatarUrl": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "TransferTeamRequest": {
+        "type": "object",
+        "properties": {
+          "newOwnerPublicId": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "GenerateTeamRecommendationsRequest": {
+        "type": "object",
+        "properties": {
+          "audience": {
+            "type": "string",
+            "refType": null
+          },
+          "mode": {
+            "type": "string",
+            "refType": null
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "AiJobDto": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "refType": null
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "USER_ANALYSIS",
+              "PERSONAL_REPORT",
+              "TEAM_ANALYSIS",
+              "TEAM_RECOMMENDATION"
+            ],
+            "refType": null
+          },
+          "triggerType": {
+            "type": "string",
+            "enum": ["MANUAL", "SCHEDULED", "SYSTEM"],
+            "refType": null
+          },
+          "status": {
+            "type": "string",
+            "enum": ["QUEUED", "RUNNING", "SUCCESS", "FAILED"],
+            "refType": null
+          },
+          "resultId": {
+            "type": "string",
+            "refType": null
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiJobErrorDto"
+            },
+            "refType": "AiJobErrorDto"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "finishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "AiJobErrorDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "refType": null
+          },
+          "message": {
+            "type": "string",
+            "refType": null
+          },
+          "retryable": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseAiJobDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AiJobDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateInvitationRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseTeamInvitationDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TeamInvitationDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "TeamInvitationDto": {
+        "type": "object",
+        "properties": {
+          "invitationId": {
+            "type": "string",
+            "refType": null
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamSummaryDto",
+            "refType": "TeamSummaryDto"
+          },
+          "inviter": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          },
+          "invitee": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          },
+          "inviteeEmail": {
+            "type": "string",
+            "refType": null
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"],
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "lastSentAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "respondedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "emailDeliveryStatus": {
+            "type": "string",
+            "enum": ["PENDING", "SENT", "FAILED"],
+            "refType": null
+          },
+          "emailDeliveryErrorCode": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "TeamSummaryDto": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "refType": null
+          },
+          "name": {
+            "type": "string",
+            "refType": null
+          },
+          "description": {
+            "type": "string",
+            "refType": null
+          },
+          "avatarUrl": {
+            "type": "string",
+            "refType": null
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "ARCHIVED", "DISSOLVED"],
+            "refType": null
+          },
+          "owner": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          },
+          "memberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "myMembershipRole": {
+            "type": "string",
+            "enum": ["OWNER", "MEMBER"],
+            "refType": null
+          },
+          "myJoinApplicationStatus": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
+            "refType": null
+          },
+          "myInvitationStatus": {
+            "type": "string",
+            "enum": ["PENDING", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"],
+            "refType": null
+          }
+        }
+      },
+      "DissolveTeamRequest": {
+        "type": "object",
+        "properties": {
+          "confirmation": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "JoinApplicationRequest": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseJoinApplicationDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/JoinApplicationDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "JoinApplicationDto": {
+        "type": "object",
+        "properties": {
+          "applicationId": {
+            "type": "string",
+            "refType": null
+          },
+          "team": {
+            "$ref": "#/components/schemas/TeamSummaryDto",
+            "refType": "TeamSummaryDto"
+          },
+          "applicant": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED", "CANCELLED"],
+            "refType": null
+          },
+          "message": {
+            "type": "string",
+            "refType": null
+          },
+          "decisionReason": {
+            "type": "string",
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "decidedBy": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          }
+        }
+      },
+      "DecideApplicationRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "BindOjAccountRequest": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "refType": null
+          },
+          "username": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseBindOjAccountResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/BindOjAccountResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "BindOjAccountResponse": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/OjAccountDto",
+            "refType": "OjAccountDto"
+          },
+          "initialSync": {
+            "$ref": "#/components/schemas/SyncJobDto",
+            "refType": "SyncJobDto"
+          }
+        }
+      },
+      "JobError": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "type": "string",
+            "refType": null
+          },
+          "code": {
+            "type": "string",
+            "refType": null
+          },
+          "message": {
+            "type": "string",
+            "refType": null
+          },
+          "retryable": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "OjAccountDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "platform": {
+            "type": "string",
+            "refType": null
+          },
+          "username": {
+            "type": "string",
+            "refType": null
+          },
+          "bindStatus": {
+            "type": "string",
+            "refType": null
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "maxRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "rank": {
+            "type": "string",
+            "refType": null
+          },
+          "maxRank": {
+            "type": "string",
+            "refType": null
+          },
+          "contribution": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "friendOfCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "firstName": {
+            "type": "string",
+            "refType": null
+          },
+          "lastName": {
+            "type": "string",
+            "refType": null
+          },
+          "country": {
+            "type": "string",
+            "refType": null
+          },
+          "city": {
+            "type": "string",
+            "refType": null
+          },
+          "organization": {
+            "type": "string",
+            "refType": null
+          },
+          "avatarUrl": {
+            "type": "string",
+            "refType": null
+          },
+          "titlePhotoUrl": {
+            "type": "string",
+            "refType": null
+          },
+          "registeredAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "lastOnlineAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "lastSyncStatus": {
+            "type": "string",
+            "refType": null
+          },
+          "nextSyncAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "boundAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "unboundAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "SyncJobDto": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "refType": null
+          },
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "scope": {
+            "type": "string",
+            "refType": null
+          },
+          "triggerType": {
+            "type": "string",
+            "refType": null
+          },
+          "status": {
+            "type": "string",
+            "refType": null
+          },
+          "stage": {
+            "type": "string",
+            "refType": null
+          },
+          "itemsFetched": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "itemsInserted": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "itemsUpdated": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JobError"
+            },
+            "refType": "JobError"
+          },
+          "requestedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "finishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseSyncJobDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SyncJobDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "GenerateRecommendationsRequest": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "refType": null
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseRecommendationBatchDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RecommendationBatchDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ProblemDto": {
+        "type": "object",
+        "properties": {
+          "problemId": {
+            "type": "string",
+            "refType": null
+          },
+          "platform": {
+            "type": "string",
+            "refType": null
+          },
+          "externalProblemKey": {
+            "type": "string",
+            "refType": null
+          },
+          "title": {
+            "type": "string",
+            "refType": null
+          },
+          "difficulty": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "points": {
+            "type": "number",
+            "refType": null
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "refType": "string"
+          },
+          "solvedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "url": {
+            "type": "string",
+            "refType": null
+          },
+          "isGym": {
+            "type": "boolean",
+            "refType": null
+          },
+          "catalogSource": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "RecommendationBatchDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "batchId": {
+            "type": "string",
+            "refType": null
+          },
+          "analysisSnapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "mode": {
+            "type": "string",
+            "refType": null
+          },
+          "targetRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "targetDimension": {
+            "type": "string",
+            "refType": null
+          },
+          "algorithmVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "mappingVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "candidateCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "resultCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "recommendations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecommendationDto"
+            },
+            "refType": "RecommendationDto"
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "stale": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "RecommendationDto": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "problem": {
+            "$ref": "#/components/schemas/ProblemDto",
+            "refType": "ProblemDto"
+          },
+          "score": {
+            "type": "number",
+            "refType": null
+          },
+          "reasonCode": {
+            "type": "string",
+            "refType": null
+          },
+          "reason": {
+            "type": "string",
+            "refType": null
+          },
+          "matchedDimension": {
+            "type": "string",
+            "refType": null
+          },
+          "solvedSinceGeneration": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseNotificationDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NotificationDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "NotificationDto": {
+        "type": "object",
+        "properties": {
+          "notificationId": {
+            "type": "string",
+            "refType": null
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "TEAM_INVITATION",
+              "TEAM_INVITATION_CANCELLED",
+              "JOIN_APPLICATION_CREATED",
+              "JOIN_APPLICATION_APPROVED",
+              "JOIN_APPLICATION_REJECTED",
+              "JOIN_APPLICATION_CANCELLED",
+              "MEMBER_JOINED",
+              "MEMBER_REMOVED"
+            ],
+            "refType": null
+          },
+          "title": {
+            "type": "string",
+            "refType": null
+          },
+          "body": {
+            "type": "string",
+            "refType": null
+          },
+          "teamId": {
+            "type": "string",
+            "format": "uuid",
+            "refType": null
+          },
+          "actor": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          },
+          "referenceType": {
+            "type": "string",
+            "refType": null
+          },
+          "referenceId": {
+            "type": "string",
+            "format": "uuid",
+            "refType": null
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            },
+            "refType": null
+          },
+          "read": {
+            "type": "boolean",
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseUpdatedCountResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UpdatedCountResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdatedCountResponse": {
+        "type": "object",
+        "properties": {
+          "updated": {
+            "type": "integer",
+            "format": "int64",
+            "refType": null
+          }
+        }
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "refType": null
+          },
+          "newPassword": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseChangePasswordResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ChangePasswordResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangePasswordResponse": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "type": "boolean",
+            "refType": null
+          },
+          "reauthRequired": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "ChangeEmailRequest": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "refType": null
+          },
+          "oldEmail": {
+            "type": "string",
+            "refType": null
+          },
+          "oldVerificationId": {
+            "type": "string",
+            "refType": null
+          },
+          "oldEmailCode": {
+            "type": "string",
+            "refType": null
+          },
+          "newEmail": {
+            "type": "string",
+            "refType": null
+          },
+          "newVerificationId": {
+            "type": "string",
+            "refType": null
+          },
+          "newEmailCode": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseChangeEmailResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ChangeEmailResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeEmailResponse": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "refType": null
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "refType": null
+          },
+          "reauthRequired": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "RedeemCoachInviteCodeRequest": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "refType": null
+          },
+          "email": {
+            "type": "string",
+            "refType": null
+          },
+          "password": {
+            "type": "string",
+            "refType": null
+          },
+          "verificationId": {
+            "type": "string",
+            "refType": null
+          },
+          "emailCode": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseRegisterResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RegisterResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserDto",
+            "refType": "UserDto"
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "refType": null
+          },
+          "verificationId": {
+            "type": "string",
+            "refType": null
+          },
+          "emailCode": {
+            "type": "string",
+            "refType": null
+          },
+          "newPassword": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseResetPasswordResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ResetPasswordResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ResetPasswordResponse": {
+        "type": "object",
+        "properties": {
+          "reset": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseLogoutAllResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LogoutAllResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "LogoutAllResponse": {
+        "type": "object",
+        "properties": {
+          "revokedSessions": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": "string",
+            "refType": null
+          },
+          "password": {
+            "type": "string",
+            "refType": null
+          },
+          "captchaChallengeId": {
+            "type": "string",
+            "refType": null
+          },
+          "captchaAnswer": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseLoginResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LoginResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/UserDto",
+            "refType": "UserDto"
+          },
+          "requiresOjBinding": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "SendEmailCodeRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "refType": null
+          },
+          "purpose": {
+            "type": "string",
+            "refType": null
+          },
+          "captchaChallengeId": {
+            "type": "string",
+            "refType": null
+          },
+          "captchaAnswer": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseSendEmailCodeResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SendEmailCodeResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "SendEmailCodeResponse": {
+        "type": "object",
+        "properties": {
+          "verificationId": {
+            "type": "string",
+            "refType": null
+          },
+          "cooldownSeconds": {
+            "type": "integer",
+            "format": "int64",
+            "refType": null
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "format": "int64",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseCaptchaResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CaptchaResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "CaptchaResponse": {
+        "type": "object",
+        "properties": {
+          "challengeId": {
+            "type": "string",
+            "refType": null
+          },
+          "imageData": {
+            "type": "string",
+            "refType": null
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "format": "int64",
+            "refType": null
+          }
+        }
+      },
+      "CreateCoachInviteCodeRequest": {
+        "type": "object",
+        "properties": {
+          "organization": {
+            "type": "string",
+            "refType": null
+          },
+          "maxUses": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseCoachInviteCodeCreatedDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CoachInviteCodeCreatedDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "CoachInviteCodeCreatedDto": {
+        "type": "object",
+        "properties": {
+          "codeId": {
+            "type": "string",
+            "refType": null
+          },
+          "code": {
+            "type": "string",
+            "refType": null
+          },
+          "organization": {
+            "type": "string",
+            "refType": null
+          },
+          "maxUses": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "usedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "enabled": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "UpdateTeamRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "refType": null
+          },
+          "description": {
+            "type": "string",
+            "refType": null
+          },
+          "avatarUrl": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "UpdatePrivacyRequest": {
+        "type": "object",
+        "properties": {
+          "basicTraining": {
+            "type": "string",
+            "refType": null
+          },
+          "abilityProfile": {
+            "type": "string",
+            "refType": null
+          },
+          "detailedSubmissions": {
+            "type": "string",
+            "refType": null
+          },
+          "analysisReport": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponsePrivacySettingsDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PrivacySettingsDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PrivacySettingsDto": {
+        "type": "object",
+        "properties": {
+          "basicTraining": {
+            "type": "string",
+            "enum": ["PRIVATE", "TEAM_COACH", "TEAM_MEMBER", "PUBLIC"],
+            "refType": null
+          },
+          "abilityProfile": {
+            "type": "string",
+            "enum": ["PRIVATE", "TEAM_COACH", "TEAM_MEMBER", "PUBLIC"],
+            "refType": null
+          },
+          "detailedSubmissions": {
+            "type": "string",
+            "enum": ["PRIVATE", "TEAM_COACH", "TEAM_MEMBER", "PUBLIC"],
+            "refType": null
+          },
+          "analysisReport": {
+            "type": "string",
+            "enum": ["PRIVATE", "TEAM_COACH", "TEAM_MEMBER", "PUBLIC"],
+            "refType": null
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "UpdateCoachInviteCodeRequest": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseCoachInviteCodeDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CoachInviteCodeDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "CoachInviteCodeDto": {
+        "type": "object",
+        "properties": {
+          "codeId": {
+            "type": "string",
+            "refType": null
+          },
+          "codePrefix": {
+            "type": "string",
+            "refType": null
+          },
+          "organization": {
+            "type": "string",
+            "refType": null
+          },
+          "maxUses": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "usedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "enabled": {
+            "type": "boolean",
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseTeamRecommendationBatchDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TeamRecommendationBatchDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "TeamRecommendationBatchDto": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "string",
+            "refType": null
+          },
+          "teamId": {
+            "type": "string",
+            "refType": null
+          },
+          "analysisSnapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "audience": {
+            "type": "string",
+            "enum": ["COACH", "MEMBER"],
+            "refType": null
+          },
+          "mode": {
+            "type": "string",
+            "enum": ["WEAKNESS", "HYBRID"],
+            "refType": null
+          },
+          "targetRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "targetDimension": {
+            "type": "string",
+            "refType": null
+          },
+          "candidateCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "resultCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "recommendations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamRecommendationItemDto"
+            },
+            "refType": "TeamRecommendationItemDto"
+          },
+          "algorithmVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "mappingVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "stale": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "TeamRecommendationItemDto": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "problem": {
+            "$ref": "#/components/schemas/ProblemDto",
+            "refType": "ProblemDto"
+          },
+          "score": {
+            "type": "number",
+            "refType": null
+          },
+          "reasonCode": {
+            "type": "string",
+            "refType": null
+          },
+          "reason": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "PageMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "pageSize": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "refType": null
+          },
+          "hasNext": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "PageResponseTeamRecommendationBatchDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamRecommendationBatchDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PageResponseTeamMemberDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamMemberDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "TeamMemberDataAccessDto": {
+        "type": "object",
+        "properties": {
+          "basicTraining": {
+            "type": "boolean",
+            "refType": null
+          },
+          "abilityProfile": {
+            "type": "boolean",
+            "refType": null
+          },
+          "detailedSubmissions": {
+            "type": "boolean",
+            "refType": null
+          },
+          "analysisReport": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "TeamMemberDto": {
+        "type": "object",
+        "properties": {
+          "membershipId": {
+            "type": "string",
+            "refType": null
+          },
+          "teamId": {
+            "type": "string",
+            "refType": null
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserBriefDto",
+            "refType": "UserBriefDto"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["OWNER", "MEMBER"],
+            "refType": null
+          },
+          "status": {
+            "type": "string",
+            "enum": ["ACTIVE", "LEFT", "REMOVED"],
+            "refType": null
+          },
+          "joinedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "dataAccess": {
+            "$ref": "#/components/schemas/TeamMemberDataAccessDto",
+            "refType": "TeamMemberDataAccessDto"
+          }
+        }
+      },
+      "ActivityStat": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "refType": null
+          },
+          "submissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "acceptedSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "failedSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "pendingSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "solvedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseSharedTrainingOverviewDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SharedTrainingOverviewDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "DifficultyStat": {
+        "type": "object",
+        "properties": {
+          "difficulty": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "attemptedProblemCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "solvedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "Period": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "refType": null
+          },
+          "end": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "SharedTrainingOverviewDto": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "refType": null
+          },
+          "snapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "window": {
+            "type": "string",
+            "refType": null
+          },
+          "period": {
+            "$ref": "#/components/schemas/Period",
+            "refType": "Period"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary",
+            "refType": "Summary"
+          },
+          "currentRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "maxRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "tagStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagStat"
+            },
+            "refType": "TagStat"
+          },
+          "difficultyStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DifficultyStat"
+            },
+            "refType": "DifficultyStat"
+          },
+          "activityStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityStat"
+            },
+            "refType": "ActivityStat"
+          },
+          "sourceAccountCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "dataCutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "stale": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "Summary": {
+        "type": "object",
+        "properties": {
+          "attemptedProblemCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "solvedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "unsolvedProblemCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "submissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "acceptedSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "failedSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "pendingSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "ratedSolvedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "unratedSolvedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "averageSolvedDifficulty": {
+            "type": "number",
+            "refType": null
+          },
+          "maxSolvedDifficulty": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "activeDays": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "TagStat": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string",
+            "refType": null
+          },
+          "attemptedProblemCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "solvedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "submissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "PageResponseUserSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSubmissionDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "SourceAccount": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "platform": {
+            "type": "string",
+            "refType": null
+          },
+          "username": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "SubmissionDto": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "refType": null
+          },
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "externalSubmissionId": {
+            "type": "string",
+            "refType": null
+          },
+          "problem": {
+            "$ref": "#/components/schemas/ProblemDto",
+            "refType": "ProblemDto"
+          },
+          "verdict": {
+            "type": "string",
+            "refType": null
+          },
+          "verdictRaw": {
+            "type": "string",
+            "refType": null
+          },
+          "programmingLanguage": {
+            "type": "string",
+            "refType": null
+          },
+          "participantType": {
+            "type": "string",
+            "refType": null
+          },
+          "memberHandles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "refType": "string"
+          },
+          "teamId": {
+            "type": "string",
+            "refType": null
+          },
+          "teamName": {
+            "type": "string",
+            "refType": null
+          },
+          "testset": {
+            "type": "string",
+            "refType": null
+          },
+          "passedTestCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "timeMs": {
+            "type": "integer",
+            "format": "int64",
+            "refType": null
+          },
+          "memoryBytes": {
+            "type": "integer",
+            "format": "int64",
+            "refType": null
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "UserSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "sourceAccount": {
+            "$ref": "#/components/schemas/SourceAccount",
+            "refType": "SourceAccount"
+          },
+          "submission": {
+            "$ref": "#/components/schemas/SubmissionDto",
+            "refType": "SubmissionDto"
+          }
+        }
+      },
+      "DimensionScore": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "refType": null
+          },
+          "name": {
+            "type": "string",
+            "refType": null
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "score": {
+            "type": "number",
+            "refType": null
+          },
+          "attemptedProblemCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "solvedCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "submissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "averageSolvedDifficulty": {
+            "type": "number",
+            "refType": null
+          },
+          "rankOrder": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "PageResponsePersonalReportDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PersonalReportDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PersonalReportContentDto": {
+        "type": "object",
+        "properties": {
+          "overview": {
+            "type": "string",
+            "refType": null
+          },
+          "strengths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "refType": "string"
+          },
+          "weaknesses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "refType": "string"
+          },
+          "recentTrend": {
+            "type": "string",
+            "refType": null
+          },
+          "actionSuggestions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "refType": "string"
+          },
+          "caution": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "PersonalReportDto": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string",
+            "refType": null
+          },
+          "analysisSnapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "recentAnalysisSnapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "sourceFingerprint": {
+            "type": "string",
+            "refType": null
+          },
+          "statisticsSnapshot": {
+            "$ref": "#/components/schemas/ReportStatisticsSnapshotDto",
+            "refType": "ReportStatisticsSnapshotDto"
+          },
+          "profileSnapshot": {
+            "$ref": "#/components/schemas/ReportProfileSnapshotDto",
+            "refType": "ReportProfileSnapshotDto"
+          },
+          "recentTrainingSnapshot": {
+            "$ref": "#/components/schemas/ReportRecentTrainingSnapshotDto",
+            "refType": "ReportRecentTrainingSnapshotDto"
+          },
+          "content": {
+            "$ref": "#/components/schemas/PersonalReportContentDto",
+            "refType": "PersonalReportContentDto"
+          },
+          "reportVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "promptVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "modelName": {
+            "type": "string",
+            "refType": null
+          },
+          "triggerType": {
+            "type": "string",
+            "refType": null
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "ReportProfileSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "overallScore": {
+            "type": "number",
+            "refType": null
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionScore"
+            },
+            "refType": "DimensionScore"
+          },
+          "weakestDimension": {
+            "type": "string",
+            "refType": null
+          },
+          "tagStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagStat"
+            },
+            "refType": "TagStat"
+          },
+          "difficultyStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DifficultyStat"
+            },
+            "refType": "DifficultyStat"
+          }
+        }
+      },
+      "ReportRecentTrainingSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "period": {
+            "$ref": "#/components/schemas/Period",
+            "refType": "Period"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary",
+            "refType": "Summary"
+          },
+          "tagStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagStat"
+            },
+            "refType": "TagStat"
+          },
+          "difficultyStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DifficultyStat"
+            },
+            "refType": "DifficultyStat"
+          },
+          "activityStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityStat"
+            },
+            "refType": "ActivityStat"
+          }
+        }
+      },
+      "ReportStatisticsSnapshotDto": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "$ref": "#/components/schemas/Summary",
+            "refType": "Summary"
+          },
+          "currentRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "maxRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "sourceAccountCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "dataCutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponsePersonalReportDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/PersonalReportDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseSharedAbilityProfileDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SharedAbilityProfileDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "SharedAbilityProfileDto": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "refType": null
+          },
+          "snapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "window": {
+            "type": "string",
+            "refType": null
+          },
+          "overallScore": {
+            "type": "number",
+            "refType": null
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionScore"
+            },
+            "refType": "DimensionScore"
+          },
+          "weakestDimension": {
+            "type": "string",
+            "refType": null
+          },
+          "dataCutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "stale": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "PageResponseTeamInvitationDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamInvitationDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PageResponseJoinApplicationDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JoinApplicationDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseTeamAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TeamAnalysisDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "TeamActivityStatDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "refType": null
+          },
+          "submissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "acceptedSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "activeMemberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "TeamAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "teamId": {
+            "type": "string",
+            "refType": null
+          },
+          "audience": {
+            "type": "string",
+            "enum": ["COACH", "MEMBER"],
+            "refType": null
+          },
+          "memberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "includedMemberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "excludedMemberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "trainingMemberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "levelMemberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "overallScore": {
+            "type": "number",
+            "refType": null
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamDimensionScoreDto"
+            },
+            "refType": "TeamDimensionScoreDto"
+          },
+          "weakestDimension": {
+            "type": "string",
+            "refType": null
+          },
+          "activityStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamActivityStatDto"
+            },
+            "refType": "TeamActivityStatDto"
+          },
+          "targetRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "sourceFingerprint": {
+            "type": "string",
+            "refType": null
+          },
+          "algorithmVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "mappingVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "dataCutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "stale": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "TeamDimensionScoreDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "refType": null
+          },
+          "name": {
+            "type": "string",
+            "refType": null
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "score": {
+            "type": "number",
+            "refType": null
+          },
+          "memberSampleCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "rankOrder": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          }
+        }
+      },
+      "PageResponseTeamAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamAnalysisDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PageResponseTeamSummaryDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TeamSummaryDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PageResponseOjAccountDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OjAccountDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseOjAccountDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/OjAccountDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "AnalysisDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "snapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "window": {
+            "type": "string",
+            "refType": null
+          },
+          "period": {
+            "$ref": "#/components/schemas/Period",
+            "refType": "Period"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary",
+            "refType": "Summary"
+          },
+          "currentRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "maxRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "overallScore": {
+            "type": "number",
+            "refType": null
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionScore"
+            },
+            "refType": "DimensionScore"
+          },
+          "weakestDimension": {
+            "type": "string",
+            "refType": null
+          },
+          "tagStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagStat"
+            },
+            "refType": "TagStat"
+          },
+          "difficultyStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DifficultyStat"
+            },
+            "refType": "DifficultyStat"
+          },
+          "activityStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityStat"
+            },
+            "refType": "ActivityStat"
+          },
+          "algorithmVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "mappingVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "timezone": {
+            "type": "string",
+            "refType": null
+          },
+          "dataCutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "sourceDataVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "stale": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/AnalysisDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseSyncStatusDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SyncStatusDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "SyncStatusDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "lastSyncStatus": {
+            "type": "string",
+            "refType": null
+          },
+          "nextSyncAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "latestJob": {
+            "$ref": "#/components/schemas/SyncJobDto",
+            "refType": "SyncJobDto"
+          }
+        }
+      },
+      "PageResponseSubmissionDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PageResponseRecommendationBatchDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecommendationBatchDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PageResponseRatingChangeDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RatingChangeDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "RatingChangeDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "contestId": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "contestName": {
+            "type": "string",
+            "refType": null
+          },
+          "rank": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "oldRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "newRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "occurredAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "PageResponseProblemProgressDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProblemProgressDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ProblemProgressDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "problem": {
+            "$ref": "#/components/schemas/ProblemDto",
+            "refType": "ProblemDto"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/Progress",
+            "refType": "Progress"
+          }
+        }
+      },
+      "Progress": {
+        "type": "object",
+        "properties": {
+          "attemptCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "accepted": {
+            "type": "boolean",
+            "refType": null
+          },
+          "acceptedSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "failedSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "pendingSubmissionCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "firstSubmittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "lastSubmittedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseDashboardDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/DashboardDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "DashboardDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "account": {
+            "$ref": "#/components/schemas/OjAccountDto",
+            "refType": "OjAccountDto"
+          },
+          "sync": {
+            "$ref": "#/components/schemas/SyncStatusDto",
+            "refType": "SyncStatusDto"
+          },
+          "analysis": {
+            "$ref": "#/components/schemas/AnalysisDto",
+            "refType": "AnalysisDto"
+          },
+          "recommendationBatch": {
+            "$ref": "#/components/schemas/RecommendationBatchDto",
+            "refType": "RecommendationBatchDto"
+          },
+          "nextAction": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "PageResponseAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AnalysisDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "PageResponseNotificationDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseCountResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CountResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "CountResponse": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int64",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseUserDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UserDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseUserAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/UserAnalysisDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "UserAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "publicId": {
+            "type": "string",
+            "refType": null
+          },
+          "snapshotId": {
+            "type": "string",
+            "refType": null
+          },
+          "window": {
+            "type": "string",
+            "refType": null
+          },
+          "period": {
+            "$ref": "#/components/schemas/Period",
+            "refType": "Period"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary",
+            "refType": "Summary"
+          },
+          "currentRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "maxRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "ratingAccounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRatingAccountDto"
+            },
+            "refType": "UserRatingAccountDto"
+          },
+          "overallScore": {
+            "type": "number",
+            "refType": null
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DimensionScore"
+            },
+            "refType": "DimensionScore"
+          },
+          "weakestDimension": {
+            "type": "string",
+            "refType": null
+          },
+          "tagStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TagStat"
+            },
+            "refType": "TagStat"
+          },
+          "difficultyStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DifficultyStat"
+            },
+            "refType": "DifficultyStat"
+          },
+          "activityStats": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityStat"
+            },
+            "refType": "ActivityStat"
+          },
+          "sourceAccountCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "sourceAccountIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "refType": "string"
+          },
+          "sourceFingerprint": {
+            "type": "string",
+            "refType": null
+          },
+          "algorithmVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "mappingVersion": {
+            "type": "string",
+            "refType": null
+          },
+          "timezone": {
+            "type": "string",
+            "refType": null
+          },
+          "dataCutoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          },
+          "stale": {
+            "type": "boolean",
+            "refType": null
+          }
+        }
+      },
+      "UserRatingAccountDto": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "refType": null
+          },
+          "platform": {
+            "type": "string",
+            "refType": null
+          },
+          "username": {
+            "type": "string",
+            "refType": null
+          },
+          "bindStatus": {
+            "type": "string",
+            "refType": null
+          },
+          "currentRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "maxRating": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "format": "date-time",
+            "refType": null
+          }
+        }
+      },
+      "ApiResponseRolesResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RolesResponse"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "RoleItem": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "refType": null
+          },
+          "name": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "RolesResponse": {
+        "type": "object",
+        "properties": {
+          "primaryRole": {
+            "type": "string",
+            "refType": null
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RoleItem"
+            },
+            "refType": "RoleItem"
+          }
+        }
+      },
+      "PageResponseUserAnalysisDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserAnalysisDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ApiResponseCoachDashboardDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/CoachDashboardDto"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "CoachDashboardDto": {
+        "type": "object",
+        "properties": {
+          "managedTeamCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "activeMemberCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "pendingApplicationCount": {
+            "type": "integer",
+            "format": "int32",
+            "refType": null
+          },
+          "recentNotifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationDto"
+            },
+            "refType": "NotificationDto"
+          }
+        }
+      },
+      "PageResponseCoachInviteCodeDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoachInviteCodeDto"
+            }
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "RemoveMemberRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "refType": null
+          }
+        }
+      },
+      "ApiError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          },
+          "requestId": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorBody": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "refType": null
+          },
+          "message": {
+            "type": "string",
+            "refType": null
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            },
+            "refType": null
+          }
+        }
+      }
+    }
+  },
+  "x-openapi": {
+    "x-setting": {
+      "customCode": 200,
+      "language": "zh-CN",
+      "enableSwaggerModels": true,
+      "swaggerModelName": "Swagger Models",
+      "enableReloadCacheParameter": false,
+      "enableAfterScript": true,
+      "enableDocumentManage": true,
+      "enableVersion": false,
+      "enableRequestCache": true,
+      "enableFilterMultipartApis": false,
+      "enableFilterMultipartApiMethodType": "POST",
+      "enableHost": false,
+      "enableHostText": "",
+      "enableDynamicParameter": false,
+      "enableDebug": true,
+      "enableFooter": true,
+      "enableFooterCustom": false,
+      "enableSearch": true,
+      "enableOpenApi": true,
+      "enableHomeCustom": false,
+      "enableGroup": true,
+      "enableResponseCode": true
+    },
+    "x-markdownFiles": []
+  }
+}

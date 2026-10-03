@@ -2,121 +2,83 @@ import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 
 test.beforeEach(() => configureUpstream());
 
-test("zero-evidence portfolio keeps both account rows and its explicit empty state", async ({
+test("zero-evidence aggregate retains source accounts and an explicit empty state", async ({
   page,
 }) => {
   await configureUpstream({ zero: true });
   await page.goto("/dashboard");
-  const portfolio = page.getByRole("region", {
-    name: "全部 CF 账号 · 训练汇总",
-    exact: true,
-  });
-  await expect(portfolio).toHaveAttribute("data-state", "empty");
-  await expect(portfolio.locator("[data-metric-panel] dd")).toHaveText([
-    "2",
-    "0",
-    "0",
-    "0",
-  ]);
-  await expect(portfolio.getByText("DemoAlpha", { exact: true })).toBeVisible();
-  await expect(portfolio.getByText("DemoBeta", { exact: true })).toBeVisible();
   await expect(
-    portfolio.getByText("当前无法加载数据，请检查网络或稍后重试", {
-      exact: true,
-    }),
-  ).toHaveCount(0);
+    page.getByRole("main").getByText("暂无训练证据", { exact: true }).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("main").getByText("DemoAlpha", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("main").getByText("DemoBeta", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "个人汇总画像", exact: true }),
+  ).toHaveAttribute("data-state", "empty");
 });
 
-test("portfolio includes both bindings and stays stable when the training account changes", async ({
+test("aggregate is backend-owned and independent of selected account preference", async ({
   page,
-  isMobile,
 }) => {
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      "codestartrack.account.00000000-0000-4000-8000-000000000001",
+      "9007199254740995",
+    ),
+  );
   await page.goto("/dashboard");
-  const portfolio = page.getByRole("region", {
-    name: "全部 CF 账号 · 训练汇总",
-    exact: true,
-  });
-  const metrics = portfolio.locator("[data-metric-panel]");
-  await expect(metrics.locator("dd")).toHaveText(["2", "8", "3", "3"]);
-  await expect(portfolio.getByText("DemoAlpha", { exact: true })).toBeVisible();
-  await expect(portfolio.getByText("DemoBeta", { exact: true })).toBeVisible();
-  await expect(portfolio).toContainText("同一题在多个账号通过会重复计数");
+  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
   await expect(
-    page.getByRole("heading", { name: "训练概览", exact: true }),
-  ).toHaveCount(0);
-  if (!isMobile) {
-    const next = await page
-      .locator('[data-slot="card"]')
-      .filter({
-        has: page.getByRole("heading", { name: "下一步", exact: true }),
-      })
-      .boundingBox();
-    const recommended = page.locator('[data-slot="card"]').filter({
-      has: page.getByRole("heading", {
-        name: "#1 A Small Step",
-        exact: true,
-      }),
-    });
-    await expect(recommended).toBeVisible();
-    expect((await recommended.boundingBox())!.x).toBeGreaterThan(
-      next!.x + next!.width,
-    );
-  }
-  await page
-    .getByLabel("当前 Codeforces 账号")
-    .selectOption("9007199254740995");
-  await expect(metrics.locator("dd")).toHaveText(["2", "8", "3", "3"]);
-  await portfolio.getByRole("button", { name: "查看数据" }).first().click();
-  await expect(page).toHaveURL("/data");
+    page.getByRole("main").getByText("DemoAlpha", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: "个人汇总画像", exact: true })
+      .locator("[data-metric-panel] dd")
+      .first(),
+  ).toHaveText("3");
+  expect(
+    (await upstreamCalls()).some(
+      (call) =>
+        call.path.includes("/oj-accounts/") &&
+        call.path.includes("/training/overview"),
+    ),
+  ).toBe(false);
+  await page.getByRole("main").getByText("DemoAlpha", { exact: true }).click();
+  await expect(page).toHaveURL("/accounts");
   await expect(page.getByLabel("当前 Codeforces 账号")).toHaveValue(
     "9007199254740993",
   );
-  await expect(
-    page.getByRole("heading", { name: "训练概览", exact: true }),
-  ).toHaveCount(1);
-  const hierarchy = await page.locator("main h2").allTextContents();
-  expect(hierarchy.indexOf("训练概览")).toBeLessThan(
-    hierarchy.indexOf("每日训练"),
-  );
 });
 
-test("one failed portfolio read preserves the other account and retries the full coverage", async ({
+test("failed aggregate read leaves teamwork available and retries without per-account aggregation", async ({
   page,
 }) => {
-  await configureUpstream({
-    errorPath: "/oj-accounts/9007199254740995/training/overview",
-  });
+  await configureUpstream({ errorPath: "/me/training/overview" });
   await page.goto("/dashboard");
-  const portfolio = page.getByRole("region", {
-    name: "全部 CF 账号 · 训练汇总",
+  const region = page.getByRole("region", {
+    name: "个人汇总画像",
     exact: true,
   });
-  await expect(portfolio.locator("[data-metric-panel] dd")).toHaveText([
-    "2",
-    "5",
-    "2",
-    "2",
-  ]);
-  await expect(portfolio).toContainText("已读取 1 / 2 个账号的训练快照");
   await expect(
-    portfolio.getByText("数据加载失败", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    portfolio
-      .getByText("当前无法加载数据，请检查网络或稍后重试", {
-        exact: true,
-      })
+    region
+      .getByText("当前无法加载数据，请检查网络或稍后重试", { exact: true })
       .first(),
   ).toBeVisible();
+  await expect(
+    page
+      .getByRole("main")
+      .getByRole("heading", { name: "我的团队", exact: true }),
+  ).toBeVisible();
   await configureUpstream({ errorPath: null }, true);
-  await portfolio.getByRole("button", { name: "重试", exact: true }).click();
-  await expect(portfolio.locator("[data-metric-panel] dd")).toHaveText([
-    "2",
-    "8",
+  await region.getByRole("button", { name: "重试", exact: true }).click();
+  await expect(region.locator("[data-metric-panel] dd").first()).toHaveText(
     "3",
-    "3",
-  ]);
-  await expect(portfolio).toContainText("已读取 2 / 2 个账号的训练快照");
+  );
 });
 
 test("desktop sidebar collapses to labeled icons, restores preference and supports keyboard", async ({

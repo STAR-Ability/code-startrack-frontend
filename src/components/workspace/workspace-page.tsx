@@ -48,7 +48,14 @@ export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
   const { accounts, account, selectedAccountId, selectAccount, user, query } =
     context;
   const userOnly =
-    !inline && (pathname === "/dashboard" || pathname.startsWith("/security"));
+    !inline &&
+    ![
+      "/accounts",
+      "/data",
+      "/practice",
+      "/accounts/analysis",
+      "/accounts/profile",
+    ].includes(pathname);
   return (
     <div
       className={
@@ -126,7 +133,7 @@ export function WorkspacePage({
     >
       <header className="flex flex-col gap-2">
         <p className="text-xs tracking-widest text-muted-foreground">
-          codeStartrack · V0.11
+          codeStartrack · V0.12
         </p>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">{t(title)}</h1>

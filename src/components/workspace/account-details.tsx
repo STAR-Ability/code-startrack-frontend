@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api/endpoints";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { DataRegion } from "./feedback";
 
 export function AccountDetails({ accountId }: { accountId: string }) {
-  const { user } = useAccounts();
+  const { user, selectAccount } = useAccounts();
   const { t, locale } = useLocale();
   const [open, setOpen] = useState(false);
   const query = useQuery({
@@ -38,6 +39,13 @@ export function AccountDetails({ accountId }: { accountId: string }) {
       </Button>
       {open && (
         <DataRegion query={query} name={t("data.accountDetails")}>
+          <Link
+            href="/accounts/analysis"
+            className="underline"
+            onClick={() => selectAccount(accountId)}
+          >
+            {t("v.analysis")}
+          </Link>
           <dl className="grid grid-cols-2 gap-3">
             {(
               [

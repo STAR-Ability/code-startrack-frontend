@@ -28,15 +28,17 @@ test("no binding shows guidance, binds exact DTO and selects the new string ID",
 }) => {
   await configureUpstream({ noAccounts: true });
   await page.goto("/dashboard");
-  await expect(page.getByRole("main")).toContainText(
-    "尚未绑定 Codeforces 账号",
-  );
+  await expect(page.getByRole("main")).toContainText("绑定 Codeforces 账号");
   expect(
     (await upstreamCalls()).some((call) =>
       /oj-accounts\/[^?]+\/dashboard/.test(call.path),
     ),
   ).toBe(false);
-  await page.getByRole("main").getByRole("link", { name: "绑定账号" }).click();
+  await page
+    .getByRole("main")
+    .getByRole("link", { name: "平台账号", exact: true })
+    .first()
+    .click();
   await page.getByLabel("Codeforces handle").fill("NewDemo");
   await page.getByRole("button", { name: "绑定账号", exact: true }).click();
   await expect(page.getByLabel("当前 Codeforces 账号")).toHaveValue(

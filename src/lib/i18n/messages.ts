@@ -1,7 +1,9 @@
+import { v012Zh, v012En } from "./v012-messages";
 import { showcaseZh, showcaseEn } from "./showcase-messages";
 import { workspaceZh, workspaceEn } from "./workspace-messages";
 
 export const zhCN = {
+  ...v012Zh,
   ...workspaceZh,
   "ui.close": "关闭",
   "ui.toggleSidebar": "切换侧边栏",
@@ -168,6 +170,7 @@ export const zhCN = {
 export type CopyKey = keyof typeof zhCN;
 
 export const en = {
+  ...v012En,
   ...workspaceEn,
   "ui.close": "Close",
   "ui.toggleSidebar": "Toggle sidebar",

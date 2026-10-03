@@ -19,7 +19,9 @@ const pagination = {
 const verification = { verificationId: uuidSchema, emailCode: code };
 const captcha = { captchaChallengeId: uuidSchema, captchaAnswer: text };
 const empty = z.strictObject({});
+import { v012Routes } from "./v012-requests.mjs";
 const routes = [
+  ...v012Routes,
   ["POST", /^\/auth\/captcha$/, empty],
   [
     "POST",
@@ -174,7 +176,12 @@ export function validateMockRequest(method, path, body, searchParams) {
     ([verb, pattern]) => verb === method && pattern.test(path),
   );
   if (!rule) return { success: false, missing: true };
-  if (rule[2] === empty && body !== undefined) return { success: false };
+  if (
+    rule[2] instanceof z.ZodObject &&
+    Object.keys(rule[2].shape).length === 0 &&
+    body !== undefined
+  )
+    return { success: false };
   // Repeated query fields are ambiguous and rejected just like unknown fields.
   const entries = [...searchParams];
   if (new Set(entries.map(([key]) => key)).size !== entries.length)

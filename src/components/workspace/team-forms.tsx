@@ -1,0 +1,150 @@
+"use client";
+import { useId } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { v012, type TeamInput } from "@/lib/api/v012";
+import type { TeamDetailDto } from "@/lib/api/v012-schemas";
+import { useLocale } from "@/components/layout/locale-provider";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { ErrorNotice } from "./feedback";
+import { Panel, useCollaborationMutation } from "./v012-shared";
+const formSchema = z.object({
+  name: z.string().trim().min(1),
+  description: z.string(),
+  avatarUrl: z.union([z.literal(""), z.url({ protocol: /^https?$/ })]),
+});
+export function TeamForm({ team }: { team?: TeamDetailDto }) {
+  const { t } = useLocale();
+  const id = useId();
+  const router = useRouter();
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: team?.name ?? "",
+      description: team?.description ?? "",
+      avatarUrl: team?.avatarUrl ?? "",
+    },
+  });
+  const mutation = useCollaborationMutation(
+    team ? "team" : "create",
+    (input: TeamInput) =>
+      team ? v012.updateTeam(team.teamId, input) : v012.createTeam(input),
+    team?.teamId,
+    (result) => {
+      if (!team) router.push(`/teams/detail?teamId=${result.teamId}`);
+    },
+  );
+  return (
+    <Panel title={team ? "v12.editTeam" : "v12.createTeam"}>
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={form.handleSubmit((values) =>
+          mutation.mutate({
+            ...values,
+            description: values.description || null,
+            avatarUrl: values.avatarUrl || null,
+          }),
+        )}
+      >
+        {(["name", "description", "avatarUrl"] as const).map((key) => (
+          <Field key={key} data-invalid={!!form.formState.errors[key]}>
+            <FieldLabel htmlFor={`${id}-${key}`}>{t(`v12.${key}`)}</FieldLabel>
+            {key === "description" ? (
+              <Textarea
+                id={`${id}-${key}`}
+                {...form.register(key)}
+                disabled={mutation.blocked}
+              />
+            ) : (
+              <Input
+                id={`${id}-${key}`}
+                {...form.register(key)}
+                aria-invalid={!!form.formState.errors[key]}
+                aria-describedby={
+                  form.formState.errors[key] ? `${id}-${key}-error` : undefined
+                }
+                disabled={mutation.blocked}
+              />
+            )}
+            <FieldError id={`${id}-${key}-error`}>
+              {form.formState.errors[key] && t("v.invalidForm")}
+            </FieldError>
+          </Field>
+        ))}
+        <Button
+          wrap
+          type="submit"
+          className="self-start"
+          disabled={mutation.blocked}
+        >
+          {t(team ? "v12.save" : "v12.createTeam")}
+        </Button>
+      </form>
+      <ErrorNotice error={mutation.error} />
+      {mutation.isSuccess && <p role="status">{t("v12.saved")}</p>}
+    </Panel>
+  );
+}
+export function InviteForm({ teamId }: { teamId: string }) {
+  const { t } = useLocale();
+  const id = useId();
+  const form = useForm<{ email: string }>({
+    resolver: zodResolver(z.object({ email: z.email() })),
+    defaultValues: { email: "" },
+  });
+  const mutation = useCollaborationMutation(
+    "invite",
+    (email: string) => v012.invite(teamId, email),
+    teamId,
+    () => form.reset(),
+  );
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={form.handleSubmit(({ email }) => mutation.mutate(email))}
+    >
+      <Field data-invalid={!!form.formState.errors.email}>
+        <FieldLabel htmlFor={id}>{t("v12.email")}</FieldLabel>
+        <Input
+          id={id}
+          type="email"
+          autoComplete="email"
+          {...form.register("email")}
+          disabled={mutation.blocked}
+          aria-invalid={!!form.formState.errors.email}
+          aria-describedby={
+            form.formState.errors.email ? `${id}-error` : undefined
+          }
+        />
+        <FieldError id={`${id}-error`}>
+          {form.formState.errors.email && t("v.invalidForm")}
+        </FieldError>
+      </Field>
+      <Button
+        wrap
+        type="submit"
+        className="self-start"
+        disabled={mutation.blocked}
+      >
+        {t("v12.invite")}
+      </Button>
+      <ErrorNotice error={mutation.error} />
+      {mutation.isSuccess && (
+        <StatusDelivery status={mutation.data.emailDeliveryStatus} />
+      )}
+    </form>
+  );
+}
+function StatusDelivery({ status }: { status: string }) {
+  const { t } = useLocale();
+  return (
+    <p role="status">
+      {t("v12.delivery")}: {status}
+    </p>
+  );
+}

@@ -4,7 +4,7 @@ import { envelope, errorSchema, pageEnvelope } from "./schemas";
 import { recordDataSource } from "./data-state";
 
 export type RequestOptions = {
-  method?: "GET" | "POST" | "DELETE";
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
   signal?: AbortSignal;
   idempotencyKey?: string;

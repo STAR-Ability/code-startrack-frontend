@@ -4,7 +4,7 @@ import Link from "next/link";
 import { OrbitIcon } from "lucide-react";
 import { useLocale } from "./locale-provider";
 
-export function Brand() {
+export function Brand({ compact = false }: { compact?: boolean }) {
   const { t } = useLocale();
   return (
     <Link
@@ -16,12 +16,14 @@ export function Brand() {
       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
         <OrbitIcon className="size-6" aria-hidden="true" />
       </span>
-      <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="font-semibold tracking-tight">码练星轨</span>
-        <span className="font-mono text-xs wrap-anywhere text-muted-foreground">
-          codeStartrack
+      {!compact && (
+        <span className="flex min-w-0 flex-col gap-0.5">
+          <span className="font-semibold tracking-tight">码练星轨</span>
+          <span className="font-mono text-xs wrap-anywhere text-muted-foreground">
+            codeStartrack
+          </span>
         </span>
-      </span>
+      )}
     </Link>
   );
 }

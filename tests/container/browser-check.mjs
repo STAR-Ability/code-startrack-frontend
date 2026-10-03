@@ -45,6 +45,11 @@ try {
   }
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(`${origin}/dashboard`);
+  await expect(
+    page.getByRole("heading", { name: "账号来源", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
+  await page.goto(`${origin}/practice`);
   await expect(page.getByLabel("当前 Codeforces 账号")).toHaveValue(
     "9007199254740993",
   );
@@ -109,7 +114,7 @@ try {
   assert.equal((await context.request.get(`${origin}/healthz`)).status(), 200);
   assert.deepEqual(violations, []);
   assert.deepEqual(errors, []);
-  console.log("V0.11 nginx/static-export/browser acceptance passed.");
+  console.log("V0.12 nginx/static-export/browser acceptance passed.");
 } finally {
   await browser.close();
 }

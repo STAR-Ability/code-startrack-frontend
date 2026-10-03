@@ -33,6 +33,22 @@ export function createQueryClient() {
     queryCache: new QueryCache({
       onError: (error, query) => {
         handleSessionError(error);
+        if (error instanceof ApiError && error.code === "ROLE_REQUIRED")
+          void client.invalidateQueries({ queryKey: keys.session });
+        if (
+          error instanceof ApiError &&
+          [403, 404].includes(error.status) &&
+          query.queryKey[2] === "team" &&
+          ["member-data", "member-report"].includes(String(query.queryKey[4]))
+        ) {
+          const prefix = query.queryKey.slice(0, 4);
+          for (const resource of ["detail", "members", "member-access"]) {
+            if (query.queryKey[4] !== resource)
+              void client.invalidateQueries({
+                queryKey: [...prefix, resource],
+              });
+          }
+        }
         if (
           error instanceof ApiError &&
           error.status === 404 &&
@@ -53,6 +69,8 @@ export function createQueryClient() {
         if (typeof publicId === "string" && !isCurrentUser(client, publicId))
           return;
         handleSessionError(error);
+        if (error instanceof ApiError && error.code === "ROLE_REQUIRED")
+          void client.invalidateQueries({ queryKey: keys.session });
         if (
           error instanceof ApiError &&
           (error.status === 404 ||

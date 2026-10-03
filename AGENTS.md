@@ -1,22 +1,41 @@
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+This version may contain APIs, conventions, and file-structure behavior that differ from model training data.
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+Before writing Next.js-specific code, inspect the version-matched documentation under `node_modules/next/dist/docs/` when necessary and follow deprecation notices.
+
+Do not remove this managed block if Next.js regenerates it.
 
 <!-- END:nextjs-agent-rules -->
 
 # codeStartrack Frontend — Agent Instructions
 
-This repository is developed primarily with Codex.
+This repository is developed with substantial AI-assisted engineering.
 
-Treat this file as the repository-level operating contract for AI-assisted development.
+Treat this file as the repository-level operating contract for Codex and other coding agents.
+
+This file defines **long-lived engineering rules only**.
+
+It must not be used to record:
+
+- current release scope;
+- milestone progress;
+- temporary implementation status;
+- sprint priorities;
+- temporary route requirements;
+- current server/container state;
+- one-off deployment instructions;
+- historical product decisions;
+- temporary Git workflow exceptions.
+
+Those belong in Issues, product documentation, development documentation, or execution plans.
 
 ---
 
-## 1. Project Identity
+# 1. Project Identity
 
 Product name:
 
@@ -24,310 +43,783 @@ Product name:
 码练星轨
 ```
 
-English product name:
+Engineering / English name:
 
 ```text
 codeStartrack
 ```
 
-Use `codeStartrack` consistently in engineering documentation unless a user-facing branding decision explicitly requires another presentation form.
+Use `codeStartrack` consistently in engineering documentation and code-related naming unless a user-facing branding requirement explicitly specifies another presentation.
 
-Do not reintroduce the old name `codeStartrail`.
-
----
-
-## 2. Primary Repository Sources
-
-Current V0.11 integration supersedes historical V0.1 API assumptions below.
-Use `docs/product/api-contract.md`, `prompts/前端api文档.md` and
-`prompts/前端需要知道的数据库.md` for the active contract. The app is statically
-exported; browser requests use `/api/v1/**` through a same-origin proxy.
-Validate mutations only against the isolated local fixture, never the live backend.
-
-Before implementing product-facing work, use the repository sources in the following order:
-
-1. The explicit current task / Issue.
-2. `docs/product/project-plan.en.md` — approved product direction and Demo V2 scope.
-3. `docs/product/apidocs.md` — currently documented backend API behavior.
-4. Structured product documents under `docs/product/`.
-5. `docs/architecture/tech-stack.md`.
-6. Development rules under `docs/development/`.
-
-Do not treat undocumented assumptions as confirmed requirements.
-
-If two sources conflict, do not silently choose one. Report the conflict and identify the affected implementation.
+Do not reintroduce deprecated historical project names unless required when discussing migration history.
 
 ---
 
-## 3. Current Product Direction
+# 2. Instruction Precedence
 
-The product must stay centered on one visible user mental model:
+When instructions conflict, use the following priority:
+
+1. Explicit instructions from the current task.
+2. This `AGENTS.md`.
+3. Approved product and API documentation.
+4. Architecture documentation.
+5. Development documentation.
+6. Existing implementation patterns.
+7. Agent assumptions.
+
+Never silently resolve a meaningful conflict.
+
+If two authoritative sources disagree:
+
+- identify the conflict;
+- determine which implementation areas are affected;
+- avoid inventing a resolution;
+- follow an explicitly newer or higher-priority instruction when one exists;
+- otherwise report the conflict before relying on either assumption.
+
+---
+
+# 3. Sources of Truth
+
+Before implementing a task, inspect only the repository sources relevant to that task.
+
+Typical sources include:
 
 ```text
-Programming Practice + Agent Assistance
+docs/product/
+docs/architecture/
+docs/development/
+.agent/
+.github/
 ```
 
-The primary loop is:
+For API work, use the repository's current API contract or explicitly designated backend documentation as the source of truth.
+
+For visual work, use the current design-system documentation, existing design tokens, shared components, and actual rendered UI as the source of truth.
+
+For architecture work, inspect the relevant architecture documentation and existing code before introducing a new pattern.
+
+Do not treat old plans, abandoned prompts, archived files, or historical implementation notes as active requirements unless the current task explicitly references them.
+
+---
+
+# 4. Do Not Infer Project Progress
+
+Do not infer the current development stage from:
+
+- filenames;
+- old commits;
+- archived prompts;
+- old version numbers;
+- historical plans;
+- unused routes;
+- commented-out code.
+
+Do not assume that a feature is required merely because code or documentation for it exists.
+
+Do not assume that an existing implementation is correct merely because it is already committed.
+
+Always evaluate the repository as it exists at the start of the task.
+
+---
+
+# 5. Development Workflow
+
+For non-trivial work, follow this sequence:
 
 ```text
-Training Goal
+Understand
     ↓
-Recommended Problem
+Inspect
     ↓
-Training
+Plan
     ↓
-Run / Submit
+Implement
     ↓
-Judge Result
+Verify
     ↓
-Progressive Agent Assistance if needed
+Review
     ↓
-Training Result
-    ↓
-Next Recommendation
+Report
 ```
 
-Do not turn ACM, 408, interviews, courses, or job preparation into separate homepage products.
+Before editing:
 
-They are future training policies / goals, not separate primary interfaces.
+1. read the relevant instructions;
+2. inspect existing implementation;
+3. inspect related shared components and utilities;
+4. inspect tests where relevant;
+5. identify constraints and affected modules;
+6. determine whether a written execution plan is required.
 
----
-
-## 4. Demo V2 Priority
-
-The Demo V2 goal is to validate the smallest real training loop.
-
-Student-side priority is higher than coach-side priority.
-
-Do not expand Demo V2 into a complete commercial platform.
-
-Explicitly avoid implementing out-of-scope features such as:
-
-- a real LLM Agent unless a later task explicitly adds it;
-- vector database;
-- RAG;
-- AI problem generation;
-- large-scale problem bank;
-- complex learner profiling;
-- a radar-chart-centered product;
-- multi-language Judge;
-- microservice cluster;
-- community;
-- leaderboard;
-- payments;
-- complex organization permissions;
-- mobile app.
+Do not immediately rewrite code before understanding the existing implementation.
 
 ---
 
-## 5. API Reality and Contract Discipline
+# 6. Planning
 
-`docs/product/apidocs.md` describes the currently documented backend API.
+Small, local and low-risk changes may be implemented directly.
 
-Important rules:
+For substantial work involving any of the following:
 
-- Use documented endpoints exactly as documented.
-- Do not invent production API endpoints in page code.
-- Do not assume a backend capability exists only because it appears in the product plan.
-- If Demo V2 requires a capability that is not documented in `apidocs.md`, record it as an API gap.
-- Do not hide API gaps by hardcoding fake production behavior into normal page components.
-- If temporary mock behavior is explicitly approved, isolate it behind a mock/data-access layer so it can be replaced cleanly.
+- multiple routes;
+- multiple feature modules;
+- architectural changes;
+- design-system changes;
+- migrations;
+- large refactors;
+- major API integration;
+- substantial UI redesign;
+- deployment-sensitive changes;
 
-The product plan and the current API documentation may represent different implementation stages.
-
-Before implementing a feature that depends on the backend, compare the requirement with `apidocs.md`.
-
-If the API contract changes, update the relevant API documentation / structured contract together with the frontend integration.
-
----
-
-## 6. Approved Frontend Stack
-
-Follow:
+create or update an execution plan under:
 
 ```text
-docs/architecture/tech-stack.md
+.agent/plans/
 ```
 
-The intended stack includes:
-
-- Node.js LTS
-- pnpm
-- Next.js
-- React
-- TypeScript
-- App Router
-- Tailwind CSS
-- shadcn/ui
-- Lucide React
-- TanStack Query
-- Zod
-- React Hook Form
-- Apache ECharts
-- Vitest
-- Playwright
-- ESLint
-- Prettier
-- TypeScript Strict
-
-Preserve the shadcn/ui configuration already initialized in this repository.
-
-The repository currently uses the selected shadcn Base UI foundation and Nova preset. Do not switch the base component library or visual preset without explicit approval.
-
----
-
-## 7. Next.js Rules
-
-- Use App Router.
-- Keep TypeScript strict.
-- Prefer Server Components by default.
-- Add `"use client"` only when interactivity, browser APIs, hooks, client-side state, or client-only libraries require it.
-- Keep Client Component boundaries as narrow as practical.
-- Avoid unnecessary `useEffect`.
-- Follow the APIs and behavior of the installed Next.js version.
-- For Next.js-specific uncertainty, inspect the version-matched local Next.js documentation and/or use the configured Next.js DevTools MCP.
-
----
-
-## 8. UI Rules
-
-- Use Tailwind CSS.
-- Prefer existing project components.
-- Prefer shadcn/ui primitives and patterns.
-- Use Lucide React for production interface icons.
-- Do not introduce another general-purpose UI library without explicit approval.
-- Preserve the Nova design language.
-- Keep the main student experience visually simple and focused.
-- Avoid turning `/training` into a large dashboard.
-- Do not use emoji as production UI icons.
-- Implement loading, empty, error, and success states for data-driven UI.
-- Support desktop and mobile layouts.
-
-When using shadcn/ui:
-
-1. inspect installed components;
-2. use the shadcn Skill / MCP when current component information is useful;
-3. reuse or compose existing primitives;
-4. create a custom primitive only when necessary.
-
----
-
-## 9. Internationalization
-
-Engineering language:
+Follow the planning conventions defined by:
 
 ```text
-English
+.agent/PLANS.md
 ```
 
-Product UI:
+A plan should describe:
+
+- objective;
+- constraints;
+- affected areas;
+- implementation stages;
+- verification strategy;
+- risks;
+- unresolved questions.
+
+Plans should describe the work, not pretend that unfinished work is already complete.
+
+---
+
+# 7. Approved Frontend Stack
+
+Use the project's existing frontend stack unless the current task explicitly approves a change.
+
+Expected technologies include:
 
 ```text
-zh-CN — default
-en    — supported
+Node.js
+pnpm
+Next.js
+React
+TypeScript
+App Router
+Tailwind CSS
+shadcn/ui
+Lucide React
+TanStack Query
+Zod
+React Hook Form
+Apache ECharts
+Vitest
+Playwright
+ESLint
+Prettier
 ```
+
+Use the versions declared by the repository.
+
+Do not upgrade major framework or library versions as a side effect of unrelated work.
+
+Do not replace an established library merely because another library is more familiar.
+
+---
+
+# 8. Package Management
+
+Use:
+
+```text
+pnpm
+```
+
+Respect:
+
+```text
+package.json
+pnpm-lock.yaml
+packageManager
+engines
+.nvmrc
+```
+
+where present.
 
 Rules:
 
-- Repository instructions, code identifiers, engineering docs, and AI prompts should be written in English.
-- User-facing UI text must be treated separately from engineering language.
-- Do not use Chinese variable, function, or file names.
-- Do not translate API field names based on UI locale.
-- Do not hard-code reusable user-facing strings when the repository's i18n layer is available.
-- New user-facing text should include translations for all required locales once i18n is enabled.
-- Backend error codes remain language-independent; UI translation belongs to the frontend.
+- keep `pnpm-lock.yaml` committed;
+- do not replace pnpm with npm or Yarn;
+- do not regenerate the lockfile unnecessarily;
+- prefer `pnpm exec` for project-local binaries;
+- avoid implicit `npx ...@latest` usage;
+- do not add dependencies when existing platform or project capabilities are sufficient.
+
+Before adding a dependency, ask:
+
+1. Can the requirement be implemented with the existing stack?
+2. Is there already a project dependency that solves it?
+3. Is the package actively maintained and compatible?
+4. Does the added bundle/runtime complexity justify its use?
+
+Major dependencies require a clear reason.
 
 ---
 
-## 10. Data and API Access
+# 9. Next.js Rules
 
-Keep backend integration centralized under:
+Use App Router.
 
-```text
-src/lib/api/
+Follow the APIs supported by the installed Next.js version.
+
+Prefer Server Components where appropriate.
+
+Use `"use client"` only when required by:
+
+- hooks;
+- client state;
+- event handlers;
+- browser APIs;
+- client-only libraries;
+- interactive components.
+
+Keep Client Component boundaries as narrow as practical.
+
+Avoid unnecessary `useEffect`.
+
+Do not move logic to the client simply because implementation is easier there.
+
+Do not rely on remembered Next.js behavior when the installed version may differ.
+
+For version-specific uncertainty:
+
+1. inspect the installed Next.js documentation;
+2. inspect existing project patterns;
+3. use configured development tooling where useful.
+
+---
+
+# 10. React Rules
+
+Prefer:
+
+- composition;
+- explicit data flow;
+- small focused components;
+- reusable primitives;
+- predictable state ownership.
+
+Avoid:
+
+- giant page components;
+- unnecessary context providers;
+- duplicated state;
+- unnecessary effects;
+- unnecessary memoization;
+- abstractions created before a real reuse case exists.
+
+Keep business logic separate from purely presentational concerns where practical.
+
+Do not introduce clever abstractions that make normal feature work harder to understand.
+
+---
+
+# 11. TypeScript Rules
+
+TypeScript strictness must remain enabled.
+
+Do not weaken compiler settings merely to make a task pass.
+
+Avoid:
+
+```ts
+any
 ```
 
-Use TanStack Query for client-side server state when caching, invalidation, refetching, or request lifecycle state is useful.
+unless genuinely unavoidable and documented.
 
-Use Zod where runtime validation of external data improves correctness.
+Prefer:
 
-Do not scatter raw backend `fetch()` calls throughout presentation components.
+- precise interfaces and types;
+- discriminated unions where useful;
+- type-safe API boundaries;
+- inferred types where they remain readable;
+- explicit types at important public boundaries.
 
-Never expose backend secrets to browser code.
+Do not duplicate backend models blindly throughout the UI.
 
-Only intentionally public browser configuration may use the `NEXT_PUBLIC_` prefix.
+Separate:
 
----
+- transport/API types;
+- validated data;
+- view models;
 
-## 11. Forms
-
-- Use React Hook Form for non-trivial forms.
-- Use Zod for validation where appropriate.
-- Keep frontend validation consistent with the backend contract.
-- Handle backend validation / conflict / not-found errors explicitly.
-- Prevent duplicate submissions during an active request.
-
----
-
-## 12. Charts
-
-Use Apache ECharts for product analytics / visualization when charts are actually required.
-
-Do not add a chart merely because the library exists.
-
-The current Demo V2 explicitly does not require a complex ability radar chart as a core experience.
+when doing so materially improves correctness.
 
 ---
 
-## 13. Product-Specific UI Constraints
+# 12. Project Structure
 
-### Regular-user navigation
+Respect the existing directory architecture.
 
-Keep the regular-user information architecture centered on:
+Before creating a new directory, inspect whether an equivalent location or pattern already exists.
+
+Prefer feature placement that makes ownership obvious.
+
+Do not create multiple competing locations for:
+
+- API clients;
+- schemas;
+- constants;
+- hooks;
+- shared components;
+- utilities;
+- types.
+
+Shared abstractions must have a genuine cross-feature use case.
+
+Keep feature-specific code close to the feature when practical.
+
+---
+
+# 13. Component Rules
+
+Before creating a new component:
+
+1. inspect existing project components;
+2. inspect installed shadcn/ui components;
+3. determine whether composition can solve the requirement;
+4. only create a new primitive when necessary.
+
+Prefer:
 
 ```text
-Training
-History
-Profile
+existing project component
+        ↓
+shadcn/ui primitive
+        ↓
+composition
+        ↓
+custom primitive
 ```
 
-### Core routes from the current plan
+Do not introduce another general-purpose component library without explicit approval.
 
-```text
-/training
-/history
-/profile
-/problem/[id]
-```
+Use Lucide React for normal production interface icons unless a specific visual requirement calls for something else.
 
-Coach routes are conditional and secondary:
-
-```text
-/coach
-/coach/students
-/coach/student/[id]
-```
-
-Do not expose the coach experience as a primary regular-user navigation destination.
-
-### `/training`
-
-Emphasize:
-
-- current goal;
-- one recommended problem;
-- recommendation reason;
-- start training.
-
-Recent training / streak / recent errors may appear with lower visual priority.
-
-Do not display a large recommendation grid unless a later approved requirement changes this rule.
+Do not use emoji as production UI icons.
 
 ---
 
-## 14. Testing and Quality
+# 14. Design System
 
-For normal implementation work, run the relevant checks:
+The design system is a system, not a collection of independent page styles.
+
+Use shared:
+
+- design tokens;
+- spacing;
+- typography;
+- radii;
+- borders;
+- shadows;
+- colors;
+- interaction states;
+- motion principles.
+
+Do not hard-code arbitrary visual values repeatedly across pages when a token or shared utility should exist.
+
+When improving visual design, preserve hierarchy and usability before decoration.
+
+Visual novelty must not reduce:
+
+- readability;
+- accessibility;
+- navigation clarity;
+- performance;
+- responsiveness;
+- consistency.
+
+A new page may have a distinctive composition while still belonging to the same product.
+
+---
+
+# 15. UI Quality
+
+Production UI should account for:
+
+- default;
+- hover;
+- focus-visible;
+- active;
+- disabled;
+- loading;
+- empty;
+- error;
+- success;
+
+states where relevant.
+
+Avoid creating interfaces that only look correct with ideal demo data.
+
+Test realistic cases including:
+
+- long labels;
+- long usernames;
+- large values;
+- missing optional data;
+- empty lists;
+- loading data;
+- API failure;
+- narrow screens;
+- translated strings.
+
+Do not solve hierarchy problems by putting every section inside another Card.
+
+Use whitespace, typography, grouping, separators, background hierarchy and layout before adding unnecessary containers.
+
+---
+
+# 16. Responsive Design
+
+All user-facing work must consider responsive behavior.
+
+At minimum inspect:
+
+- large desktop;
+- laptop;
+- tablet;
+- mobile.
+
+Avoid desktop-only assumptions.
+
+Do not simply shrink a desktop layout until it fits.
+
+Adapt:
+
+- navigation;
+- grids;
+- typography;
+- spacing;
+- charts;
+- dialogs;
+- tables;
+- controls;
+
+to the available viewport.
+
+Avoid horizontal scrolling unless the interaction genuinely requires it.
+
+---
+
+# 17. Accessibility
+
+Accessibility is part of implementation quality.
+
+Use semantic HTML wherever possible.
+
+Requirements include:
+
+- keyboard accessibility;
+- visible focus states;
+- correct button/link semantics;
+- associated labels;
+- accessible form errors;
+- meaningful alternative text;
+- appropriate ARIA only where necessary;
+- sufficient color contrast;
+- non-color-only state communication.
+
+Do not add ARIA attributes to compensate for incorrect semantic HTML when native elements solve the problem better.
+
+---
+
+# 18. Motion and Animation
+
+Animation should communicate:
+
+- hierarchy;
+- causality;
+- state change;
+- focus;
+- continuity.
+
+Avoid animation solely because an element can be animated.
+
+Do not use:
+
+- abrupt movement;
+- excessive bouncing;
+- excessive scaling;
+- excessive parallax;
+- continuous distracting motion;
+- animations that cause layout shifts.
+
+Hover interactions should feel physically continuous rather than instantaneous.
+
+Prefer transform and opacity for performant motion.
+
+Respect:
+
+```css
+prefers-reduced-motion
+```
+
+Avoid adding a large animation dependency unless existing capabilities are insufficient and the dependency is justified.
+
+---
+
+# 19. Internationalization
+
+Engineering language should remain English for:
+
+- code identifiers;
+- filenames;
+- technical comments;
+- engineering documentation;
+- architecture documentation;
+- development instructions.
+
+User-facing product language is independent from engineering language.
+
+Do not:
+
+- use Chinese identifiers in code;
+- translate API field names;
+- hard-code reusable strings when the project's localization system should own them.
+
+When adding user-facing copy, follow the localization architecture already established by the repository.
+
+Layouts must tolerate translated strings with different lengths.
+
+---
+
+# 20. API Architecture
+
+Keep backend integration centralized in the established API/data-access layer.
+
+Do not scatter raw `fetch()` calls throughout presentation components.
+
+Prefer a structure where responsibilities are clear:
+
+```text
+UI
+ ↓
+hooks / query layer
+ ↓
+API client
+ ↓
+backend
+```
+
+Do not invent production API endpoints.
+
+Do not assume backend capabilities that are not documented.
+
+When frontend requirements exceed the current API contract:
+
+- identify the API gap;
+- isolate temporary mock behavior if explicitly required;
+- do not disguise mock behavior as production integration.
+
+---
+
+# 21. TanStack Query
+
+Use TanStack Query for server state when its capabilities are useful, including:
+
+- caching;
+- request lifecycle;
+- invalidation;
+- refetching;
+- mutations;
+- synchronization.
+
+Use stable and structured query keys.
+
+Do not mirror query state unnecessarily into local React state.
+
+Mutations should:
+
+- expose pending state;
+- prevent accidental duplicate submission where appropriate;
+- invalidate/update relevant data deliberately;
+- handle expected backend errors.
+
+---
+
+# 22. Runtime Validation
+
+Use Zod where validating data at runtime materially improves correctness.
+
+External data is not trusted merely because TypeScript declares a type.
+
+Consider validation at:
+
+- API boundaries;
+- form boundaries;
+- persisted external data;
+- query-string or route-derived data;
+
+where applicable.
+
+Do not add unnecessary schemas for completely internal compile-time-only values.
+
+---
+
+# 23. Forms
+
+Use React Hook Form for non-trivial forms.
+
+Use Zod when schema-driven validation is appropriate.
+
+Forms should handle:
+
+- validation;
+- pending state;
+- duplicate submission;
+- backend validation errors;
+- conflict errors;
+- failure recovery;
+- disabled controls;
+- accessible error messages.
+
+Keep frontend validation compatible with the backend contract.
+
+Frontend validation does not replace backend validation.
+
+---
+
+# 24. Charts and Data Visualization
+
+Use Apache ECharts when a chart materially improves understanding.
+
+Do not add charts merely because chart infrastructure exists.
+
+Choose visualization based on the data and user question.
+
+Charts must account for:
+
+- empty state;
+- loading;
+- responsive resizing;
+- readable labels;
+- tooltip clarity;
+- accessible surrounding explanation;
+- consistent visual tokens.
+
+Avoid excessive colors.
+
+Color should encode meaning rather than decoration.
+
+Do not place critical information exclusively inside chart hover tooltips.
+
+---
+
+# 25. Loading, Empty and Error States
+
+Data-driven UI must not assume successful populated data.
+
+Design appropriate states for:
+
+```text
+loading
+empty
+partial data
+error
+retry
+success
+```
+
+Use Skeleton components when useful.
+
+Avoid full-page spinners for local asynchronous operations when a localized loading state is more appropriate.
+
+Errors should help the user understand what can be done next.
+
+Do not expose raw backend stack traces or internal implementation details.
+
+---
+
+# 26. Mock Data
+
+Mock mode and production integration must remain clearly separated.
+
+Do not scatter environment checks throughout presentation components.
+
+Mock data should flow through the same or a deliberately compatible data-access boundary where practical.
+
+Do not modify production behavior merely to make a demo easier.
+
+Do not send destructive or mutating requests to a production backend for frontend experimentation unless explicitly authorized.
+
+---
+
+# 27. Security
+
+Never commit:
+
+- passwords;
+- tokens;
+- API keys;
+- private keys;
+- certificates;
+- session secrets;
+- private `.env` files;
+- production customer data.
+
+Never expose server-side secrets through `NEXT_PUBLIC_*`.
+
+Treat any browser-visible value as public.
+
+Do not log sensitive authentication or user data unnecessarily.
+
+Do not weaken authentication, authorization or browser security controls merely to simplify local development.
+
+---
+
+# 28. Performance
+
+Do not optimize blindly, but avoid obvious performance regressions.
+
+Consider:
+
+- JavaScript bundle size;
+- Client Component boundaries;
+- unnecessary rerenders;
+- image loading;
+- font loading;
+- chart cost;
+- animation cost;
+- duplicate requests;
+- oversized dependencies.
+
+Use lazy loading or code splitting where it provides meaningful benefit.
+
+Do not trade maintainability for micro-optimizations without evidence.
+
+---
+
+# 29. Testing
+
+Use:
+
+- Vitest for unit and logic tests;
+- Playwright for important user-facing flows.
+
+Bug fixes should include regression coverage when practical.
+
+Test behavior, not implementation trivia.
+
+Do not disable or delete valid tests merely to make a change pass.
+
+Before considering substantial work complete, run the relevant available checks such as:
 
 ```bash
 pnpm lint
@@ -337,204 +829,458 @@ pnpm test
 pnpm build
 ```
 
-For major user-facing flows:
+For major user-facing flows, also run the appropriate E2E suite when available:
 
 ```bash
 pnpm test:e2e
 ```
 
+Use repository scripts rather than inventing alternative commands when equivalent scripts already exist.
+
+---
+
+# 30. Browser Verification
+
+Visual and interaction changes require browser inspection.
+
+Compilation success is not sufficient verification for UI work.
+
+When tooling permits, inspect:
+
+- rendered layout;
+- console errors;
+- hydration warnings;
+- network failures;
+- responsive behavior;
+- keyboard interaction;
+- loading states;
+- hover/focus states;
+- animation behavior.
+
+Use the project's configured Playwright/browser tooling when available.
+
+HTTP responses alone do not prove that a UI is correct.
+
+---
+
+# 31. Code Quality
+
+Prefer code that is:
+
+- explicit;
+- readable;
+- maintainable;
+- testable;
+- unsurprising.
+
+Avoid:
+
+- speculative abstractions;
+- premature generalization;
+- duplicated logic;
+- unexplained magic constants;
+- giant files;
+- dead code;
+- commented-out obsolete implementations;
+- debug logging left in production code.
+
+If a comment is required to understand what the code does, first consider whether clearer structure or naming would solve the problem.
+
+Comments should primarily explain **why**, not restate **what** the code already says.
+
+---
+
+# 32. Refactoring
+
+Do not perform broad unrelated refactors during a scoped feature task.
+
+A refactor is appropriate when it:
+
+- is necessary to implement the requested behavior safely;
+- removes significant duplication directly encountered by the task;
+- fixes a structural problem blocking the task;
+- is explicitly requested.
+
+Keep unrelated cleanup separate.
+
+Do not rewrite stable working code merely to match personal style preferences.
+
+---
+
+# 33. Dependencies
+
+Before adding, removing or replacing dependencies:
+
+1. inspect existing dependencies;
+2. inspect existing project usage;
+3. confirm compatibility;
+4. understand bundle/build impact;
+5. explain why the change is needed.
+
+Do not silently migrate libraries as part of unrelated work.
+
+Do not use unmaintained or suspicious packages without justification.
+
+---
+
+# 34. Repository Search and Inspection
+
+Prefer efficient repository-native tools.
+
+Typical order:
+
+```text
+rg
+fd
+git
+jq
+Node / project-local tooling
+```
+
 Use:
 
-- Vitest for unit / logic tests;
-- Playwright for important end-to-end flows.
-
-Do not disable lint, strict TypeScript, tests, or CI merely to make a task pass.
-
-Bug fixes should include regression coverage when practical.
-
----
-
-## 15. Git and Repository Scope
-
-Follow:
-
-```text
-docs/development/repository-management.md
+```bash
+rg --files
 ```
 
-Key rules:
+for repository inventories.
 
-- for current V0.1 development, work directly on `dev`; do not create task branches or PRs;
-- inspect tracked and untracked files; commit legitimate project files while excluding secrets, local env files, dependencies, build output and temporary artifacts;
-- after each completed V0.1 stage/Issue, run its required checks/tests, review the full diff, make a scoped Conventional Commit and immediately push to `origin/dev` before starting the next stage;
-- preserve unfinished work separately; do not mix stages in a commit;
-- never modify or push directly to `main`, force push, or use destructive reset/clean operations;
-- keep work scoped to the active Issue;
-- do not perform broad unrelated refactors;
-- outside this explicit V0.1 exception, the normal task-branch/PR workflow in repository management still applies.
+Use scoped searches.
 
-The user's 2026-09-30 direct-`dev` instruction supersedes earlier V0.1 branch/PR requirements in repository documents and prompts. It does not relax quality checks, live-backend GET-only restrictions or Issue scope.
-
----
-
-## 16. AI Development Rules
-
-Before changing code, read only the repository documents relevant to the task.
-
-Do not load every document for trivial edits.
-
-For product work, inspect:
+Avoid unnecessarily scanning:
 
 ```text
-docs/product/project-plan.en.md
-docs/product/apidocs.md
+node_modules
+.next
+dist
+coverage
+build artifacts
+private environment files
 ```
 
-plus the specific structured product documents relevant to the task.
-
-Codex must not:
-
-- invent product behavior;
-- invent production APIs;
-- silently resolve contradictions between plan and API docs;
-- add a major dependency without a reason;
-- replace the approved UI system;
-- build features outside the current task;
-- hide missing backend functionality inside page components;
-- commit secrets, credentials, `.env` files, private certificates, or production data.
-
-Codex should:
-
-- inspect existing code before adding abstractions;
-- prefer the smallest complete change;
-- reuse established patterns;
-- report product/API gaps explicitly;
-- validate work with executable checks;
-- summarize unresolved risks at the end.
+Do not use grep/sed as a substitute for proper JSON parsing.
 
 ---
 
-## 17. Planning
+# 35. CodeGraph
 
-Small and local tasks may be implemented directly.
+When `.codegraph/` exists and CodeGraph is operational, use it when dependency or symbol relationships would materially improve understanding.
 
-For substantial work spanning multiple routes/modules, major architecture changes, or staged migrations, create an execution plan under:
+Good use cases include:
+
+- locating symbol relationships;
+- understanding component dependencies;
+- impact analysis;
+- tracing module relationships;
+- identifying callers and references.
+
+CodeGraph is an assistance layer, not a source of truth.
+
+Always verify important findings against actual source code.
+
+Do not initialize CodeGraph implicitly during an unrelated task.
+
+If the repository is not indexed, continue with normal repository tools unless the current task explicitly asks for indexing.
+
+---
+
+# 36. Tool Selection
+
+Prefer tools already configured for the project.
+
+Do not install a large toolchain merely to perform a small task.
+
+Before assuming a CLI exists:
+
+```bash
+command -v <tool>
+```
+
+when appropriate.
+
+Use project-local tools rather than unrelated global versions whenever practical.
+
+Do not automatically download arbitrary latest-version CLIs.
+
+When a task requires external documentation, prefer version-matched official documentation.
+
+---
+
+# 37. Git Safety
+
+Before meaningful changes, inspect:
+
+```bash
+git status
+git branch --show-current
+git diff
+```
+
+as appropriate.
+
+Never:
+
+- force push without explicit authorization;
+- use destructive reset to discard user work;
+- run destructive clean operations casually;
+- overwrite unrelated uncommitted changes;
+- commit secrets;
+- silently alter Git history.
+
+Do not assume a particular branching or push strategy from this file.
+
+Follow the current task and the repository's current Git workflow documentation.
+
+If the user has not asked for commits or pushes, do not assume permission to publish changes.
+
+Keep commits scoped and understandable when commits are requested.
+
+---
+
+# 38. Documentation
+
+Update documentation when implementation changes:
+
+- public behavior;
+- architecture;
+- API contracts;
+- development workflow;
+- environment requirements;
+- reusable conventions.
+
+Do not update documentation merely to make implementation appear compliant.
+
+Documentation must describe actual behavior.
+
+Do not put temporary project progress into `AGENTS.md`.
+
+Temporary status belongs in:
 
 ```text
+Issues
 .agent/plans/
-```
-
-Follow:
-
-```text
-.agent/PLANS.md
+release notes
+task reports
+project tracking documents
 ```
 
 ---
 
-## 18. Definition of Done
+# 39. Deployment Safety
 
-A task is complete only when:
+Treat deployment as a separate high-risk operation.
+
+Do not deploy automatically merely because implementation and tests succeed.
+
+Before deployment, verify the repository's current deployment documentation.
+
+Never assume:
+
+- production hostname;
+- container names;
+- ports;
+- registry paths;
+- environment variables;
+- infrastructure topology;
+
+from historical knowledge.
+
+Do not:
+
+- delete production volumes;
+- delete databases;
+- modify production data;
+- remove unrelated containers;
+- rotate credentials;
+
+unless the task explicitly requires it and appropriate safeguards exist.
+
+Local development completion and production deployment are separate milestones.
+
+---
+
+# 40. AI Agent Behaviour
+
+The agent must:
+
+- inspect before editing;
+- plan substantial changes;
+- reuse established patterns;
+- keep changes scoped;
+- validate assumptions;
+- distinguish facts from assumptions;
+- report unresolved gaps;
+- verify with executable checks where possible.
+
+The agent must not:
+
+- invent requirements;
+- invent APIs;
+- invent backend behavior;
+- assume project progress;
+- claim tests passed without running them;
+- claim visual quality without inspecting rendered UI when inspection is available;
+- hide failures;
+- silently skip requested work;
+- introduce large dependencies without justification;
+- replace established architecture for convenience.
+
+If a requested implementation cannot be completed exactly, implement the safest useful subset and clearly state the remaining gap.
+
+---
+
+# 41. Autonomous Decision-Making
+
+The agent is encouraged to make reasonable implementation decisions when the requirement leaves room for engineering judgment.
+
+Use existing project principles and industry-standard frontend practices.
+
+Do not ask unnecessary clarification questions when repository context can resolve the issue safely.
+
+However, autonomy does not permit:
+
+- inventing product requirements;
+- destructive operations;
+- changing architecture without reason;
+- silently changing public contracts;
+- weakening security;
+- ignoring explicit instructions.
+
+---
+
+# 42. Visual Design Tasks
+
+For substantial visual work:
+
+1. inspect the existing rendered page;
+2. inspect existing components and tokens;
+3. identify hierarchy problems;
+4. define the intended visual direction;
+5. implement incrementally;
+6. inspect the result in a browser;
+7. revise obvious visual inconsistencies.
+
+Do not treat visual implementation as complete merely because CSS was written.
+
+Evaluate the complete page rather than isolated components.
+
+Avoid randomly adding:
+
+- gradients;
+- shadows;
+- glass effects;
+- animations;
+- colored cards;
+- decorative shapes;
+
+without a coherent visual purpose.
+
+Distinctive design should still feel systematic.
+
+---
+
+# 43. API and Product Gaps
+
+When the requested frontend requires functionality not supported by the documented backend:
+
+Do not fake a production endpoint.
+
+Instead classify the situation as one of:
+
+```text
+frontend-only behavior
+mock-only behavior
+API gap
+backend dependency
+```
+
+Keep temporary mock implementation replaceable.
+
+Include unresolved integration gaps in the final task report.
+
+---
+
+# 44. Definition of Done
+
+A task is complete only when all relevant conditions are satisfied:
 
 - requested behavior is implemented;
-- implementation matches the approved product scope;
-- backend usage matches the documented API or an explicitly approved mock strategy;
+- implementation follows repository architecture;
+- existing functionality has not been unintentionally broken;
+- API usage matches the documented contract;
+- loading/error/empty states are handled where relevant;
+- responsive behavior is reasonable;
+- accessibility has been considered;
 - relevant tests pass;
 - lint/type checks pass;
-- production build passes;
-- relevant docs/contracts are updated when needed;
-- no secrets or debugging artifacts remain;
-- the final report lists changes, validation performed, API/product gaps, and remaining risks.
+- build passes when applicable;
+- browser verification is performed for meaningful UI changes when possible;
+- no secrets or debug artifacts remain;
+- relevant documentation is updated;
+- unresolved risks are reported.
 
-## 19. Codex CLI environment
+A task is not complete because the code merely compiles.
 
-Project setup, tool provenance and verification: `docs/development/codex-cli.md`.
-MCP lives in `.codex/config.toml`; project Skills live in `.agents/skills/`.
-Start Codex from the repository root after `pnpm install --frozen-lockfile`.
-Use installed Next.js docs first, Context7 for other version-specific library
-questions, Next DevTools for runtime diagnostics, and Playwright MCP for browser
-inspection. Use the offline harness for UI exploration; browser MCP does not
-inherit the E2E network guard. Do not send private code or data to docs services.
-Preserve the user's global model, authentication and approval configuration.
+---
 
-## 20. Frontend CLI tool selection
+# 45. Final Task Report
 
-Check availability with `command -v` and inspect the relevant version before
-assuming a tool exists. Prefer existing tools and project scripts over installing
-another dependency. The inventory in `docs/development/codex-cli.md` describes
-this Mac, not prerequisites that every contributor must install.
+At the end of substantial work, provide a concise report containing:
 
-| Task                      | Preferred tool and fallback order                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Understand indexed code   | Follow the CodeGraph rule above when`.codegraph/` exists; otherwise proceed directly with the tools below. Do not create an index implicitly.                                                                                                                                                                                                                                                                                                                                                                              |
-| Search source text        | `rg` → `grep -R -n`; scope paths and exclude dependencies, generated output and private env files.                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Locate files              | Start repository inventories with`rg --files`; prefer `fd` for dedicated filename/path discovery → `rg --files -g '<pattern>'` → scoped `find`. `fd` is available on this Mac's user PATH. Both fd and rg normally skip ignored/hidden files; inspect those explicitly when the task requires it.                                                                                                                                                                                                                |
-| Read/transform JSON       | `jq` → a small Node script using `JSON.parse` / `JSON.stringify`. Do not parse structured JSON with grep/sed.                                                                                                                                                                                                                                                                                                                                                                                                         |
-| Version control           | `git`; inspect status, diff and history first. Preserve the branch/push rules in section 15. No destructive fallback.                                                                                                                                                                                                                                                                                                                                                                                                      |
-| GitHub Issues, PRs and CI | `gh` → `pnpm gh` (repository portable wrapper) → Git for Git operations and browser/read-only API inspection where sufficient. Report unsupported actions or missing authentication rather than extracting credentials.                                                                                                                                                                                                                                                                                                |
-| Node version              | `fnm` with `.nvmrc` → an already-installed Node satisfying `package.json#engines` (or an existing version manager). Use Node 24 here; never select a new major merely because it is latest. In a shell without fnm initialization, use `fnm exec --using=24 -- node ...` or initialize fnm explicitly.                                                                                                                                                                                                              |
-| Dependencies and scripts  | `pnpm` at `package.json#packageManager` → an already-provisioned compatible Corepack shim. If neither exists, report the bootstrap requirement; do not substitute npm/yarn, rewrite the lockfile or auto-download an arbitrary CLI. Prefer frozen-lockfile installs for verification.                                                                                                                                                                                                                                   |
-| Temporary JS/TS           | Use`node` for JS/ESM; prefer project-local `pnpm exec tsx <script.ts>` (also supports `.tsx`) for TypeScript scripts. The version is pinned in devDependencies. If tsx is unavailable, use Node 24 native erasable TypeScript for compatible `.mts`/`.ts`, then the existing TypeScript/Vitest workflow. Neither tsx nor native Node typechecks; keep `pnpm typecheck`. Native Node does not implement tsconfig path aliases/TSX. Avoid a separate global tsx version and implicit `npx ...@latest` downloads. |
-| Browser/UI verification   | Configured Playwright MCP for interactive inspection;`pnpm test:e2e` for repeatable regression checks → the installed `@playwright/test` browser API for a focused script. Use the offline harness and browser-review Skill. HTTP checks with curl/Node are useful but do not replace browser, console, responsive or interaction checks.                                                                                                                                                                               |
+```text
+What changed
+Validation performed
+Important design/architecture decisions
+Known limitations or unresolved gaps
+Files or areas requiring future attention
+```
 
-Do not default to Python for ordinary frontend file edits, JSON processing,
-automation or temporary scripts. Use Node/shell and the tools above. Python is
-appropriate only when the task demonstrably benefits from it, such as an existing
-Python workflow or specialized data tooling; explain that choice briefly.
+Do not claim success for checks that were not executed.
 
-Do not install a large toolchain just to satisfy a preferred command. Check
-existing equivalents first. For necessary updates, check official sources,
-compatibility and checksums, preserve existing installations/configuration and
-re-run relevant checks. Stop the affected step for administrator privileges,
-account login/OAuth, API keys or potentially destructive environment changes.
+Clearly distinguish:
 
+```text
+PASS
+NOT RUN
+BLOCKED
+```
 
-# Server Operations
+when reporting verification results.
 
-## Production Server
+---
 
-SSH alias:
+# 46. Core Principle
 
-ssh startrack-prod
+Prefer:
 
-Server:
-server1.qlluck.com
+```text
+small complete changes
+over
+large speculative changes
+```
 
-Backend container:
+Prefer:
 
-startrack-app
+```text
+existing project conventions
+over
+personal preferences
+```
 
-Old frontend container:
+Prefer:
 
-code-startrack-frontend-frontend-1
+```text
+verified behavior
+over
+assumptions
+```
 
-The old frontend container may be removed when deploying the new frontend.
+Prefer:
 
-## Backend API
+```text
+maintainable product quality
+over
+short-term demo tricks
+```
 
-Inspect backend container and exposed ports before making assumptions.
-
-API documentation:
-
-/doc.html
-
-Use the actual production API documentation as the source of truth.
-
-## Deployment Rules
-
-1. Test locally first.
-2. Test local Docker build and startup.
-3. Verify frontend/backend API compatibility.
-4. Do not modify database data.
-5. Do not remove backend containers.
-6. Do not delete Docker volumes.
-7. Merge dev -> main only after tests pass.
-8. Build production image from main.
-9. Push image to GHCR.
-10. Deploy the GHCR image to production.
-11. Verify container status, logs and HTTP access.
-
-## Important
-
-Algorithm analysis service is not deployed yet.
-Do not block frontend/backend integration because this service is unavailable.
+The purpose of this file is to keep AI-assisted development consistent, safe, maintainable and grounded in the actual repository — regardless of the project's current release, milestone or implementation stage.

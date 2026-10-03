@@ -14,12 +14,15 @@ import {
   fixtureUuid,
 } from "../demo/fixtures.ts";
 import { uuidSchema, windows, modes } from "../api/schemas.ts";
-import { scenarioConfig } from "./scenarios.mjs";
+import { identityFixture } from "../demo/v012-scenarios.ts";
+import { scenarioConfig, mockScenarios } from "./scenarios.mjs";
 import { mockCaptchaImage } from "./captcha.mjs";
+import { createV012Mock } from "./v012-backend.mjs";
 import { validateMockRequest } from "./requests.mjs";
 
 // Isolated, in-memory single-learner service. No provider, DB or network calls.
 export function createMockBackend({ scenario = "success" } = {}) {
+  const collaboration = createV012Mock();
   let config,
     calls,
     bound,
@@ -32,12 +35,27 @@ export function createMockBackend({ scenario = "success" } = {}) {
   let nextAccount = 9007199254740997n;
   let lastManualJob;
   function reset(options = {}) {
-    config = { ...scenarioConfig(scenario), ...options };
+    config = { ...scenarioConfig(options.scenario ?? scenario), ...options };
     calls = [];
-    user = structuredClone(demoUser);
+    user = structuredClone(
+      config.identity ? identityFixture(config.identity).user : demoUser,
+    );
+    if (config.coach) {
+      user.roles = ["STUDENT", "COACH"];
+      user.primaryRole = "COACH";
+    }
+    if (config.publicId) user.publicId = config.publicId;
+    collaboration.reset(config);
     bound = config.noAccounts
       ? []
-      : structuredClone([...demoAccounts, demoUnbound]);
+      : structuredClone([
+          ...(config.identity
+            ? identityFixture(config.identity).accounts
+            : config.oneAccount
+              ? demoAccounts.slice(0, 1)
+              : demoAccounts),
+          demoUnbound,
+        ]);
     if (config.invalid && bound[0]) bound[0].bindStatus = "INVALID";
     jobs = new Map();
     lastManualJob = new Map();
@@ -185,7 +203,11 @@ export function createMockBackend({ scenario = "success" } = {}) {
         if (body?.preserveCalls) config = { ...config, ...body };
         else reset(body ?? {});
       }
-      json({ calls, scenario });
+      json({
+        calls,
+        scenario: config.scenario ?? scenario,
+        availableScenarios: Object.keys(mockScenarios),
+      });
       return;
     }
     calls.push({
@@ -230,12 +252,23 @@ export function createMockBackend({ scenario = "success" } = {}) {
     };
     if (config.delayMs)
       await new Promise((resolve) => setTimeout(resolve, config.delayMs));
+    if (config.networkFailure) {
+      response.destroy();
+      return;
+    }
     if (config.failReads && request.method === "GET") {
       error("INTERNAL_ERROR", 503);
       return;
     }
-    if (config.errorPath === path) {
-      error(config.errorCode ?? "INTERNAL_ERROR", config.errorStatus ?? 503);
+    if (
+      config.errorPath === path ||
+      (config.errorResource && path.endsWith(config.errorResource))
+    ) {
+      error(
+        config.errorCode ?? "INTERNAL_ERROR",
+        config.errorStatus ?? 503,
+        config.retryAfter ? { "Retry-After": String(config.retryAfter) } : {},
+      );
       return;
     }
     if (path === "/auth/captcha") {
@@ -351,6 +384,22 @@ export function createMockBackend({ scenario = "success" } = {}) {
       error("FORBIDDEN", 403);
       return;
     }
+    if (
+      collaboration.handle({
+        path,
+        method: request.method,
+        body,
+        query,
+        config,
+        user,
+        bound,
+        data,
+        paginated,
+        error,
+        noContent,
+      })
+    )
+      return;
     if (path === "/oj-accounts") {
       if (request.method === "POST") {
         const existing = bound.find(

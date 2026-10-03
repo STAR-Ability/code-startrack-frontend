@@ -3,7 +3,7 @@ test.beforeEach(() => configureUpstream());
 test("analysis windows refetch exact DTO and history opens immutable snapshot", async ({
   page,
 }) => {
-  await page.goto("/analysis");
+  await page.goto("/accounts/analysis");
   await expect(
     page.getByRole("heading", { name: "六维能力 · 0–100" }),
   ).toBeVisible();

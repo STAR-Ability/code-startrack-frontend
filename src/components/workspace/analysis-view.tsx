@@ -20,6 +20,24 @@ import { MetricPanel } from "./metric-panel";
 import { Chart } from "./chart";
 import { useAccountTimezone } from "./account-provider";
 
+export type AnalysisPresentation = Pick<
+  AnalysisDto,
+  | "window"
+  | "timezone"
+  | "dataCutoffAt"
+  | "stale"
+  | "summary"
+  | "currentRating"
+  | "maxRating"
+  | "overallScore"
+  | "dimensions"
+  | "weakestDimension"
+  | "period"
+  | "tagStats"
+  | "difficultyStats"
+  | "activityStats"
+>;
+
 export function AnalysisView({
   analysis,
   dimensions = false,
@@ -29,8 +47,14 @@ export function AnalysisView({
   metricTitle = "profile.overview",
   ability = false,
   trend,
+  aggregate = false,
+  activity = true,
+  ratings = true,
 }: {
-  analysis: AnalysisDto | null;
+  analysis: AnalysisPresentation | null;
+  aggregate?: boolean;
+  activity?: boolean;
+  ratings?: boolean;
   dimensions?: boolean;
   statistics?: boolean;
   loading?: boolean;
@@ -40,7 +64,8 @@ export function AnalysisView({
   trend?: React.ReactNode;
 }) {
   const { t, locale } = useLocale();
-  const timezone = useAccountTimezone();
+  const accountTimezone = useAccountTimezone();
+  const timezone = aggregate && analysis ? analysis.timezone : accountTimezone;
   const number = (v: number | null) =>
     v === null
       ? t("v.unavailable")
@@ -81,8 +106,14 @@ export function AnalysisView({
           ability
             ? [
                 ["v.overallScore", analysis?.overallScore ?? 0],
-                ["v.rating", analysis?.currentRating ?? null],
-                ["v.maxRating", analysis?.maxRating ?? null],
+                [
+                  aggregate ? "v12.highestRating" : "v.rating",
+                  analysis?.currentRating ?? null,
+                ],
+                [
+                  aggregate ? "v12.highestMaxRating" : "v.maxRating",
+                  analysis?.maxRating ?? null,
+                ],
                 ["v.solved", summary.solvedCount],
               ]
             : [
@@ -121,11 +152,13 @@ export function AnalysisView({
           ) : (
             t("v.unavailable")
           )}
-          {!ability && (
+          {!ability && ratings && (
             <>
               {" "}
-              · {t("v.rating")}: {number(analysis?.currentRating ?? null)} ·{" "}
-              {t("v.maxRating")}: {number(analysis?.maxRating ?? null)}
+              · {t(aggregate ? "v12.highestRating" : "v.rating")}:{" "}
+              {number(analysis?.currentRating ?? null)} ·{" "}
+              {t(aggregate ? "v12.highestMaxRating" : "v.maxRating")}:{" "}
+              {number(analysis?.maxRating ?? null)}
             </>
           )}
         </p>
@@ -133,7 +166,9 @@ export function AnalysisView({
       </div>
       {analysis?.stale && (
         <Alert>
-          <AlertDescription>{t("v.staleNote")}</AlertDescription>
+          <AlertDescription>
+            {t(aggregate ? "v12.staleNote" : "v.staleNote")}
+          </AlertDescription>
         </Alert>
       )}
       {!analysis && !loading && (
@@ -147,43 +182,47 @@ export function AnalysisView({
       {trend}
       {statistics && (
         <>
-          <Card size="sm" interaction="none">
-            <CardHeader>
-              <CardTitle>
-                <h2>{t("v.activityStats")}</h2>
-              </CardTitle>
-              <CardDescription>{t("v.windowNote")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {daily.length ? (
-                <Chart
-                  palette="activity"
-                  label={t("v.activityStats")}
-                  option={trendOption(
-                    daily.map((item) => item.date),
-                    [
-                      {
-                        name: t("v.submissions"),
-                        values: daily.map((item) => item.submissionCount),
-                      },
-                      {
-                        name: t("v.solved"),
-                        values: daily.map((item) => item.solvedCount),
-                      },
-                      {
-                        name: t("v.pendingCount"),
-                        values: daily.map(
-                          (item) => item.pendingSubmissionCount,
-                        ),
-                      },
-                    ],
-                  )}
-                />
-              ) : (
-                <EmptyState title={t("v.noRecords")} />
-              )}
-            </CardContent>
-          </Card>
+          {activity && (
+            <Card size="sm" interaction="none">
+              <CardHeader>
+                <CardTitle>
+                  <h2>{t("v.activityStats")}</h2>
+                </CardTitle>
+                <CardDescription>
+                  {t(aggregate ? "v12.activityNote" : "v.windowNote")}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {daily.length ? (
+                  <Chart
+                    palette="activity"
+                    label={t("v.activityStats")}
+                    option={trendOption(
+                      daily.map((item) => item.date),
+                      [
+                        {
+                          name: t("v.submissions"),
+                          values: daily.map((item) => item.submissionCount),
+                        },
+                        {
+                          name: t("v.solved"),
+                          values: daily.map((item) => item.solvedCount),
+                        },
+                        {
+                          name: t("v.pendingCount"),
+                          values: daily.map(
+                            (item) => item.pendingSubmissionCount,
+                          ),
+                        },
+                      ],
+                    )}
+                  />
+                ) : (
+                  <EmptyState title={t("v.noRecords")} />
+                )}
+              </CardContent>
+            </Card>
+          )}
           <div className="grid min-w-0 gap-4 lg:grid-cols-2">
             <Card size="sm" interaction="none">
               <CardHeader>
@@ -326,7 +365,7 @@ export function AnalysisView({
                     <dt className="text-sm">
                       {t(`data.dimension.${item.code}`)}
                       {item.code === analysis?.weakestDimension && (
-                        <Badge variant="outline" className="ml-2">
+                        <Badge variant="outline" wrap className="ml-2">
                           {t("v.weakest")}
                         </Badge>
                       )}

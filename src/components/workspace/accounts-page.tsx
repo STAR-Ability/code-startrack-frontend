@@ -226,7 +226,7 @@ function AccountCard({ account }: { account: OjAccountDto }) {
           variant="outline"
           onClick={() => {
             selectAccount(account.accountId);
-            router.push("/dashboard");
+            router.push("/data");
           }}
         >
           {t("v.viewAccount")}

@@ -1,6 +1,6 @@
 "use client";
 import { useId } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { v012 } from "@/lib/api/v012";
 import {
@@ -10,10 +10,7 @@ import {
 } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Field, FieldLabel } from "@/components/ui/field";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+import { ChoiceSelect } from "@/components/ui/choice-select";
 import { Button } from "@/components/ui/button";
 import { Panel, useCollaborationMutation } from "./v012-shared";
 import { useUserQuery } from "./use-user-query";
@@ -46,9 +43,9 @@ export function PrivacyForm({ settings }: { settings: PrivacySettingsDto }) {
   });
   const mutation = useCollaborationMutation("privacy", v012.updatePrivacy);
   return (
-    <Panel title="v12.privacy" description={t("v12.privacyNote")}>
+    <Panel title="v12.privacyControls" description={t("v12.privacyNote")}>
       <form
-        className="flex flex-col gap-4"
+        className="grid gap-5 md:grid-cols-2"
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
       >
         {(
@@ -59,19 +56,27 @@ export function PrivacyForm({ settings }: { settings: PrivacySettingsDto }) {
             "analysisReport",
           ] as const
         ).map((key) => (
-          <Field key={key}>
+          <Field key={key} className="rounded-xl border bg-muted/30 p-4">
             <FieldLabel htmlFor={`${id}-${key}`}>{t(`v12.${key}`)}</FieldLabel>
-            <NativeSelect
-              id={`${id}-${key}`}
-              {...form.register(key)}
-              disabled={mutation.blocked}
-            >
-              {privacyScopes.map((scope) => (
-                <NativeSelectOption key={scope} value={scope}>
-                  {t(`v12.scope.${scope}`)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+            <Controller
+              name={key}
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <ChoiceSelect
+                  id={`${id}-${key}`}
+                  value={field.value}
+                  name={field.name}
+                  onBlur={field.onBlur}
+                  onValueChange={field.onChange}
+                  aria-invalid={!!fieldState.error}
+                  disabled={mutation.blocked}
+                  options={privacyScopes.map((value) => ({
+                    value,
+                    label: t(`v12.scope.${value}`),
+                  }))}
+                />
+              )}
+            />
           </Field>
         ))}
         <Button

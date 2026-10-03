@@ -1,4 +1,27 @@
 export const v012Zh = {
+  "v12.expires": "邀请到期",
+  "v12.overview": "概览",
+  "v12.teamSettings": "团队设置",
+  "v12.teamNavigation": "团队工作区导航",
+  "v12.pendingInvitations": "待处理邀请",
+  "v12.dangerZone": "谨慎操作",
+  "v12.dangerNote": "此操作会改变团队及成员访问权限，请确认后继续。",
+  "v12.transferNote":
+    "新负责人须为拥有 COACH 角色的有效成员，提交后由服务端验证资格。",
+  "v12.noTeamRecommendations": "尚无团队推荐",
+  "v12.readyState": "已就绪",
+  "v12.staleState": "待更新",
+  "v12.unavailableState": "暂不可用",
+  "v12.dataAvailability": "数据可用性",
+  "v12.dataAvailabilityNote":
+    "共享范围由成员隐私授权决定，不同统计可能使用不同样本。",
+  "v12.openTeam": "进入团队",
+  "v12.teamActions": "团队操作",
+  "v12.coachNote": "管理你负责的团队，同时保留个人学习与训练功能。",
+  "v12.managedQueueNote": "选择团队查看该团队的待办。",
+  "v12.searchGuide": "输入名称或关键词，发现可加入的团队。",
+  "v12.privacyControls": "数据共享范围",
+
   "v12.navLearning": "概览与学习",
   "v12.navTeams": "团队协作",
   "v12.navCoach": "教练工作区",
@@ -167,6 +190,31 @@ export const v012Zh = {
   "v12.status.SENT": "已发送",
 } as const;
 export const v012En = {
+  "v12.expires": "Expires",
+  "v12.overview": "Overview",
+  "v12.teamSettings": "Team settings",
+  "v12.teamNavigation": "Team workspace navigation",
+  "v12.pendingInvitations": "Pending invitations",
+  "v12.dangerZone": "Careful actions",
+  "v12.dangerNote":
+    "This changes team and member access. Confirm before continuing.",
+  "v12.transferNote":
+    "The new owner must be an active member with COACH. The server verifies eligibility.",
+  "v12.noTeamRecommendations": "No team recommendations yet",
+  "v12.readyState": "Ready",
+  "v12.staleState": "Needs update",
+  "v12.unavailableState": "Unavailable",
+  "v12.dataAvailability": "Data availability",
+  "v12.dataAvailabilityNote":
+    "Members control sharing. Each statistic may use a different sample.",
+  "v12.openTeam": "Open team",
+  "v12.teamActions": "Team actions",
+  "v12.coachNote":
+    "Manage the teams you own alongside your personal learning and training.",
+  "v12.managedQueueNote": "Choose a team to review its pending work.",
+  "v12.searchGuide": "Enter a name or keyword to discover teams you can join.",
+  "v12.privacyControls": "Data sharing scopes",
+
   "v12.navLearning": "Overview & learning",
   "v12.navTeams": "Teams & collaboration",
   "v12.navCoach": "Coach workspace",

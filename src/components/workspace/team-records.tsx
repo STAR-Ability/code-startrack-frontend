@@ -1,6 +1,15 @@
 "use client";
 import { useState, useId } from "react";
 import Link from "next/link";
+import { ArrowUpRightIcon, MoreHorizontalIcon } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { v012 } from "@/lib/api/v012";
 import type {
   JoinApplicationDto,
@@ -17,9 +26,11 @@ import { Status, useCollaborationMutation } from "./v012-shared";
 export function TeamCard({
   team,
   searchable = false,
+  section = "overview",
 }: {
   team: TeamSummaryDto;
   searchable?: boolean;
+  section?: string;
 }) {
   const { t } = useLocale();
   const [message, setMessage] = useState("");
@@ -39,11 +50,25 @@ export function TeamCard({
       mutation.error instanceof ApiError &&
       mutation.error.code === "TEAM_NOT_JOINABLE"
     );
+  const href = `/teams/detail?teamId=${team.teamId}&tab=${section}`;
   return (
-    <article className="flex min-w-0 flex-col gap-3 border-b py-4 last:border-0">
+    <article className="workspace-team-card">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="break-words font-medium">{team.name}</h3>
+          <div className="flex items-center gap-3">
+            <Avatar size="lg">
+              {team.avatarUrl && <AvatarImage src={team.avatarUrl} alt="" />}
+              <AvatarFallback>{team.name.slice(0, 2)}</AvatarFallback>
+            </Avatar>
+            <h3 className="break-words font-semibold">
+              <Link
+                href={href}
+                className="rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+              >
+                {team.name}
+              </Link>
+            </h3>
+          </div>
           <p className="text-sm text-muted-foreground">
             {team.owner.displayName ?? team.owner.username} · {t("v12.members")}
             : {team.memberCount}
@@ -58,12 +83,52 @@ export function TeamCard({
       )}
       <div className="flex flex-wrap gap-3">
         <Link
-          href={`/teams/detail?teamId=${team.teamId}`}
+          href={href}
           className={buttonVariants({ variant: "outline", size: "sm" })}
         >
-          {t("v12.open")}
+          {t("v12.openTeam")}{" "}
+          <ArrowUpRightIcon aria-hidden="true" className="size-4" />
         </Link>
-        {team.myMembershipRole && <span>{t("v12.joined")}</span>}
+        {team.myMembershipRole && (
+          <Badge variant="secondary">
+            {t(team.myMembershipRole === "OWNER" ? "v12.owner" : "v12.member")}
+          </Badge>
+        )}
+        {team.myMembershipRole && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`${team.name} · ${t("v12.teamActions")}`}
+                />
+              }
+            >
+              <MoreHorizontalIcon aria-hidden="true" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                render={
+                  <Link
+                    href={`/teams/detail?teamId=${team.teamId}&tab=members`}
+                  />
+                }
+              >
+                {t("v12.members")}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                render={
+                  <Link
+                    href={`/teams/detail?teamId=${team.teamId}&tab=analysis`}
+                  />
+                }
+              >
+                {t("v12.teamAnalysis")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
         {team.myJoinApplicationStatus === "PENDING" && (
           <Link href="/teams?tab=applications">
             {t("v12.pendingApplication")}
@@ -87,6 +152,8 @@ export function TeamCard({
             <FieldLabel htmlFor={id}>{t("v12.message")}</FieldLabel>
             <Input
               id={id}
+              name="message"
+              autoComplete="off"
               value={message}
               onChange={(event) => setMessage(event.target.value)}
             />
@@ -114,7 +181,7 @@ export function ApplicationRow({
   manage?: boolean;
   readonly?: boolean;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [reason, setReason] = useState("");
   const id = useId();
   const mutation = useCollaborationMutation(
@@ -153,13 +220,18 @@ export function ApplicationRow({
         className="text-xs text-muted-foreground"
         dateTime={application.createdAt}
       >
-        {application.createdAt}
+        {new Intl.DateTimeFormat(locale, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(application.createdAt))}
       </time>
       {manage && application.status === "PENDING" && (
         <Field>
           <FieldLabel htmlFor={id}>{t("v12.reason")}</FieldLabel>
           <Input
             id={id}
+            name="decisionReason"
+            autoComplete="off"
             value={reason}
             disabled={disabled}
             onChange={(event) => setReason(event.target.value)}
@@ -209,7 +281,7 @@ export function InvitationRow({
   manage?: boolean;
   readonly?: boolean;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const mutation = useCollaborationMutation(
     manage ? "invite" : "invitation",
     (operation: "cancel" | "resend" | "accept" | "reject") =>
@@ -243,7 +315,11 @@ export function InvitationRow({
         className="text-xs text-muted-foreground"
         dateTime={invitation.expiresAt}
       >
-        {invitation.expiresAt}
+        {t("v12.expires")}:{" "}
+        {new Intl.DateTimeFormat(locale, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(invitation.expiresAt))}
       </time>
       {manage && (
         <p>

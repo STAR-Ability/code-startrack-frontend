@@ -1,23 +1,23 @@
 "use client";
 import { useId, useState } from "react";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { v012 } from "@/lib/api/v012";
 import type { TeamDetailDto, TeamMemberDto } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { ChoiceSelect } from "@/components/ui/choice-select";
 import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-  DialogHeader,
-} from "@/components/ui/dialog";
+  AlertDialog as Dialog,
+  AlertDialogContent as DialogContent,
+  AlertDialogTitle as DialogTitle,
+  AlertDialogDescription as DialogDescription,
+  AlertDialogHeader as DialogHeader,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import {
   Panel,
   Status,
@@ -50,14 +50,32 @@ export function TeamMembers({ team }: { team: TeamDetailDto }) {
           className="flex flex-col gap-3 border-b py-3 last:border-0"
         >
           <div className="flex flex-wrap justify-between gap-2">
-            <h3 className="break-words font-medium">
-              {member.user.displayName ?? member.user.username}
-            </h3>
-            <span>
+            <div className="flex min-w-0 items-center gap-3">
+              <Avatar>
+                {member.user.avatarUrl && (
+                  <AvatarImage src={member.user.avatarUrl} alt="" />
+                )}
+                <AvatarFallback>
+                  {(member.user.displayName ?? member.user.username).slice(
+                    0,
+                    2,
+                  )}
+                </AvatarFallback>
+              </Avatar>
+              <h3 className="break-words font-medium">
+                {member.user.displayName ?? member.user.username}
+              </h3>
+            </div>
+            <Badge variant="outline">
               {t(member.role === "OWNER" ? "v12.owner" : "v12.member")}
-            </span>
+            </Badge>
           </div>
           <Status value={member.status} />
+          {!Object.values(member.dataAccess).some(Boolean) && (
+            <p className="text-sm text-muted-foreground">
+              {t("v12.PRIVATE_DENIED")}
+            </p>
+          )}
           <div className="flex flex-wrap gap-3">
             {(
               [
@@ -128,28 +146,79 @@ export function TeamMembers({ team }: { team: TeamDetailDto }) {
           >
             {t("v12.remove")}
           </Button>
+          <AlertDialogCancel disabled={mutation.isPending}>
+            {t("v12.cancel")}
+          </AlertDialogCancel>
           <ErrorNotice error={mutation.error} />
         </DialogContent>
       </Dialog>
     </Panel>
   );
 }
-export function TeamManagement({ team }: { team: TeamDetailDto }) {
+export function TeamApplications({ team }: { team: TeamDetailDto }) {
   const { t } = useLocale();
   const [applicationPage, setApplicationPage] = useState(1);
-  const [invitationPage, setInvitationPage] = useState(1);
-  const [invitationStatus, setInvitationStatus] = useState<string>("PENDING");
+  const [applicationStatus, setApplicationStatus] = useState<string>("PENDING");
+  const id = useId();
   const applications = useTeamQuery(
     team.teamId,
     "applications",
-    { page: applicationPage, status: "PENDING" },
+    { page: applicationPage, status: applicationStatus },
     (signal) =>
       v012.applications(
         team.teamId,
-        { page: applicationPage, status: "PENDING" },
+        {
+          page: applicationPage,
+          status: (applicationStatus as "PENDING") || undefined,
+        },
         signal,
       ),
   );
+  const active = team.status === "ACTIVE";
+  return (
+    <Panel title="v12.applications">
+      <Field className="max-w-sm">
+        <FieldLabel htmlFor={`${id}-status`}>{t("v12.status")}</FieldLabel>
+        <ChoiceSelect
+          id={`${id}-status`}
+          value={applicationStatus}
+          onValueChange={(value) => {
+            setApplicationStatus(value);
+            setApplicationPage(1);
+          }}
+          options={[
+            { value: "", label: t("v12.all") },
+            ...(["PENDING", "APPROVED", "REJECTED", "CANCELLED"] as const).map(
+              (value) => ({ value, label: t(`v12.status.${value}`) }),
+            ),
+          ]}
+        />
+      </Field>
+      <QueryFeedback query={applications} />
+      {applications.data?.data.map((application) => (
+        <ApplicationRow
+          key={application.applicationId}
+          application={application}
+          manage
+          readonly={!active}
+        />
+      ))}
+      {applications.data?.data.length === 0 && (
+        <EmptyState title={t("v12.noApplications")} />
+      )}
+      <Pagination
+        meta={applications.data?.meta}
+        page={applicationPage}
+        setPage={setApplicationPage}
+        pending={applications.isFetching}
+      />
+    </Panel>
+  );
+}
+export function TeamInvitations({ team }: { team: TeamDetailDto }) {
+  const { t } = useLocale();
+  const [invitationPage, setInvitationPage] = useState(1);
+  const [invitationStatus, setInvitationStatus] = useState<string>("PENDING");
   const invitations = useTeamQuery(
     team.teamId,
     "invitations",
@@ -164,6 +233,57 @@ export function TeamManagement({ team }: { team: TeamDetailDto }) {
         signal,
       ),
   );
+  const id = useId();
+  const active = team.status === "ACTIVE";
+  return (
+    <Panel title="v12.invitations">
+      {active && <InviteForm teamId={team.teamId} />}
+      <Field className="max-w-sm">
+        <FieldLabel htmlFor={`${id}-status`}>{t("v12.status")}</FieldLabel>
+        <ChoiceSelect
+          id={`${id}-status`}
+          value={invitationStatus}
+          onValueChange={(value) => {
+            setInvitationStatus(value);
+            setInvitationPage(1);
+          }}
+          options={[
+            { value: "", label: t("v12.all") },
+            ...(
+              [
+                "PENDING",
+                "ACCEPTED",
+                "REJECTED",
+                "EXPIRED",
+                "CANCELLED",
+              ] as const
+            ).map((value) => ({ value, label: t(`v12.status.${value}`) })),
+          ]}
+        />
+      </Field>
+      <QueryFeedback query={invitations} />
+      {invitations.data?.data.map((invitation) => (
+        <InvitationRow
+          key={invitation.invitationId}
+          invitation={invitation}
+          manage
+          readonly={!active}
+        />
+      ))}
+      {invitations.data?.data.length === 0 && (
+        <EmptyState title={t("v12.noInvitations")} />
+      )}
+      <Pagination
+        meta={invitations.data?.meta}
+        page={invitationPage}
+        setPage={setInvitationPage}
+        pending={invitations.isFetching}
+      />
+    </Panel>
+  );
+}
+export function TeamSettings({ team }: { team: TeamDetailDto }) {
+  const { t } = useLocale();
   const [ownerPage, setOwnerPage] = useState(1);
   const members = useTeamQuery(
     team.teamId,
@@ -196,7 +316,7 @@ export function TeamManagement({ team }: { team: TeamDetailDto }) {
       {team.status !== "DISSOLVED" && (
         <>
           <TeamForm key={team.updatedAt} team={team} />
-          <Panel title="v12.manage">
+          <Panel title="v12.dangerZone" description={t("v12.dangerNote")}>
             <div className="flex flex-wrap gap-3">
               {(active
                 ? ["archive", "transfer", "dissolve"]
@@ -227,67 +347,6 @@ export function TeamManagement({ team }: { team: TeamDetailDto }) {
           </Panel>
         </>
       )}
-      <Panel title="v12.applications">
-        <QueryFeedback query={applications} />
-        {applications.data?.data.map((application) => (
-          <ApplicationRow
-            key={application.applicationId}
-            application={application}
-            manage
-            readonly={!active}
-          />
-        ))}
-        {applications.data?.data.length === 0 && (
-          <EmptyState title={t("v12.noApplications")} />
-        )}
-        <Pagination
-          meta={applications.data?.meta}
-          page={applicationPage}
-          setPage={setApplicationPage}
-          pending={applications.isFetching}
-        />
-      </Panel>
-      <Panel title="v12.invitations">
-        {active && <InviteForm teamId={team.teamId} />}
-        <Field className="max-w-sm">
-          <FieldLabel htmlFor={`${id}-status`}>{t("v12.status")}</FieldLabel>
-          <NativeSelect
-            id={`${id}-status`}
-            value={invitationStatus}
-            onChange={(event) => {
-              setInvitationStatus(event.target.value);
-              setInvitationPage(1);
-            }}
-          >
-            <NativeSelectOption value="">{t("v12.all")}</NativeSelectOption>
-            {["PENDING", "ACCEPTED", "REJECTED", "EXPIRED", "CANCELLED"].map(
-              (status) => (
-                <NativeSelectOption key={status} value={status}>
-                  {t(`v12.status.${status}` as Parameters<typeof t>[0])}
-                </NativeSelectOption>
-              ),
-            )}
-          </NativeSelect>
-        </Field>
-        <QueryFeedback query={invitations} />
-        {invitations.data?.data.map((invitation) => (
-          <InvitationRow
-            key={invitation.invitationId}
-            invitation={invitation}
-            manage
-            readonly={!active}
-          />
-        ))}
-        {invitations.data?.data.length === 0 && (
-          <EmptyState title={t("v12.noInvitations")} />
-        )}
-        <Pagination
-          meta={invitations.data?.meta}
-          page={invitationPage}
-          setPage={setInvitationPage}
-          pending={invitations.isFetching}
-        />
-      </Panel>
       <Dialog
         open={!!operation}
         onOpenChange={(open) => {
@@ -307,7 +366,9 @@ export function TeamManagement({ team }: { team: TeamDetailDto }) {
                       : "v12.archive",
               )}
             </DialogTitle>
-            <DialogDescription>{team.name}</DialogDescription>
+            <DialogDescription>
+              {team.name} · {t("v12.dangerNote")}
+            </DialogDescription>
           </DialogHeader>
           {operation === "dissolve" && (
             <Field>
@@ -326,28 +387,26 @@ export function TeamManagement({ team }: { team: TeamDetailDto }) {
               <FieldLabel htmlFor={`${id}-owner`}>
                 {t("v12.newOwner")}
               </FieldLabel>
-              <NativeSelect
+              <ChoiceSelect
                 id={`${id}-owner`}
                 value={newOwner}
-                onChange={(event) => setNewOwner(event.target.value)}
-              >
-                <NativeSelectOption value="">
-                  {t("v12.newOwner")}
-                </NativeSelectOption>
-                {members.data?.data
-                  .filter(
-                    (member) =>
-                      member.role !== "OWNER" && member.status === "ACTIVE",
-                  )
-                  .map((member) => (
-                    <NativeSelectOption
-                      key={member.membershipId}
-                      value={member.user.publicId}
-                    >
-                      {member.user.displayName ?? member.user.username}
-                    </NativeSelectOption>
-                  ))}
-              </NativeSelect>
+                onValueChange={setNewOwner}
+                options={[
+                  { value: "", label: t("v12.newOwner") },
+                  ...(members.data?.data
+                    .filter(
+                      (member) =>
+                        member.role !== "OWNER" && member.status === "ACTIVE",
+                    )
+                    .map((member) => ({
+                      value: member.user.publicId,
+                      label: member.user.displayName ?? member.user.username,
+                    })) ?? []),
+                ]}
+              />
+              <p className="text-sm text-muted-foreground">
+                {t("v12.transferNote")}
+              </p>
               <QueryFeedback query={members} />
               <Pagination
                 page={ownerPage}
@@ -369,6 +428,9 @@ export function TeamManagement({ team }: { team: TeamDetailDto }) {
           >
             {t("v12.save")}
           </Button>
+          <AlertDialogCancel disabled={mutation.isPending}>
+            {t("v12.cancel")}
+          </AlertDialogCancel>
           <ErrorNotice error={mutation.error} />
         </DialogContent>
       </Dialog>

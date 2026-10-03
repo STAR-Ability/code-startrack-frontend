@@ -16,10 +16,7 @@ import { trendOption } from "@/lib/charts/options";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+import { ChoiceSelect } from "@/components/ui/choice-select";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Panel, AiJobNotice, useTeamQuery } from "./v012-shared";
@@ -309,7 +306,8 @@ export function TeamInsights({ team }: { team: TeamDetailDto }) {
       {displayed ? (
         <TeamAnalysisView analysis={displayed} />
       ) : (
-        !latest.isFetching && <EmptyState title={t("v12.noTeamAnalysis")} />
+        !latest.isFetching &&
+        !latest.error && <EmptyState title={t("v12.noTeamAnalysis")} />
       )}
       <Panel title="v12.teamHistory">
         <QueryFeedback query={history} />
@@ -345,21 +343,21 @@ export function TeamInsights({ team }: { team: TeamDetailDto }) {
           pending={history.isFetching}
         />
       </Panel>
-      <TeamRecommendations
-        key={`${team.teamId}:${team.canManage}`}
-        team={team}
-        levelReady={latest.data ? latest.data.levelMemberCount > 0 : false}
-      />
     </>
   );
 }
-function TeamRecommendations({
-  team,
-  levelReady,
-}: {
-  team: TeamDetailDto;
-  levelReady: boolean;
-}) {
+export function TeamRecommendations({ team }: { team: TeamDetailDto }) {
+  const analysis = useTeamQuery(
+    team.teamId,
+    "analysis",
+    {
+      endpoint: "latest",
+      membershipRole: team.myMembershipRole,
+      canManage: team.canManage,
+    },
+    (signal) => v012.teamAnalysis(team.teamId, signal),
+  );
+  const levelReady = !!analysis.data && analysis.data.levelMemberCount > 0;
   const { t } = useLocale();
   const { user } = useAccounts();
   const client = useQueryClient();
@@ -424,44 +422,42 @@ function TeamRecommendations({
             <FieldLabel htmlFor={`${id}-audience`}>
               {t("v12.audience")}
             </FieldLabel>
-            <NativeSelect
+            <ChoiceSelect
               id={`${id}-audience`}
               value={audience}
-              onChange={(event) => {
-                setAudience(event.target.value as TeamAnalysisAudience);
+              onValueChange={(value) => {
+                setAudience(value as TeamAnalysisAudience);
                 setPage(1);
                 setBatchId(null);
               }}
-            >
-              {(["MEMBER", "COACH"] as const).map((value) => (
-                <NativeSelectOption key={value} value={value}>
-                  {t(`v12.audience.${value}`)}
-                </NativeSelectOption>
-              ))}
-            </NativeSelect>
+              options={(["MEMBER", "COACH"] as const).map((value) => ({
+                value,
+                label: t(`v12.audience.${value}`),
+              }))}
+            />
           </Field>
         )}
         <Field className="max-w-sm">
           <FieldLabel htmlFor={`${id}-mode`}>{t("v.mode")}</FieldLabel>
-          <NativeSelect
+          <ChoiceSelect
             id={`${id}-mode`}
             value={mode}
-            onChange={(event) => {
-              setMode(event.target.value as TeamRecommendationMode);
+            onValueChange={(value) => {
+              setMode(value as TeamRecommendationMode);
               setPage(1);
               setBatchId(null);
             }}
-          >
-            <NativeSelectOption value="HYBRID">
-              {t("v.mode.HYBRID")}
-            </NativeSelectOption>
-            <NativeSelectOption value="WEAKNESS">
-              {t("v.mode.WEAKNESS")}
-            </NativeSelectOption>
-          </NativeSelect>
+            options={(["HYBRID", "WEAKNESS"] as const).map((value) => ({
+              value,
+              label: t(`v.mode.${value}`),
+            }))}
+          />
         </Field>
       </div>
-      {!levelReady && <p>{t("v12.noLevel")}</p>}
+      <QueryFeedback query={analysis} />
+      {!analysis.isFetching && !analysis.error && !levelReady && (
+        <p>{t("v12.noLevel")}</p>
+      )}
       {team.canManage && team.status === "ACTIVE" && (
         <Button
           wrap
@@ -483,6 +479,9 @@ function TeamRecommendations({
       <AiJobNotice jobId={jobId} teamId={team.teamId} />
       <QueryFeedback query={displayed} />
       {displayed.data && <TeamBatchView batch={displayed.data} />}
+      {!displayed.isFetching && !displayed.error && displayed.data === null && (
+        <EmptyState title={t("v12.noTeamRecommendations")} />
+      )}
       <QueryFeedback query={history} />
       {history.data?.data.map((item) => (
         <div

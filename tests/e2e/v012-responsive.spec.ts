@@ -18,6 +18,14 @@ for (const locale of ["zh-CN", "en"]) {
     for (const route of [
       "/teams",
       `/teams/detail?teamId=${owner}`,
+      ...[
+        "members",
+        "analysis",
+        "recommendations",
+        "applications",
+        "invitations",
+        "settings",
+      ].map((tab) => `/teams/detail?teamId=${owner}&tab=${tab}`),
       `/teams/member?teamId=${owner}&memberPublicId=${peer}&view=basicTraining`,
       `/teams/member?teamId=${owner}&memberPublicId=${peer}&view=abilityProfile`,
       "/privacy",

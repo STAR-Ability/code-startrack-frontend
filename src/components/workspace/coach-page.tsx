@@ -3,18 +3,24 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { v012 } from "@/lib/api/v012";
 import { useLocale } from "@/components/layout/locale-provider";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { MetricPanel } from "./metric-panel";
 import { Panel, useCollaborationMutation } from "./v012-shared";
 import { useUserQuery } from "./use-user-query";
 import { ErrorNotice, QueryFeedback, EmptyState } from "./feedback";
+import { TeamCard } from "./team-records";
 import { NotificationRow } from "./notifications-page";
 export function CoachPage() {
   const { t } = useLocale();
   const query = useUserQuery("coach-dashboard", {}, (_id, signal) =>
     v012.coachDashboard(signal),
+  );
+  const teams = useUserQuery(
+    "teams",
+    { endpoint: "mine", scope: "MANAGED", page: 1 },
+    (_id, signal) => v012.mine("MANAGED", { page: 1 }, signal),
   );
   return (
     <>
@@ -28,25 +34,58 @@ export function CoachPage() {
           ["v12.pendingApplications", query.data?.pendingApplicationCount ?? 0],
         ]}
       />
-      <div className="flex flex-wrap gap-4">
-        <Link href="/coach/teams" className="underline">
-          {t("v12.manage")}
-        </Link>
-        <Link href="/coach/teams/create" className="underline">
-          {t("v12.createTeam")}
-        </Link>
+      <div className="workspace-context-header flex flex-wrap items-center justify-between gap-4">
+        <p className="max-w-xl text-sm text-muted-foreground">
+          {t("v12.coachNote")}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/coach/teams"
+            className={buttonVariants({ variant: "outline" })}
+          >
+            {t("v12.manage")}
+          </Link>
+          <Link href="/coach/teams/create" className={buttonVariants()}>
+            {t("v12.createTeam")}
+          </Link>
+        </div>
       </div>
-      <Panel title="v12.recentNotifications">
-        {query.data?.recentNotifications.map((notification) => (
-          <NotificationRow
-            key={notification.notificationId}
-            notification={notification}
-          />
-        ))}
-        {query.data?.recentNotifications.length === 0 && (
-          <EmptyState title={t("v12.noNotifications")} />
-        )}
-      </Panel>
+      <div className="grid min-w-0 gap-5 xl:grid-cols-3">
+        <section className="flex min-w-0 flex-col gap-4 xl:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">{t("v12.manage")}</h2>
+            <Link
+              href="/coach/teams?task=applications"
+              className="text-sm underline"
+            >
+              {t("v12.pendingApplications")} ·{" "}
+              {query.data?.pendingApplicationCount ?? "—"}
+            </Link>
+          </div>
+          <QueryFeedback query={teams} />
+          {teams.data?.data.map((team) => (
+            <TeamCard key={team.teamId} team={team} />
+          ))}
+          {teams.data?.data.length === 0 && (
+            <EmptyState
+              title={t("v12.noTeams")}
+              href="/coach/teams/create"
+              action={t("v12.createTeam")}
+            />
+          )}
+        </section>
+        <Panel title="v12.recentNotifications">
+          {query.data?.recentNotifications.map((notification) => (
+            <NotificationRow
+              key={notification.notificationId}
+              notification={notification}
+            />
+          ))}
+          {query.data?.recentNotifications.length === 0 && (
+            <EmptyState title={t("v12.noNotifications")} />
+          )}
+        </Panel>
+      </div>
     </>
   );
 }

@@ -955,3 +955,32 @@
     color: var(--destructive);
   }
 }
+
+@layer components {
+  .workspace-context-header {
+    @apply relative isolate overflow-hidden rounded-2xl border bg-background p-5 sm:p-6;
+    background-image: radial-gradient(
+      ellipse at 100% 0%,
+      color-mix(in srgb, var(--canvas) 90%, transparent),
+      transparent 65%
+    );
+  }
+  .workspace-context-header::after {
+    content: "";
+    position: absolute;
+    right: -3rem;
+    top: -6rem;
+    width: 18rem;
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+    border-radius: 50%;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .workspace-task-tile {
+    @apply relative flex min-w-0 flex-col gap-3 rounded-xl border bg-background p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transform-none motion-reduce:transition-none;
+  }
+  .workspace-team-card {
+    @apply flex min-w-0 flex-col gap-4 rounded-xl border bg-background p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-within:border-ring/40 motion-reduce:transform-none motion-reduce:transition-none;
+  }
+}

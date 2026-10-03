@@ -7,9 +7,11 @@ export function notificationRoute(notification: NotificationDto) {
     return "/teams?tab=invitations";
   if (notification.referenceType === "APPLICATION") {
     return notification.type === "JOIN_APPLICATION_CREATED" && teamId.success
-      ? `/teams/detail?teamId=${teamId.data}`
+      ? `/teams/detail?teamId=${teamId.data}&tab=applications`
       : "/teams?tab=applications";
   }
   if (notification.type === "MEMBER_REMOVED") return "/teams";
-  return teamId.success ? `/teams/detail?teamId=${teamId.data}` : "/teams";
+  return teamId.success
+    ? `/teams/detail?teamId=${teamId.data}&tab=members`
+    : "/teams";
 }

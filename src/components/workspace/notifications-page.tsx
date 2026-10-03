@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { MailIcon, ClipboardListIcon, UsersRoundIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { v012 } from "@/lib/api/v012";
 import type { NotificationDto } from "@/lib/api/v012-schemas";
 import { notificationRoute } from "@/lib/ui/notification-route";
@@ -15,12 +17,27 @@ export function NotificationRow({
 }: {
   notification: NotificationDto;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const mutation = useCollaborationMutation("notification", () =>
     v012.readNotification(notification.notificationId),
   );
+  const Icon =
+    notification.referenceType === "INVITATION"
+      ? MailIcon
+      : notification.referenceType === "APPLICATION"
+        ? ClipboardListIcon
+        : UsersRoundIcon;
   return (
-    <article className="flex flex-col gap-3 border-b py-4 last:border-0">
+    <article
+      className={cn(
+        "relative flex min-w-0 flex-col gap-2 border-b py-4 pl-10 last:border-0",
+        !notification.read && "border-l-2 border-l-primary",
+      )}
+    >
+      <Icon
+        aria-hidden="true"
+        className="absolute top-5 left-2 size-4 text-muted-foreground"
+      />
       <div className="flex flex-wrap justify-between gap-2">
         <h3 className="break-words font-medium">{notification.title}</h3>
         {!notification.read && <Badge>{t("v12.unread")}</Badge>}
@@ -32,7 +49,10 @@ export function NotificationRow({
         className="text-xs text-muted-foreground"
         dateTime={notification.createdAt}
       >
-        {notification.createdAt}
+        {new Intl.DateTimeFormat(locale, {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(notification.createdAt))}
       </time>
       <div className="flex flex-wrap items-center gap-3">
         <Link
@@ -101,7 +121,7 @@ export function NotificationsPage() {
       </div>
       <ErrorNotice error={mutation.error} />
       <QueryFeedback query={unread} />
-      <Panel title="v12.notifications">
+      <Panel title="v12.recentNotifications">
         <QueryFeedback query={query} />
         {query.data?.data.map((notification) => (
           <NotificationRow

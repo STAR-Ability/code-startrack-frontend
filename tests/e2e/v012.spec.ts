@@ -163,22 +163,32 @@ test("coach is additive, owner approves and invites, member access is backend sc
   await expect(
     page.getByRole("heading", { name: "教练主页", exact: true }),
   ).toHaveCount(2);
-  await expect(
-    page.getByRole("link", { name: "训练主页", exact: true }),
-  ).toBeVisible();
-  await page.goto(`/teams/detail?teamId=${owner}`);
+  await expect(page.getByRole("main")).toBeVisible();
+  await page.goto(`/teams/detail?teamId=${owner}&tab=applications`);
   await expect(
     page.getByRole("button", { name: "退出团队", exact: true }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "通过", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "团队工作区导航" })
+    .getByRole("link", { name: "团队成员", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "新成员", exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "团队工作区导航" })
+    .getByRole("link", { name: "团队邀请", exact: true })
+    .click();
   await page.getByLabel("邀请邮箱").fill("new@example.test");
   await page.getByRole("button", { name: "邀请成员", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "new@example.test", exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "团队工作区导航" })
+    .getByRole("link", { name: "团队成员", exact: true })
+    .click();
   const card = page.locator("main article").filter({
     has: page.getByRole("heading", { name: "训练伙伴", exact: true }),
   });
@@ -196,7 +206,7 @@ test("coach is additive, owner approves and invites, member access is backend sc
 test("ordinary members request only MEMBER recommendations and cannot manage", async ({
   page,
 }) => {
-  await page.goto(`/teams/detail?teamId=${joined}`);
+  await page.goto(`/teams/detail?teamId=${joined}&tab=recommendations`);
   await expect(
     page.getByRole("heading", { name: "团队推荐", exact: true }),
   ).toBeVisible();
@@ -218,7 +228,7 @@ test("no shared samples shows privacy explanations and no zero radar", async ({
   page,
 }) => {
   await configureUpstream({ noSharing: true });
-  await page.goto(`/teams/detail?teamId=${joined}`);
+  await page.goto(`/teams/detail?teamId=${joined}&tab=analysis`);
   await expect(
     page.getByText("当前没有成员允许共享能力画像", { exact: true }),
   ).toBeVisible();
@@ -242,16 +252,17 @@ test("privacy defaults remain private until explicitly saved", async ({
     "详细提交记录",
     "个人分析报告",
   ])
-    await expect(page.getByRole("combobox", { name, exact: true })).toHaveValue(
-      "PRIVATE",
-    );
+    await expect(
+      page.getByRole("combobox", { name, exact: true }),
+    ).toContainText("仅自己");
+  await page.getByRole("combobox", { name: "能力画像", exact: true }).click();
   await page
-    .getByRole("combobox", { name: "能力画像", exact: true })
-    .selectOption("TEAM_COACH");
+    .getByRole("option", { name: "共享团队负责人/教练", exact: true })
+    .click();
   await page.getByRole("button", { name: "保存", exact: true }).click();
   await expect(
     page.getByRole("combobox", { name: "能力画像", exact: true }),
-  ).toHaveValue("TEAM_COACH");
+  ).toContainText("共享团队负责人/教练");
   expect(
     (await upstreamCalls()).find(
       (call) => call.method === "PATCH" && call.path.endsWith("/me/privacy"),

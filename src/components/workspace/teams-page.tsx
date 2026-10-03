@@ -1,5 +1,6 @@
 "use client";
 import { useState, useId } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { v012 } from "@/lib/api/v012";
 import {
@@ -9,15 +10,11 @@ import {
   type TeamInvitationStatus,
 } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel } from "@/components/ui/field";
-import {
-  NativeSelect,
-  NativeSelectOption,
-} from "@/components/ui/native-select";
+import { ChoiceSelect } from "@/components/ui/choice-select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Panel } from "./v012-shared";
 import { useUserQuery } from "./use-user-query";
 import { Pagination, QueryFeedback, EmptyState } from "./feedback";
 import { TeamCard, ApplicationRow, InvitationRow } from "./team-records";
@@ -25,7 +22,21 @@ const tabs = ["mine", "applications", "invitations", "search"] as const;
 type Tab = (typeof tabs)[number];
 export function TeamsPage({ managed = false }: { managed?: boolean }) {
   const params = useSearchParams();
-  const chosen = params.get("tab");
+  return (
+    <TeamsContent
+      key={`${managed}:${params.get("tab")}:${params.get("task")}`}
+      managed={managed}
+    />
+  );
+}
+function TeamsContent({ managed }: { managed: boolean }) {
+  const params = useSearchParams();
+  const chosen = managed ? "mine" : params.get("tab");
+  const task = ["applications", "invitations"].includes(
+    params.get("task") ?? "",
+  )
+    ? params.get("task")!
+    : "overview";
   const router = useRouter();
   const tab: Tab = tabs.includes(chosen as Tab) ? (chosen as Tab) : "mine";
   const [page, setPage] = useState(1);
@@ -77,33 +88,44 @@ export function TeamsPage({ managed = false }: { managed?: boolean }) {
           : invitations;
   return (
     <>
-      <ToggleGroup
-        value={[tab]}
-        className="flex-wrap"
-        aria-label={t("v12.teams")}
-        onValueChange={(value) => {
-          if (tabs.includes(value[0] as Tab)) {
-            router.push(
-              `${managed ? "/coach/teams" : "/teams"}?tab=${value[0]}`,
-              { scroll: false },
-            );
-            setPage(1);
-            setStatus("");
-          }
-        }}
-      >
-        {tabs.map((value) => (
-          <ToggleGroupItem key={value} value={value}>
-            {t(
-              value === "mine"
-                ? "v12.myTeams"
-                : value === "search"
-                  ? "v12.searchTeams"
-                  : `v12.${value}`,
-            )}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+      {managed ? (
+        <div className="workspace-context-header flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {t(task === "overview" ? "v12.coachNote" : "v12.managedQueueNote")}
+          </p>
+          <Link href="/coach/teams/create" className={buttonVariants()}>
+            {t("v12.createTeam")}
+          </Link>
+        </div>
+      ) : (
+        <ToggleGroup
+          value={[tab]}
+          className="flex-wrap"
+          aria-label={t("v12.teams")}
+          onValueChange={(value) => {
+            if (tabs.includes(value[0] as Tab)) {
+              router.push(
+                `${managed ? "/coach/teams" : "/teams"}?tab=${value[0]}`,
+                { scroll: false },
+              );
+              setPage(1);
+              setStatus("");
+            }
+          }}
+        >
+          {tabs.map((value) => (
+            <ToggleGroupItem key={value} value={value}>
+              {t(
+                value === "mine"
+                  ? "v12.myTeams"
+                  : value === "search"
+                    ? "v12.searchTeams"
+                    : `v12.${value}`,
+              )}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      )}
       {tab === "search" && (
         <form
           className="flex flex-wrap items-end gap-3"
@@ -130,44 +152,57 @@ export function TeamsPage({ managed = false }: { managed?: boolean }) {
       {["applications", "invitations"].includes(tab) && (
         <Field className="max-w-sm">
           <FieldLabel htmlFor={`${id}-status`}>{t("v12.status")}</FieldLabel>
-          <NativeSelect
+          <ChoiceSelect
             id={`${id}-status`}
             value={status}
-            onChange={(event) => {
-              setStatus(event.target.value);
+            onValueChange={(value) => {
+              setStatus(value);
               setPage(1);
             }}
-          >
-            <NativeSelectOption value="">{t("v12.all")}</NativeSelectOption>
-            {(tab === "applications"
-              ? applicationStatuses
-              : invitationStatuses
-            ).map((value) => (
-              <NativeSelectOption key={value} value={value}>
-                {t(`v12.status.${value}`)}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+            options={[
+              { value: "", label: t("v12.all") },
+              ...(tab === "applications"
+                ? applicationStatuses
+                : invitationStatuses
+              ).map((value) => ({ value, label: t(`v12.status.${value}`) })),
+            ]}
+          />
         </Field>
       )}
-      <Panel
-        title={
-          tab === "mine"
-            ? "v12.myTeams"
-            : tab === "search"
-              ? "v12.searchTeams"
-              : `v12.${tab}`
-        }
-      >
+      <section className="flex flex-col gap-4">
+        <h2 className="text-lg font-semibold">
+          {t(
+            managed
+              ? task === "applications"
+                ? "v12.pendingApplications"
+                : task === "invitations"
+                  ? "v12.pendingInvitations"
+                  : "v12.manage"
+              : tab === "mine"
+                ? "v12.myTeams"
+                : tab === "search"
+                  ? "v12.discoverTeams"
+                  : `v12.${tab}`,
+          )}
+        </h2>
+        {tab === "search" && !search && (
+          <EmptyState title={t("v12.searchGuide")} />
+        )}
         <QueryFeedback query={query} />
-        {tab === "mine" &&
-          mine.data?.data.map((team) => (
-            <TeamCard key={team.teamId} team={team} />
-          ))}
-        {tab === "search" &&
-          results.data?.data.map((team) => (
-            <TeamCard key={team.teamId} team={team} searchable />
-          ))}
+        {tab === "mine" && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {mine.data?.data.map((team) => (
+              <TeamCard key={team.teamId} team={team} section={task} />
+            ))}
+          </div>
+        )}
+        {tab === "search" && (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {results.data?.data.map((team) => (
+              <TeamCard key={team.teamId} team={team} searchable />
+            ))}
+          </div>
+        )}
         {tab === "applications" &&
           applications.data?.data.map((application) => (
             <ApplicationRow
@@ -201,7 +236,7 @@ export function TeamsPage({ managed = false }: { managed?: boolean }) {
           setPage={setPage}
           pending={query.isFetching}
         />
-      </Panel>
+      </section>
     </>
   );
 }

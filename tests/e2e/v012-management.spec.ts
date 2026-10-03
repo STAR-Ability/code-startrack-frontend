@@ -1,6 +1,5 @@
 import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 const owner = "00000000-0000-4000-8000-000000001001";
-const peer = "00000000-0000-4000-8000-000000001101";
 test.beforeEach(() => configureUpstream());
 
 test("coach redemption refreshes additive roles and enables coach navigation", async ({
@@ -15,6 +14,14 @@ test("coach redemption refreshes additive roles and enables coach navigation", a
   await page
     .getByRole("button", { name: "兑换教练邀请码", exact: true })
     .click();
+  if (
+    await page
+      .getByRole("button", { name: "移动端工作区导航", exact: true })
+      .isVisible()
+  )
+    await page
+      .getByRole("button", { name: "移动端工作区导航", exact: true })
+      .click();
   await expect(
     page.getByRole("link", { name: "教练主页", exact: true }),
   ).toBeVisible();
@@ -39,6 +46,10 @@ test("coach creates, edits, archives, activates and dissolves a team with exact 
   await expect(
     page.getByRole("heading", { name: "新建训练队", exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "团队工作区导航" })
+    .getByRole("link", { name: "团队设置", exact: true })
+    .click();
   await page.getByLabel("团队名称", { exact: true }).fill("更新训练队");
   const edit = page.locator('[data-slot="card"]').filter({
     has: page.getByRole("heading", { name: "编辑团队", exact: true }),
@@ -49,30 +60,30 @@ test("coach creates, edits, archives, activates and dissolves a team with exact 
   ).toBeVisible();
   await page.getByRole("button", { name: "归档团队", exact: true }).click();
   await page
-    .getByRole("dialog")
+    .getByRole("alertdialog")
     .getByRole("button", { name: "保存", exact: true })
     .click();
-  await expect(page.getByText("已归档", { exact: true })).toBeVisible();
+  await expect(page.getByText("已归档", { exact: true }).first()).toBeVisible();
   await expect(
     page.getByRole("button", { name: "邀请成员", exact: true }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "恢复团队", exact: true }).click();
   await page
-    .getByRole("dialog")
+    .getByRole("alertdialog")
     .getByRole("button", { name: "保存", exact: true })
     .click();
   await expect(
-    page.getByRole("button", { name: "邀请成员", exact: true }),
+    page.getByRole("button", { name: "归档团队", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "解散团队", exact: true }).click();
-  const dialog = page.getByRole("dialog");
+  const dialog = page.getByRole("alertdialog");
   await dialog.getByLabel("输入团队名称确认解散").fill("不匹配");
   await expect(
     dialog.getByRole("button", { name: "保存", exact: true }),
   ).toBeDisabled();
   await dialog.getByLabel("输入团队名称确认解散").fill("更新训练队");
   await dialog.getByRole("button", { name: "保存", exact: true }).click();
-  await expect(page.getByText("已解散", { exact: true })).toBeVisible();
+  await expect(page.getByText("已解散", { exact: true }).first()).toBeVisible();
   await expect(
     page.getByRole("button", { name: "邀请成员", exact: true }),
   ).toHaveCount(0);
@@ -86,14 +97,22 @@ test("coach creates, edits, archives, activates and dissolves a team with exact 
 test("transfer withdraws coach batches and owner actions; member can then leave", async ({
   page,
 }) => {
-  await page.goto(`/teams/detail?teamId=${owner}`);
+  await configureUpstream({ coach: true });
+  await page.goto(`/teams/detail?teamId=${owner}&tab=recommendations`);
   await expect(page.locator('[data-team-audience="COACH"]')).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "团队工作区导航" })
+    .getByRole("link", { name: "团队设置", exact: true })
+    .click();
   await page.getByRole("button", { name: "转让负责人", exact: true }).click();
-  const dialog = page.getByRole("dialog");
-  await dialog
-    .getByRole("combobox", { name: "新负责人", exact: true })
-    .selectOption(peer);
+  const dialog = page.getByRole("alertdialog");
+  await dialog.getByRole("combobox", { name: "新负责人", exact: true }).click();
+  await page.getByRole("option", { name: "训练伙伴", exact: true }).click();
   await dialog.getByRole("button", { name: "保存", exact: true }).click();
+  await page
+    .getByRole("navigation", { name: "团队工作区导航" })
+    .getByRole("link", { name: "团队推荐", exact: true })
+    .click();
   await expect(page.getByLabel("推荐可见范围")).toHaveCount(0);
   await expect(page.locator('[data-team-audience="COACH"]')).toHaveCount(0);
   await expect(page.locator('[data-team-audience="MEMBER"]')).toBeVisible();
@@ -102,7 +121,7 @@ test("transfer withdraws coach batches and owner actions; member can then leave"
   ).toHaveCount(0);
   await page.getByRole("button", { name: "退出团队", exact: true }).click();
   await page
-    .getByRole("dialog")
+    .getByRole("alertdialog")
     .getByRole("button", { name: "退出团队", exact: true })
     .click();
   await page.goto("/teams");
@@ -114,8 +133,10 @@ test("transfer withdraws coach batches and owner actions; member can then leave"
 test("team AI generation uses explicit audience, polls one job and preserves scope", async ({
   page,
 }) => {
-  await page.goto(`/teams/detail?teamId=${owner}`);
-  await page.getByLabel("推荐可见范围").selectOption("MEMBER");
+  await configureUpstream({ coach: true });
+  await page.goto(`/teams/detail?teamId=${owner}&tab=recommendations`);
+  await page.getByLabel("推荐可见范围").click();
+  await page.getByRole("option", { name: "团队成员可见", exact: true }).click();
   await expect(page.locator('[data-team-audience="MEMBER"]')).toBeVisible();
   await page.getByRole("button", { name: "生成团队推荐", exact: true }).click();
   await expect(page.getByText("处理完成", { exact: false })).toBeVisible();

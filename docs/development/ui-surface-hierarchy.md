@@ -4,6 +4,24 @@ codeStartrack keeps the existing shadcn Base UI/Nova composition, white primary
 surfaces, dark typography, brand blue and Geist typography. Tailwind v4 resolves
 the shared tokens in `src/app/globals.css`; Storybook imports that same stylesheet.
 
+## Viewport background and scrolling content
+
+The public, workspace and authentication shells own their decorative backgrounds.
+Their pseudo-elements use `position: fixed` and viewport bounds, so light, grids,
+dots and the public orbit stay visually stable while document content scrolls.
+White cards, supporting section surfaces and local illustrations remain in normal
+content flow.
+
+Each shell uses `isolation: isolate`; its base paints below the negative decorative
+layer and its content paints above it. `pointer-events: none` keeps decoration out
+of pointer interaction. Keep transforms, filters and containment off these shell
+ancestors: they can change the containing block of a fixed descendant. Apply local
+motion to controls or illustrations instead. The viewport decorations use no
+scroll listeners, animation, backdrop blur or permanent layer-promotion hints.
+
+The practice intro orbit is a static detail of its card. Card and control motion
+continues to follow the shared reduced-motion rules.
+
 ## Semantic accents
 
 | Existing token family         | Meaning                                                    |

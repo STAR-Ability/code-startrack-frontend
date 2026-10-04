@@ -42,10 +42,13 @@ The browser MCP uses headless Chrome with an isolated profile. It does not
 inherit the E2E fixture's browser network guard. Isolation does not sandbox
 network traffic. Use the offline harness and review destinations before actions.
 
-For a dev-server diagnosis, use `pnpm dev:offline` on port 3000 and Next DevTools
-with that explicit port. This mode starts the synthetic backend on 3210 and
-overrides the dev proxy destination. Stop it before E2E or preview:offline to
-free 3210. Restart Codex to load changed MCP settings.
+For a dev-server diagnosis, use `pnpm dev:mock` (`dev:offline` is an alias) on
+port 3000 and Next DevTools with that explicit frontend port. Development starts
+its own synthetic backend on an available loopback port, prints its `/__control`
+URL, and overrides the dev proxy destination. `MOCK_PORT=3210` selects a fixed
+fixture port when needed; preview and E2E still own 3100/3210. Stop development
+before building because it shares `.next` outputs. Restart Codex to load changed
+MCP settings.
 
 Existing `tests/e2e/accessibility.spec.ts` covers keyboard, narrow widths and
 text zoom; `fixtures.ts` checks browser errors and prohibits external requests

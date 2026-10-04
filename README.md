@@ -57,6 +57,8 @@ pnpm preview:mock
 MOCK_SCENARIO=empty pnpm preview:mock
 ```
 
+The development Mock binds its own available loopback port and prints its `/__control` URL; `MOCK_PORT=3210 pnpm dev:mock` selects an explicit port when needed. Its proxy always overrides `BACKEND_BASE_URL`, including local environment settings. Preview and E2E retain ports 3100/3210; stop manual previews before E2E, and stop Next development before production builds because they share `.next` outputs.
+
 The shared Mock labels synthetic data and serves the V0.11 and V0.12 endpoint families. The [scenario matrix](docs/development/v0.12-mock-scenarios.md) documents 85 deterministic presets and eight identities, shared by HTTP development, Vitest, Storybook and Playwright. Live failures never automatically select synthetic data.
 
 ## Component documentation

@@ -35,8 +35,20 @@ for (const [route, resource, headings] of [
       }),
     });
     await expect(overview.locator("dd").filter({ hasText: /^0$/ })).toHaveCount(
-      route === "/data" ? 10 : 4,
+      0,
     );
+    const snapshotCharts =
+      route === "/data"
+        ? ["每日训练", "知识标签", "难度分布"]
+        : ["六维能力 · 0–100"];
+    for (const name of snapshotCharts)
+      await expect(
+        page.getByRole("main").getByRole("img", { name, exact: true }),
+      ).toHaveCount(0);
+    if (route === "/accounts/analysis")
+      await expect(
+        page.getByRole("img", { name: "分数趋势（当前页）", exact: true }),
+      ).toBeVisible();
     await expect(overview).toContainText("暂无");
     await configureUpstream({ errorResource: null }, true);
     await page

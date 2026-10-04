@@ -43,6 +43,9 @@ export const workspaceZh = {
   "data.dimension.DYNAMIC_PROGRAMMING": "动态规划",
   "data.dimension.GRAPHS": "图论",
   "data.dimension.MATH": "数学",
+  "v.chartTagLimit": "图表按提供的顺序展示前 10 个标签，完整数值见下方。",
+  "v.activityChartNote":
+    "图表将缺失的日历日期显示为 0，快照与统计总数保持不变。",
   "data.mockTitle": "Mock 模式 · 示例数据",
   "data.mockDescription": "当前使用本地合成数据，操作仅影响临时示例环境。",
   "data.accountDetails": "账号详情",
@@ -415,6 +418,10 @@ export const workspaceEn = {
   "practice.forYou": "Picked for you",
   "practice.controls": "Practice direction",
   "recommendation.featured": "First recommendation",
+  "v.chartTagLimit":
+    "Chart shows up to 10 tags in the supplied order. Full values are below.",
+  "v.activityChartNote":
+    "Missing calendar dates are shown as zero for this chart; the snapshot and totals are unchanged.",
   "recommendation.matchedDimension": "Skill coverage",
   "recommendation.coverageNote":
     "This problem covers the matched skill dimension.",

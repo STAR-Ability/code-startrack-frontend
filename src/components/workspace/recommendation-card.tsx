@@ -4,6 +4,7 @@ import { cn } from "cn";
 import type { RecommendationBatchDto, ProblemDto } from "@/lib/api/schemas";
 import { safeProblemUrl } from "@/lib/charts/data";
 import { useLocale } from "@/components/layout/locale-provider";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import {
   Card,
   CardHeader,
@@ -30,9 +31,14 @@ export function ProblemLink({
   return url ? (
     <a
       href={url}
+      data-slot="button"
       target="_blank"
       rel="noopener noreferrer"
-      className={buttonVariants({ variant, wrap: true })}
+      className={buttonVariants({
+        variant,
+        size: primary ? "lg" : "sm",
+        wrap: true,
+      })}
     >
       <span>
         {t("recommendation.openExternal", { platform: "Codeforces" })}
@@ -41,7 +47,7 @@ export function ProblemLink({
       <span className="sr-only">{t("recommendation.newTab")}</span>
     </a>
   ) : (
-    <Button disabled variant={variant} wrap>
+    <Button disabled variant={variant} size={primary ? "lg" : "sm"} wrap>
       {t("recommendation.linkUnavailable")}
     </Button>
   );
@@ -53,7 +59,7 @@ export function BatchView({
   batch: RecommendationBatchDto | null;
   firstOnly?: boolean;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   if (!batch)
     return (
       <Card interaction="none">
@@ -86,7 +92,9 @@ export function BatchView({
         </Badge>
         <p>
           {t("recommendation.generatedAt")}:{" "}
-          <time dateTime={batch.generatedAt}>{batch.generatedAt}</time>
+          <time dateTime={batch.generatedAt}>
+            {formatTimestamp(batch.generatedAt, locale)}
+          </time>
         </p>
         <p>
           {t("v.candidateCount")}: {batch.candidateCount} · {t("v.resultCount")}
@@ -129,10 +137,10 @@ export function RecommendationCard({
   const featured = item.rank === 1;
   return (
     <Card
-      variant={featured ? "recommendation" : "default"}
+      variant={featured ? "recommendation" : "supporting"}
       size={featured ? "lg" : "sm"}
-      interaction="lift"
-      className="feedback-enter @container/recommendation"
+      interaction="none"
+      className="recommendation-card feedback-enter @container/recommendation"
       data-recommendation-rank={item.rank}
     >
       <CardHeader>
@@ -152,12 +160,15 @@ export function RecommendationCard({
         </div>
         <CardTitle>
           <h2
-            className={cn("wrap-anywhere", featured && "recommendation-title")}
+            className={cn(
+              "recommendation-heading",
+              featured && "recommendation-title",
+            )}
           >
-            <span className="mr-3 font-mono text-muted-foreground">
-              #{item.rank}
-            </span>{" "}
-            {item.problem.title ?? item.problem.externalProblemKey}
+            <span className="recommendation-rank">#{item.rank}</span>{" "}
+            <span className="min-w-0 wrap-anywhere">
+              {item.problem.title ?? item.problem.externalProblemKey}
+            </span>
           </h2>
         </CardTitle>
         <CardDescription>
@@ -229,11 +240,16 @@ export function RecommendationCard({
             <Badge variant="outline">INFERRED</Badge>
           )}
         </div>
+      </CardContent>
+      <CardFooter
+        className={cn(
+          "recommendation-footer flex-wrap justify-between gap-3",
+          !featured && "border-0 bg-transparent pt-0",
+        )}
+      >
         <p className="text-xs text-muted-foreground">
           {t("v.cfSolved")}: {item.problem.solvedCount ?? t("v.unavailable")}
         </p>
-      </CardContent>
-      <CardFooter className="flex-wrap gap-3">
         <ProblemLink problem={item.problem} primary={featured} />
       </CardFooter>
     </Card>

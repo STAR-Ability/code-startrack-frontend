@@ -31,7 +31,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Loading: Story = {
-  args: { analysis: null, loading: true, dimensions: false },
+  args: { analysis: null, loading: true },
 };
 export const Empty: Story = { args: { analysis: null } };
 export const ZeroEvidence: Story = {
@@ -41,7 +41,7 @@ export const Stale: Story = {
   args: { analysis: { ...snapshot, stale: true } },
 };
 export const Error: Story = {
-  args: { analysis: null, unavailable: true, dimensions: false },
+  args: { analysis: null, unavailable: true },
   render: (args) => (
     <>
       <ErrorNotice
@@ -55,5 +55,17 @@ export const Error: Story = {
 };
 export const Statistics: Story = {
   args: { ability: false, dimensions: false, statistics: true },
+};
+export const EmptyStatistics: Story = {
+  args: { analysis: null, ability: false, dimensions: false, statistics: true },
+};
+export const LoadingStatistics: Story = {
+  args: {
+    analysis: null,
+    loading: true,
+    ability: false,
+    dimensions: false,
+    statistics: true,
+  },
 };
 export const Mobile: Story = { globals: mobile };

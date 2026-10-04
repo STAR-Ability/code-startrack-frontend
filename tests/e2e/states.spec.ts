@@ -24,7 +24,12 @@ test("account-mismatched response is discarded", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "能力摘要" })).toBeVisible();
   await expect(
     page.getByRole("main").locator("dd").filter({ hasText: /^0$/ }),
-  ).toHaveCount(4);
+  ).toHaveCount(0);
+  await expect(
+    page
+      .getByRole("main")
+      .getByRole("img", { name: "六维能力 · 0–100", exact: true }),
+  ).toHaveCount(0);
 });
 test("sync task polls to PARTIAL, preserves data and offers analysis rebuild", async ({
   page,

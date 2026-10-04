@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { ChoiceSelect } from "@/components/ui/choice-select";
 import { Badge } from "@/components/ui/badge";
+import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Panel, AiJobNotice, useTeamQuery } from "./v012-shared";
 import {
@@ -155,21 +156,28 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
                 ],
               )}
             />
-            <dl className="flex flex-col gap-2">
-              {analysis.activityStats.map((item) => (
-                <div
-                  key={item.date}
-                  className="flex flex-wrap justify-between gap-2"
-                >
-                  <dt>{item.date}</dt>
-                  <dd>
-                    {t("v.submissions")}: {item.submissionCount} ·{" "}
-                    {t("v.accepted")}: {item.acceptedSubmissionCount} ·{" "}
-                    {t("v12.activeMembers")}: {item.activeMemberCount}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <DetailsDisclosure
+              title={t("metrics.chartValues")}
+              keepMounted={false}
+            >
+              <dl className="flex flex-col gap-2">
+                {analysis.activityStats.map((item) => (
+                  <div
+                    key={item.date}
+                    className="flex flex-wrap justify-between gap-2"
+                  >
+                    <dt>
+                      <time dateTime={item.date}>{item.date}</time>
+                    </dt>
+                    <dd>
+                      {t("v.submissions")}: {item.submissionCount} ·{" "}
+                      {t("v.accepted")}: {item.acceptedSubmissionCount} ·{" "}
+                      {t("v12.activeMembers")}: {item.activeMemberCount}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </DetailsDisclosure>
           </>
         ) : (
           <EmptyState title={t("v.noRecords")} />

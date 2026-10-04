@@ -1025,11 +1025,21 @@
   .recommendation-title {
     @apply text-xl font-semibold tracking-tight wrap-anywhere sm:text-2xl;
   }
+  .recommendation-heading {
+    @apply flex min-w-0 items-start gap-3;
+  }
+  .recommendation-rank {
+    @apply inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-canvas font-mono text-xs font-medium tabular-nums text-muted-foreground;
+  }
+  .recommendation-title .recommendation-rank {
+    @apply size-10 rounded-xl border border-info/20 bg-info-soft text-base text-info;
+  }
   .recommendation-context {
     @apply flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground;
   }
   .recommendation-facts {
-    @apply grid min-w-0 grid-cols-1 gap-4 rounded-xl border border-info/15 bg-card/70 p-4 sm:grid-cols-2;
+    @apply grid min-w-0 gap-4 rounded-xl border border-info/15 bg-card/70 p-4;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr));
   }
   .recommendation-facts dt {
     @apply text-xs text-muted-foreground;

@@ -43,8 +43,9 @@ test("mode and history reads do not generate; failed generation retries with one
   // History refetches independently after generation. Select the returned batch
   // only once its row appears, rather than racing the old first history row.
   await page
-    .getByText(generatedBatch.generatedAt, { exact: false })
-    .locator("..")
+    .locator(
+      `[data-recommendation-history-row]:has(time[datetime="${generatedBatch.generatedAt}"])`,
+    )
     .getByRole("button", { name: "查看批次", exact: true })
     .click();
   await expect(

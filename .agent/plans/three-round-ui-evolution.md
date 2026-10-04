@@ -30,8 +30,8 @@ The old completed hierarchy plan describes previous work, not new requirements. 
 
 - [x] Fixed shell backgrounds remain stable while content scrolls; overlays/input work without overflow.
 - [x] Mock dev startup collision repaired; synthetic scenarios, normal dev and production export verified.
-- [ ] Recommendations prioritize next action using only supplied data; chart evidence remains accessible.
-- [ ] Missing analysis never masquerades as zero ability; genuine zero evidence retains its meaning.
+- [x] Recommendations prioritize next action using only supplied data; chart evidence remains accessible.
+- [x] Missing analysis never masquerades as zero ability; genuine zero evidence retains its meaning.
 - [ ] Responsive, bilingual, keyboard and reduced-motion checks pass on rendered pages.
 - [ ] Required scripts pass, complete diffs reviewed, scope and limitations recorded.
 - [ ] Three Issues have results and are closed after each accepted commit is pushed and verified on dev.
@@ -44,11 +44,19 @@ Areas: globals.css/shell surface convention, scripts/dev-offline.mjs, launcher c
 Visual subagent owns fixed decoration and surface documentation; debug subagent owns launcher diagnosis and fix; Main owns integration, browser verification and regression coverage.
 Acceptance: viewport background geometry stable, content moves independently, second mock session isolated, normal dev and production build valid.
 
-### Stage 2 — Recommendation and chart clarity
+### Stage 2 — Recommendation and chart clarity (Issue #12)
 
 Areas: recommendation composition, analysis/data/chart presentation, related locale copy/stories/tests.
 Start only after Round 1 commit/push/Issue closure. Use independent product audit findings and Main rendered review to set actual scope.
 Expected: clearer primary recommendation/context/history; accessible chart values and readable source metadata; unavailable evidence distinct from zeros.
+
+Approved scope after Round 1 review: compact responsive controls and secondary
+recommendations; existing localized timestamp utility with retained datetime;
+unknown metrics/no radar for null analysis; activity values disclosure; bounded
+shared tag chart with complete evidence; shared rating trend conventions. Visual
+subagent owns recommendation/CSS/copy, engineering owns analysis/chart views,
+independent reviewer owns state/evidence regressions and profile state stories.
+Main owns final docs/integration and browser/build/suite verification.
 
 ### Stage 3 — Final product polish
 
@@ -77,7 +85,7 @@ Each round is a scoped coherent commit with no data/schema migration. Revert thr
 
 - [x] Initial audit and clean dev checkout.
 - [x] Round 1 implementation, verification and Main acceptance; commit/push and Issue closure recorded in Issue #11.
-- [ ] Round 2 implementation, verification, Main acceptance, push and Issue closure.
+- [x] Round 2 implementation, verification and Main acceptance; commit/push and Issue closure recorded in Issue #12.
 - [ ] Round 3 implementation, verification, Main acceptance, push and Issue closure.
 
 ## Decisions / deviations
@@ -102,3 +110,22 @@ Mock launch with occupied 3210, synthetic populated/empty/error/slow responses,
 explicit-port diagnostics, shutdown and normal dev were exercised. Initial test
 fixture NODE_ENV typing was corrected without weakening strictness; final checks
 passed. Real authenticated backend and deployment are NOT RUN.
+
+## Round 2 acceptance
+
+PASS: lint, format, typecheck, 174 unit tests, production export and Storybook
+build. Full Storybook suite: 312 passed. Full E2E: 186 passed, one intentional
+mobile skip, two failures in a new overly broad absent-chart assertion. The
+assertion incorrectly counted a valid independent history trend; it now targets
+unavailable snapshot charts and preserves that history. Final affected E2E
+rerun: 26 passed; all 188 applicable cases have passing results. Main found an
+ineffective supporting-footer CSS-layer override; composition utilities fixed
+it, final builds passed and 40 recommendation Storybook checks passed.
+
+Main inspected desktop and mobile recommendations, dashboard chart values,
+missing aggregate profile, rating charts and loading/long-content stories.
+320/390/768/1024/1440 widths and 200% text sizing showed no overflow. Source review
+confirmed API/rank/completion/cache/audience boundaries remain unchanged.
+Round 3 targets the observed repetitive empty containers, dashboard actions and
+times, guest login duplication and long account names. Real backend/deployment
+remain NOT RUN. GitHub CI for Round 1 also completed successfully.

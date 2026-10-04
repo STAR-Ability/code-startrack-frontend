@@ -84,3 +84,24 @@ provides text values and headings; charts are not the only access to information
 Check both locales, long metadata, nullable difficulty, missing URLs, completed
 recommendations, empty candidates and stale/error states. Verify at 320px, 390px,
 tablet, laptop and desktop widths, with keyboard input and 200% text sizing.
+
+## Evidence and recommendation context
+
+Missing analysis is unknown, not a zero-valued profile. Keep metric and evidence
+section structure during loading or failure, use Skeleton for pending data and
+the existing unavailable/empty feedback after it settles. Initialize a radar and
+dimension bars only when a real analysis DTO exists. A genuine zero-evidence
+snapshot retains its supplied zeros and explicit no-evidence explanation.
+
+Activity charts expose their plotted values through a keyboard-accessible
+DetailsDisclosure. Shared training views expose only their authorized DTO values;
+they do not join private ability data. Tag charts display at most ten supplied
+tags in their original order, with complete values available below. This is a
+display bound, not a calculated ranking. Rating trends reuse the established
+axis, tooltip and legend conventions; contest entries retain exact ratings.
+
+The featured recommendation remains stationary while its controls respond
+locally. Supporting problems use compact composition rather than repeating the
+hero. Generated timestamps use the existing locale formatter and explicit UTC
+context, retaining the original instant in `time[datetime]`. Backend ordering,
+rank, completion, mode and generation behavior remain unchanged.

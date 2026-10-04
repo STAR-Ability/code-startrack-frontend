@@ -10,7 +10,13 @@ import { type RecommendationMode } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { useAccounts } from "./account-provider";
 import { useAccountQuery } from "./use-account-query";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PracticeModePicker } from "./practice-mode-picker";
 import { FormInput } from "@/components/ui/form-input";
@@ -122,54 +128,61 @@ export function RecommendationsPage({
   const displayed = batchId ? batch : latest;
   return (
     <>
-      <PracticeModePicker
-        mode={mode}
-        disabled={generate.isPending}
-        onChange={(value) => {
-          setMode(value);
-          setPage(1);
-          setBatchId(null);
-          attempt.current = null;
-          generate.reset();
-        }}
-      />
-      <p className="text-sm text-muted-foreground">
-        {t("v.recommendationNote")}
-      </p>
-      {account?.bindStatus === "ACTIVE" && (
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="w-48 max-w-full">
-            <FormInput
-              label={t("v.limit")}
-              type="number"
-              min={1}
-              max={50}
-              step={1}
-              disabled={generate.isPending}
-              value={limit}
-              onChange={(event) => setLimit(event.target.value)}
-            />
-          </div>
-          <Button
-            wrap
-            disabled={
-              generate.isPending ||
-              (generate.error instanceof ApiError &&
-                generate.error.status === 403) ||
-              !!remaining ||
-              !Number.isInteger(Number(limit)) ||
-              Number(limit) < 1 ||
-              Number(limit) > 50
-            }
-            onClick={run}
-          >
-            {generate.isPending && (
-              <Spinner data-icon="inline-start" aria-hidden="true" />
-            )}
-            {t(generate.isPending ? "v.generating" : "v.generate")}
-          </Button>
-        </div>
-      )}
+      <Card interaction="none" variant="supporting">
+        <CardHeader>
+          <CardTitle>
+            <h2>{t("practice.controls")}</h2>
+          </CardTitle>
+          <CardDescription>{t("v.recommendationNote")}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <PracticeModePicker
+            mode={mode}
+            disabled={generate.isPending}
+            onChange={(value) => {
+              setMode(value);
+              setPage(1);
+              setBatchId(null);
+              attempt.current = null;
+              generate.reset();
+            }}
+          />
+          {account?.bindStatus === "ACTIVE" && (
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="w-48 max-w-full">
+                <FormInput
+                  label={t("v.limit")}
+                  type="number"
+                  min={1}
+                  max={50}
+                  step={1}
+                  disabled={generate.isPending}
+                  value={limit}
+                  onChange={(event) => setLimit(event.target.value)}
+                />
+              </div>
+              <Button
+                wrap
+                disabled={
+                  generate.isPending ||
+                  (generate.error instanceof ApiError &&
+                    generate.error.status === 403) ||
+                  !!remaining ||
+                  !Number.isInteger(Number(limit)) ||
+                  Number(limit) < 1 ||
+                  Number(limit) > 50
+                }
+                onClick={run}
+              >
+                {generate.isPending && (
+                  <Spinner data-icon="inline-start" aria-hidden="true" />
+                )}
+                {t(generate.isPending ? "v.generating" : "v.generate")}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       <ErrorNotice
         error={generate.error}
         retry={run}
@@ -202,7 +215,7 @@ export function RecommendationsPage({
           {t("v.snapshotLink")}
         </Button>
       )}
-      <Card>
+      <Card variant="supporting" interaction="none">
         <CardHeader>
           <CardTitle>
             <h2>{t("v.recommendationHistory")}</h2>
@@ -230,7 +243,7 @@ export function RecommendationsPage({
           {history.data?.data.map((item) => (
             <div
               key={item.batchId}
-              className="flex flex-wrap items-center justify-between gap-3"
+              className="flex flex-wrap items-center justify-between gap-3 border-b pb-3 last:border-b-0 last:pb-0"
             >
               <span className="text-sm">
                 {item.generatedAt} · {t(`v.mode.${item.mode}`)} ·{" "}

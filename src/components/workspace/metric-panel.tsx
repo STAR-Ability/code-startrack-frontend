@@ -15,7 +15,7 @@ const metricTones: Partial<Record<CopyKey, string>> = {
   "v.accepted": "success",
   "v.failed": "danger",
   "v.pendingCount": "warning",
-  "v.overallScore": "info",
+  "v.overallScore": "insight",
   "v.rating": "info",
 };
 export type Metric = readonly [CopyKey, number | string | null];
@@ -40,7 +40,7 @@ export function MetricPanel({
         ? new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(v)
         : v;
   return (
-    <Card size="sm" interaction="none" data-metric-panel>
+    <Card variant="metric" interaction="none" data-metric-panel>
       <CardHeader>
         <CardTitle>
           <h2>{t(title)}</h2>
@@ -50,7 +50,11 @@ export function MetricPanel({
       <CardContent className="flex flex-col gap-3">
         <dl className="metric-strip">
           {metrics.map(([label, v]) => (
-            <div key={label} data-tone={metricTones[label]}>
+            <div
+              key={label}
+              data-tone={metricTones[label]}
+              data-value-type={typeof v}
+            >
               <dt>{t(label)}</dt>
               <dd>{loading ? <Skeleton className="h-7 w-12" /> : value(v)}</dd>
             </div>

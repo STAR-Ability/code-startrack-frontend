@@ -77,6 +77,26 @@ export const CurrentReport: Story = {
 export const FrozenHistoricalReport: Story = {
   render: () => <PersonalReportView report={v012Report(true)} />,
 };
+export const ReportEvidence: Story = {
+  render: () => <PersonalReportView report={v012Report()} evidenceOpen />,
+};
+export const HistoricalReportEvidence: Story = {
+  render: () => <PersonalReportView report={v012Report(true)} evidenceOpen />,
+};
+export const RecentActivityOverview: Story = {
+  render: () => (
+    <AnalysisView
+      analysis={v012Analysis("30D")}
+      aggregate
+      statistics
+      distributions={false}
+    />
+  ),
+};
+export const ReportMobile: Story = {
+  globals: mobile,
+  render: () => <PersonalReportView report={v012Report()} />,
+};
 export const CoachAnalysis: Story = {
   render: () => <TeamAnalysisView analysis={v012TeamAnalysis()} />,
 };

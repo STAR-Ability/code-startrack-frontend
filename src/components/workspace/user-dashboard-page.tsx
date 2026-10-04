@@ -12,8 +12,11 @@ import {
   UserRebuild,
 } from "./user-analysis-page";
 import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MetricPanel } from "./metric-panel";
 export function UserDashboardPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const overview = useUserQuery(
     "user-analysis",
     { endpoint: "overview", window: "30D" },
@@ -55,21 +58,73 @@ export function UserDashboardPage() {
         </p>
 
         {overview.data ? (
-          <AnalysisView analysis={overview.data} statistics aggregate />
+          <AnalysisView
+            analysis={overview.data}
+            statistics
+            aggregate
+            distributions={false}
+            ratings={false}
+          />
         ) : (
           !overview.isFetching && <UserAnalysisEmpty />
         )}
       </DataRegion>
-      <UserRebuild />
       <QueryFeedback query={analysis} />
       {analysis.data && (
         <>
-          <AnalysisView analysis={analysis.data} dimensions ability aggregate />
+          <MetricPanel
+            title="v12.abilitySummary"
+            description={
+              <>
+                {t("v.window.ALL")} · {t("v.cutoff")}:{" "}
+                <time dateTime={analysis.data.dataCutoffAt}>
+                  {new Intl.DateTimeFormat(locale, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                    timeZone: analysis.data.timezone,
+                  }).format(new Date(analysis.data.dataCutoffAt))}
+                </time>
+                {analysis.data.stale && (
+                  <Badge variant="warning" className="ml-2">
+                    {t("v.stale")}
+                  </Badge>
+                )}
+              </>
+            }
+            metrics={[
+              ["v.overallScore", analysis.data.overallScore],
+              [
+                "v.weakest",
+                t(`data.dimension.${analysis.data.weakestDimension}`),
+              ],
+              ["v12.highestRating", analysis.data.currentRating],
+              ["v12.highestMaxRating", analysis.data.maxRating],
+            ]}
+          />
+          {analysis.data.stale && (
+            <Alert>
+              <AlertDescription>{t("v12.staleNote")}</AlertDescription>
+            </Alert>
+          )}
+          {!analysis.data.summary.submissionCount && (
+            <EmptyState title={t("v.noEvidence")} />
+          )}
+          <Link
+            href="/profile"
+            className={buttonVariants({
+              variant: "outline",
+              wrap: true,
+              className: "self-start",
+            })}
+          >
+            {t("v12.openProfile")}
+          </Link>
           <UserSources analysis={analysis.data} />
         </>
       )}
+      <UserRebuild />
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel title="v12.reports">
+        <Panel title="v12.reports" variant="analysis">
           <QueryFeedback query={report} />
           {report.data ? (
             <>
@@ -90,7 +145,7 @@ export function UserDashboardPage() {
             {t("v12.open")}
           </Link>
         </Panel>
-        <Panel title="v12.myTeams">
+        <Panel title="v12.myTeams" variant="supporting">
           <QueryFeedback query={teams} />
           {teams.data?.data.map((team) => (
             <Link
@@ -106,7 +161,7 @@ export function UserDashboardPage() {
           )}
           <Link href="/teams">{t("v12.teams")}</Link>
         </Panel>
-        <Panel title="v12.invitations">
+        <Panel title="v12.invitations" variant="supporting">
           <QueryFeedback query={invitations} />
           {invitations.data?.data.map((invite) => (
             <p key={invite.invitationId}>
@@ -119,7 +174,7 @@ export function UserDashboardPage() {
           )}
           <Link href="/teams?tab=invitations">{t("v12.open")}</Link>
         </Panel>
-        <Panel title="v12.notifications">
+        <Panel title="v12.notifications" variant="supporting">
           <QueryFeedback query={unread} />
           <p>
             {t("v12.unread")}: {unread.data?.count ?? "—"}

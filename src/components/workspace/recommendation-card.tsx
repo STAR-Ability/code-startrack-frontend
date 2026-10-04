@@ -1,5 +1,6 @@
 "use client";
-import { ExternalLinkIcon } from "lucide-react";
+import { ExternalLinkIcon, OrbitIcon, RouteIcon } from "lucide-react";
+import { cn } from "cn";
 import type { RecommendationBatchDto, ProblemDto } from "@/lib/api/schemas";
 import { safeProblemUrl } from "@/lib/charts/data";
 import { useLocale } from "@/components/layout/locale-provider";
@@ -16,15 +17,22 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EmptyState } from "./feedback";
 
-export function ProblemLink({ problem }: { problem: ProblemDto }) {
+export function ProblemLink({
+  problem,
+  primary = false,
+}: {
+  problem: ProblemDto;
+  primary?: boolean;
+}) {
   const { t } = useLocale();
   const url = safeProblemUrl(problem.url);
+  const variant = primary ? "default" : "outline";
   return url ? (
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className={buttonVariants({ variant: "outline", wrap: true })}
+      className={buttonVariants({ variant, wrap: true })}
     >
       <span>
         {t("recommendation.openExternal", { platform: "Codeforces" })}
@@ -33,7 +41,7 @@ export function ProblemLink({ problem }: { problem: ProblemDto }) {
       <span className="sr-only">{t("recommendation.newTab")}</span>
     </a>
   ) : (
-    <Button disabled variant="outline" wrap>
+    <Button disabled variant={variant} wrap>
       {t("recommendation.linkUnavailable")}
     </Button>
   );
@@ -48,7 +56,7 @@ export function BatchView({
   const { t } = useLocale();
   if (!batch)
     return (
-      <Card>
+      <Card interaction="none">
         <CardHeader>
           <CardTitle>
             <h2>{t("practice.forYou")}</h2>
@@ -72,12 +80,24 @@ export function BatchView({
           </AlertDescription>
         </Alert>
       )}
-      <p className="text-xs text-muted-foreground">
-        {t("recommendation.generatedAt")}: {batch.generatedAt} ·{" "}
-        {t(`v.mode.${batch.mode}`)} · {t("v.targetRating")}:{" "}
-        {batch.targetRating} · {t("v.candidateCount")}: {batch.candidateCount} ·{" "}
-        {t("v.resultCount")}: {batch.resultCount}
-      </p>
+      <div className="recommendation-context">
+        <Badge variant="info" wrap>
+          {t(`v.mode.${batch.mode}`)}
+        </Badge>
+        <p>
+          {t("recommendation.generatedAt")}:{" "}
+          <time dateTime={batch.generatedAt}>{batch.generatedAt}</time>
+        </p>
+        <p>
+          {t("v.candidateCount")}: {batch.candidateCount} · {t("v.resultCount")}
+          : {batch.resultCount}
+        </p>
+        {!batch.recommendations.some((item) => item.rank === 1) && (
+          <p>
+            {t("v.targetRating")}: {batch.targetRating}
+          </p>
+        )}
+      </div>
       {!batch.recommendations.length && (
         <EmptyState
           title={t("practice.noData")}
@@ -88,7 +108,11 @@ export function BatchView({
         ? batch.recommendations.slice(0, 1)
         : batch.recommendations
       ).map((item) => (
-        <RecommendationCard key={item.rank} item={item} />
+        <RecommendationCard
+          key={item.rank}
+          item={item}
+          targetRating={batch.targetRating}
+        />
       ))}
     </>
   );
@@ -96,15 +120,40 @@ export function BatchView({
 
 export function RecommendationCard({
   item,
+  targetRating,
 }: {
   item: RecommendationBatchDto["recommendations"][number];
+  targetRating?: number;
 }) {
   const { t } = useLocale();
+  const featured = item.rank === 1;
   return (
-    <Card interaction="lift" className="feedback-enter">
+    <Card
+      variant={featured ? "recommendation" : "default"}
+      size={featured ? "lg" : "sm"}
+      interaction="lift"
+      className="feedback-enter @container/recommendation"
+      data-recommendation-rank={item.rank}
+    >
       <CardHeader>
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          {featured && (
+            <Badge variant="info" wrap>
+              <OrbitIcon aria-hidden="true" />
+              {t("recommendation.featured")}
+            </Badge>
+          )}
+          <Badge variant="outline">Codeforces</Badge>
+          {item.solvedSinceGeneration && (
+            <Badge variant="success" wrap>
+              {t("v.solvedSince")}
+            </Badge>
+          )}
+        </div>
         <CardTitle>
-          <h2 className="wrap-anywhere">
+          <h2
+            className={cn("wrap-anywhere", featured && "recommendation-title")}
+          >
             <span className="mr-3 font-mono text-muted-foreground">
               #{item.rank}
             </span>{" "}
@@ -112,21 +161,69 @@ export function RecommendationCard({
           </h2>
         </CardTitle>
         <CardDescription>
-          {item.problem.externalProblemKey} · {t("recommendation.difficulty")}:{" "}
-          {item.problem.difficulty ?? t("v.unrated")}
+          {item.problem.externalProblemKey}
+          {!featured && (
+            <>
+              {" "}
+              · {t("recommendation.difficulty")}:{" "}
+              {item.problem.difficulty ?? t("v.unrated")}
+            </>
+          )}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <p>{t(`v.reason.${item.reasonCode}`)}</p>
+      <CardContent className={cn("flex flex-col gap-4", featured && "gap-5")}>
+        <div
+          className={cn(
+            "grid min-w-0 gap-4",
+            featured &&
+              "@xl/recommendation:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]",
+          )}
+        >
+          <div className="recommendation-reason">
+            {featured && (
+              <h3>
+                <RouteIcon className="size-4" aria-hidden="true" />
+                {t("recommendation.reason")}
+              </h3>
+            )}
+            <p>{t(`v.reason.${item.reasonCode}`)}</p>
+            {item.matchedDimension !== null && (
+              <div className="flex flex-col gap-2">
+                <div className="recommendation-coverage">
+                  <span>{t("recommendation.matchedDimension")}</span>
+                  <Badge variant="insight" wrap>
+                    {t(`data.dimension.${item.matchedDimension}`)}
+                  </Badge>
+                </div>
+                {featured && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("recommendation.coverageNote")}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+          {featured && (
+            <dl className="recommendation-facts">
+              <div>
+                <dt>{t("recommendation.difficulty")}</dt>
+                <dd>{item.problem.difficulty ?? t("v.unrated")}</dd>
+              </div>
+              {targetRating !== undefined && (
+                <div>
+                  <dt>{t("v.targetRating")}</dt>
+                  <dd>{targetRating}</dd>
+                </div>
+              )}
+            </dl>
+          )}
+        </div>
         <div className="flex flex-wrap gap-2">
           {item.problem.tags.map((tag) => (
             <Badge variant="outline" key={tag} wrap>
               {tag}
             </Badge>
           ))}
-          {item.solvedSinceGeneration && (
-            <Badge variant="success">{t("v.solvedSince")}</Badge>
-          )}
           {item.problem.isGym && <Badge variant="outline">Gym</Badge>}
           {item.problem.catalogSource === "INFERRED" && (
             <Badge variant="outline">INFERRED</Badge>
@@ -136,8 +233,8 @@ export function RecommendationCard({
           {t("v.cfSolved")}: {item.problem.solvedCount ?? t("v.unavailable")}
         </p>
       </CardContent>
-      <CardFooter>
-        <ProblemLink problem={item.problem} />
+      <CardFooter className="flex-wrap gap-3">
+        <ProblemLink problem={item.problem} primary={featured} />
       </CardFooter>
     </Card>
   );

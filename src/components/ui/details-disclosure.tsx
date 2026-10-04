@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "cn";
 import { ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,19 +12,37 @@ import {
 export function DetailsDisclosure({
   title,
   children,
+  keepMounted = true,
+  variant = "inline",
+  defaultOpen = false,
 }: {
   title: string;
   children: React.ReactNode;
+  keepMounted?: boolean;
+  variant?: "inline" | "panel";
+  defaultOpen?: boolean;
 }) {
   return (
-    <Collapsible className="w-full text-xs text-muted-foreground">
+    <Collapsible
+      defaultOpen={defaultOpen}
+      className={cn(
+        "w-full",
+        variant === "inline"
+          ? "text-xs text-muted-foreground"
+          : "text-sm text-foreground",
+      )}
+    >
       <CollapsibleTrigger
         render={
           <Button
             type="button"
-            variant="ghost"
-            size="xs"
-            className="group/disclosure"
+            variant={variant === "panel" ? "outline" : "ghost"}
+            size={variant === "panel" ? "default" : "xs"}
+            wrap
+            className={cn(
+              "group/disclosure",
+              variant === "panel" && "w-full justify-between",
+            )}
           />
         }
       >
@@ -34,8 +53,15 @@ export function DetailsDisclosure({
           className="transition-transform duration-200 group-data-panel-open/disclosure:rotate-180 motion-reduce:transition-none"
         />
       </CollapsibleTrigger>
-      <CollapsibleContent keepMounted>
-        <div className="flex flex-col gap-2 pt-2">{children}</div>
+      <CollapsibleContent keepMounted={keepMounted}>
+        <div
+          className={cn(
+            "flex min-w-0 flex-col",
+            variant === "panel" ? "gap-4 pt-4" : "gap-2 pt-2",
+          )}
+        >
+          {children}
+        </div>
       </CollapsibleContent>
     </Collapsible>
   );

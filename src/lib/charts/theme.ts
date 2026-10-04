@@ -15,7 +15,20 @@ export function chartTheme(styles: CSSStyleDeclaration, palette: ChartPalette) {
     color: chartPalettes[palette].map(token),
     backgroundColor: "transparent",
     textStyle: { color: foreground, fontFamily: styles.fontFamily },
-    legend: { textStyle: { color: foreground } },
+    legend: {
+      textStyle: { color: token("--foreground"), fontSize: 11 },
+      pageTextStyle: { color: foreground },
+      pageIconColor: token("--info"),
+      pageIconInactiveColor: border,
+    },
+    tooltip: {
+      confine: true,
+      backgroundColor: token("--popover"),
+      borderColor: border,
+      borderWidth: 1,
+      padding: [10, 12],
+      textStyle: { color: token("--popover-foreground"), fontSize: 12 },
+    },
     categoryAxis: {
       axisLine: { lineStyle: { color: border } },
       axisLabel: { color: foreground },

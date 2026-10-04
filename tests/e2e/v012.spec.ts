@@ -103,6 +103,9 @@ test("historical report shows frozen numbers and caution, not current analysis",
   await expect(
     report.getByText("当时可用训练样本较少。", { exact: true }),
   ).toBeVisible();
+  await report
+    .getByRole("button", { name: "报告数据依据", exact: true })
+    .click();
   await expect(
     report.locator("[data-metric-panel]").first().locator("dd").first(),
   ).toHaveText("0");

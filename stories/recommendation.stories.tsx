@@ -14,7 +14,7 @@ const item = batch.recommendations[0];
 const meta = {
   title: "Workspace/Recommendation",
   component: RecommendationCard,
-  args: { item },
+  args: { item, targetRating: batch.targetRating },
   decorators: [
     (Story) => (
       <StoryFrame>
@@ -35,6 +35,37 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Hover: Story = {};
+export const Featured: Story = {};
+export const Secondary: Story = { args: { item: batch.recommendations[1] } };
+export const MatchedDimension: Story = { args: { item } };
+export const NoMatchedDimension: Story = {
+  args: { item: { ...item, matchedDimension: null } },
+};
+export const Unrated: Story = {
+  args: { item: { ...item, problem: { ...item.problem, difficulty: null } } },
+};
+export const MissingMetadata: Story = {
+  args: {
+    item: {
+      ...item,
+      matchedDimension: null,
+      problem: {
+        ...item.problem,
+        title: null,
+        difficulty: null,
+        solvedCount: null,
+        tags: [],
+        url: null,
+      },
+    },
+  },
+};
+export const CompletedSecondary: Story = {
+  args: { item: { ...batch.recommendations[1], solvedSinceGeneration: true } },
+};
+export const OrderedBatch: Story = {
+  render: () => <BatchView batch={batch} />,
+};
 export const Completed: Story = {
   args: { item: { ...item, solvedSinceGeneration: true } },
 };

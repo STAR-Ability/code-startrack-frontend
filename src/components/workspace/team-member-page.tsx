@@ -57,9 +57,10 @@ export function SharedTrainingView({
         ]}
       />
       {data.stale && <p>{t("v12.staleNote")}</p>}
-      <Panel title="v.activityStats">
+      <Panel title="v.activityStats" variant="analysis">
         {data.activityStats.length ? (
           <Chart
+            palette="activity"
             label={t("v.activityStats")}
             option={trendOption(
               data.activityStats.map((item) => item.date),
@@ -81,9 +82,10 @@ export function SharedTrainingView({
           <EmptyState title={t("v.noRecords")} />
         )}
       </Panel>
-      <Panel title="v.tagStats">
+      <Panel title="v.tagStats" variant="analysis">
         {data.tagStats.length ? (
           <Chart
+            palette="distribution"
             label={t("v.tagStats")}
             option={distributionOption(
               data.tagStats.map((item) => item.tag),
@@ -97,10 +99,11 @@ export function SharedTrainingView({
           <EmptyState title={t("v.noRecords")} />
         )}
       </Panel>
-      <Panel title="v.difficultyStats">
+      <Panel title="v.difficultyStats" variant="analysis">
         {data.difficultyStats.length ? (
           <>
             <Chart
+              palette="distribution"
               label={t("v.difficultyStats")}
               option={distributionOption(
                 data.difficultyStats.map(
@@ -139,7 +142,7 @@ export function SharedProfileView({ data }: { data: SharedAbilityProfileDto }) {
     (a, b) => a.displayOrder - b.displayOrder,
   );
   return (
-    <Panel title="v12.abilityProfile">
+    <Panel title="v12.abilityProfile" variant="analysis">
       <p>
         {t("v.overallScore")}: {data.overallScore} / 100 · {t("v.weakest")}:{" "}
         {t(`data.dimension.${data.weakestDimension}`)}

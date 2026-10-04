@@ -79,9 +79,11 @@
   --insight-soft: #f4f1fa;
   --support: #22756f;
   --support-soft: #edf6f5;
-  --canvas: #f6f7f9;
-  --surface-shadow: 0 2px 8px -4px rgb(24 32 49 / 10%);
-  --raised-shadow: 0 16px 36px -16px rgb(24 32 49 / 18%);
+  --canvas: #f3f5f8;
+  --surface-shadow:
+    0 1px 2px rgb(24 32 49 / 3%), 0 4px 14px -8px rgb(24 32 49 / 12%);
+  --raised-shadow:
+    0 2px 4px rgb(24 32 49 / 4%), 0 18px 40px -20px rgb(24 32 49 / 22%);
   --link: var(--info);
   --background: #ffffff;
   --foreground: #111827;
@@ -286,7 +288,10 @@
     @apply text-xs text-muted-foreground;
   }
   .metric-strip dd {
-    @apply font-mono text-xl font-medium tabular-nums;
+    @apply font-mono text-2xl font-medium tracking-tight tabular-nums;
+  }
+  .metric-strip > [data-value-type="string"] dd {
+    @apply font-sans text-base leading-snug;
   }
   .metric-details {
     @apply grid grid-cols-1 gap-x-6 gap-y-2 border-t pt-3 sm:grid-cols-2 xl:grid-cols-4;
@@ -936,6 +941,9 @@
   .metric-strip > [data-tone="success"] {
     border-color: color-mix(in srgb, var(--success) 40%, var(--border));
   }
+  .metric-strip > [data-tone="insight"] {
+    border-color: color-mix(in srgb, var(--insight) 40%, var(--border));
+  }
   .metric-strip > [data-tone="info"] {
     border-color: color-mix(in srgb, var(--info) 40%, var(--border));
   }
@@ -982,5 +990,81 @@
   }
   .workspace-team-card {
     @apply flex min-w-0 flex-col gap-4 rounded-xl border bg-background p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-within:border-ring/40 motion-reduce:transform-none motion-reduce:transition-none;
+  }
+}
+
+/* Content roles build on the existing white surfaces and semantic accents. */
+@layer components {
+  [data-slot="card"][data-variant="metric"] {
+    background: linear-gradient(
+      180deg,
+      var(--card) 55%,
+      color-mix(in srgb, var(--canvas) 35%, var(--card))
+    );
+  }
+  [data-slot="card"][data-variant="analysis"] > [data-slot="card-header"] {
+    border-inline-start: 3px solid
+      color-mix(in srgb, var(--insight) 55%, var(--border));
+  }
+  [data-slot="card"][data-variant="supporting"] {
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--canvas) 28%, var(--card)),
+      color-mix(in srgb, var(--canvas) 28%, var(--card))
+    );
+  }
+  [data-slot="card"][data-variant="recommendation"] {
+    background: linear-gradient(125deg, var(--card) 15%, var(--info-soft));
+  }
+  [data-slot="card"][data-variant="recommendation"]
+    > [data-slot="card-footer"] {
+    background-image: linear-gradient(
+      color-mix(in srgb, var(--card) 65%, transparent),
+      color-mix(in srgb, var(--card) 65%, transparent)
+    );
+  }
+  .workspace-page-header {
+    @apply border-b pb-5;
+  }
+  .recommendation-title {
+    @apply text-xl font-semibold tracking-tight wrap-anywhere sm:text-2xl;
+  }
+  .recommendation-context {
+    @apply flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground;
+  }
+  .recommendation-facts {
+    @apply grid min-w-0 grid-cols-1 gap-4 rounded-xl border border-info/15 bg-card/70 p-4 sm:grid-cols-2;
+  }
+  .recommendation-facts dt {
+    @apply text-xs text-muted-foreground;
+  }
+  .recommendation-facts dd {
+    @apply mt-1 font-mono text-lg font-medium tabular-nums;
+  }
+  .recommendation-reason {
+    @apply flex min-w-0 flex-col gap-2;
+  }
+  .recommendation-reason > h3 {
+    @apply flex items-center gap-2 text-xs font-medium text-info;
+  }
+  .recommendation-reason > p {
+    @apply leading-relaxed;
+  }
+  .recommendation-coverage {
+    @apply flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground;
+  }
+  .report-actions {
+    @apply flex flex-col gap-3 rounded-xl border border-info/15 bg-info-soft p-4 sm:p-5;
+  }
+  .report-list {
+    @apply flex list-disc flex-col gap-2 pl-5 leading-relaxed;
+  }
+  .practice-intro[data-compact="true"] {
+    background-image: none;
+  }
+  .practice-intro[data-compact="true"]::after {
+    content: none;
+  }
+  .practice-intro[data-compact="true"] .practice-heading {
+    @apply text-base font-medium tracking-normal;
   }
 }

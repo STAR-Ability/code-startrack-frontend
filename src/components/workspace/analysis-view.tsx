@@ -50,11 +50,13 @@ export function AnalysisView({
   aggregate = false,
   activity = true,
   ratings = true,
+  distributions = true,
 }: {
   analysis: AnalysisPresentation | null;
   aggregate?: boolean;
   activity?: boolean;
   ratings?: boolean;
+  distributions?: boolean;
   dimensions?: boolean;
   statistics?: boolean;
   loading?: boolean;
@@ -183,7 +185,7 @@ export function AnalysisView({
       {statistics && (
         <>
           {activity && (
-            <Card size="sm" interaction="none">
+            <Card variant="analysis" interaction="none">
               <CardHeader>
                 <CardTitle>
                   <h2>{t("v.activityStats")}</h2>
@@ -223,103 +225,105 @@ export function AnalysisView({
               </CardContent>
             </Card>
           )}
-          <div className="grid min-w-0 gap-4 lg:grid-cols-2">
-            <Card size="sm" interaction="none">
-              <CardHeader>
-                <CardTitle>
-                  <h2>{t("v.tagStats")}</h2>
-                </CardTitle>
-                <CardDescription>{t("v.statsNote")}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {tags.length ? (
-                  <>
-                    <Chart
-                      palette="distribution"
-                      label={t("v.tagStats")}
-                      option={distributionOption(
-                        tags.slice(0, 10).map((item) => item.tag),
-                        tags
-                          .slice(0, 10)
-                          .map((item) => item.attemptedProblemCount),
-                        tags.slice(0, 10).map((item) => item.solvedCount),
-                        [t("v.attempted"), t("v.solved")],
-                        true,
-                      )}
-                    />
-                    <DetailsDisclosure title={t("metrics.chartValues")}>
-                      <dl className="flex flex-col gap-2">
-                        {tags.map((item) => (
-                          <div
-                            key={item.tag}
-                            className="flex flex-wrap justify-between gap-2"
-                          >
-                            <dt>{item.tag}</dt>
-                            <dd>
-                              {t("v.solved")}: {number(item.solvedCount)} /{" "}
-                              {t("v.attempted")}:{" "}
-                              {number(item.attemptedProblemCount)} ·{" "}
-                              {t("v.submissions")}:{" "}
-                              {number(item.submissionCount)}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
-                    </DetailsDisclosure>
-                  </>
-                ) : (
-                  <EmptyState title={t("v.noRecords")} />
-                )}
-              </CardContent>
-            </Card>
-            <Card size="sm" interaction="none">
-              <CardHeader>
-                <CardTitle>
-                  <h2>{t("v.difficultyStats")}</h2>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {difficulty.length ? (
-                  <>
-                    <Chart
-                      palette="distribution"
-                      label={t("v.difficultyStats")}
-                      option={distributionOption(
-                        difficulty.map(
-                          (item) => item.difficulty ?? t("v.unrated"),
-                        ),
-                        difficulty.map((item) => item.attemptedProblemCount),
-                        difficulty.map((item) => item.solvedCount),
-                        [t("v.attempted"), t("v.solved")],
-                      )}
-                    />
-                    <DetailsDisclosure title={t("metrics.chartValues")}>
-                      <dl className="flex flex-col gap-1">
-                        {difficulty.map((item) => (
-                          <div
-                            key={item.difficulty ?? "unrated"}
-                            className="flex justify-between gap-2"
-                          >
-                            <dt>{item.difficulty ?? t("v.unrated")}</dt>
-                            <dd>
-                              {number(item.solvedCount)} /{" "}
-                              {number(item.attemptedProblemCount)}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
-                    </DetailsDisclosure>
-                  </>
-                ) : (
-                  <EmptyState title={t("v.noRecords")} />
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          {distributions && (
+            <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+              <Card variant="analysis" interaction="none">
+                <CardHeader>
+                  <CardTitle>
+                    <h2>{t("v.tagStats")}</h2>
+                  </CardTitle>
+                  <CardDescription>{t("v.statsNote")}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {tags.length ? (
+                    <>
+                      <Chart
+                        palette="distribution"
+                        label={t("v.tagStats")}
+                        option={distributionOption(
+                          tags.slice(0, 10).map((item) => item.tag),
+                          tags
+                            .slice(0, 10)
+                            .map((item) => item.attemptedProblemCount),
+                          tags.slice(0, 10).map((item) => item.solvedCount),
+                          [t("v.attempted"), t("v.solved")],
+                          true,
+                        )}
+                      />
+                      <DetailsDisclosure title={t("metrics.chartValues")}>
+                        <dl className="flex flex-col gap-2">
+                          {tags.map((item) => (
+                            <div
+                              key={item.tag}
+                              className="flex flex-wrap justify-between gap-2"
+                            >
+                              <dt>{item.tag}</dt>
+                              <dd>
+                                {t("v.solved")}: {number(item.solvedCount)} /{" "}
+                                {t("v.attempted")}:{" "}
+                                {number(item.attemptedProblemCount)} ·{" "}
+                                {t("v.submissions")}:{" "}
+                                {number(item.submissionCount)}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </DetailsDisclosure>
+                    </>
+                  ) : (
+                    <EmptyState title={t("v.noRecords")} />
+                  )}
+                </CardContent>
+              </Card>
+              <Card variant="analysis" interaction="none">
+                <CardHeader>
+                  <CardTitle>
+                    <h2>{t("v.difficultyStats")}</h2>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {difficulty.length ? (
+                    <>
+                      <Chart
+                        palette="distribution"
+                        label={t("v.difficultyStats")}
+                        option={distributionOption(
+                          difficulty.map(
+                            (item) => item.difficulty ?? t("v.unrated"),
+                          ),
+                          difficulty.map((item) => item.attemptedProblemCount),
+                          difficulty.map((item) => item.solvedCount),
+                          [t("v.attempted"), t("v.solved")],
+                        )}
+                      />
+                      <DetailsDisclosure title={t("metrics.chartValues")}>
+                        <dl className="flex flex-col gap-1">
+                          {difficulty.map((item) => (
+                            <div
+                              key={item.difficulty ?? "unrated"}
+                              className="flex justify-between gap-2"
+                            >
+                              <dt>{item.difficulty ?? t("v.unrated")}</dt>
+                              <dd>
+                                {number(item.solvedCount)} /{" "}
+                                {number(item.attemptedProblemCount)}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </DetailsDisclosure>
+                    </>
+                  ) : (
+                    <EmptyState title={t("v.noRecords")} />
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </>
       )}
       {dimensions && (
-        <Card size="sm" interaction="none">
+        <Card variant="analysis" interaction="none">
           <CardHeader>
             <CardTitle>
               <h2>{t("v.dimensions")}</h2>

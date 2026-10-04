@@ -6,20 +6,26 @@ export function trendOption(
 ): EChartsOption {
   return {
     tooltip: { trigger: "axis" },
-    legend: { bottom: 0, type: "scroll", itemWidth: 12, itemHeight: 8 },
+    legend: {
+      bottom: 0,
+      type: "scroll",
+      itemWidth: 12,
+      itemHeight: 8,
+      itemGap: 16,
+    },
     grid: { left: 12, right: 14, top: 14, bottom: 52, outerBoundsMode: "same" },
     xAxis: {
       type: "category",
       boundaryGap: false,
       data: labels,
       axisTick: { show: false },
-      axisLabel: { hideOverlap: true, fontSize: 10 },
+      axisLabel: { hideOverlap: true, fontSize: 11 },
     },
     yAxis: {
       type: "value",
       min: 0,
       ...(score ? { max: 100 } : { minInterval: 1 }),
-      axisLabel: { fontSize: 10 },
+      axisLabel: { fontSize: 11 },
       splitLine: { lineStyle: { type: "dashed" } },
     },
     series: series.map((item, index) => ({
@@ -45,17 +51,23 @@ export function distributionOption(
     type: "category" as const,
     data: labels,
     axisTick: { show: false },
-    axisLabel: { hideOverlap: true, fontSize: 10 },
+    axisLabel: { hideOverlap: true, fontSize: 11 },
   };
   const values = {
     type: "value" as const,
     minInterval: 1,
     splitLine: { lineStyle: { type: "dashed" as const } },
-    axisLabel: { fontSize: 10 },
+    axisLabel: { fontSize: 11 },
   };
   return {
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-    legend: { bottom: 0, type: "scroll", itemWidth: 10, itemHeight: 8 },
+    legend: {
+      bottom: 0,
+      type: "scroll",
+      itemWidth: 10,
+      itemHeight: 8,
+      itemGap: 16,
+    },
     grid: { left: 12, right: 12, top: 12, bottom: 44, outerBoundsMode: "same" },
     xAxis: horizontal ? values : category,
     yAxis: horizontal

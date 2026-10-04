@@ -8,6 +8,7 @@ import { isCurrentUser } from "@/lib/query/session";
 import type { PersonalReportDto } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
+import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAccounts } from "./account-provider";
 import { AnalysisView } from "./analysis-view";
@@ -22,25 +23,40 @@ import {
 } from "./feedback";
 import { UserRebuild } from "./user-analysis-page";
 import { isAiJobPending } from "./use-ai-job";
-export function PersonalReportView({ report }: { report: PersonalReportDto }) {
+export function PersonalReportView({
+  report,
+  evidenceOpen = false,
+}: {
+  report: PersonalReportDto;
+  evidenceOpen?: boolean;
+}) {
   const { t } = useLocale();
   return (
     <div className="flex flex-col gap-4" data-report-id={report.reportId}>
-      <Panel title="v12.reportOverview" description={report.generatedAt}>
-        <p className="whitespace-pre-wrap break-words">
+      <Panel
+        title="v12.reportOverview"
+        description={report.generatedAt}
+        variant="analysis"
+        size="lg"
+      >
+        <p className="whitespace-pre-wrap break-words text-base leading-relaxed">
           {report.content.overview}
         </p>
-        {(["strengths", "weaknesses", "actionSuggestions"] as const).map(
-          (key) => (
-            <section key={key}>
-              <h3 className="mb-2 font-medium">
-                {t(
-                  key === "actionSuggestions"
-                    ? "v12.suggestions"
-                    : `v12.${key}`,
-                )}
-              </h3>
-              <ul className="list-disc pl-5">
+        <section className="report-actions">
+          <h3 className="font-medium">{t("v12.suggestions")}</h3>
+          <ul className="report-list">
+            {report.content.actionSuggestions.map((line, index) => (
+              <li key={index} className="whitespace-pre-wrap break-words">
+                {line}
+              </li>
+            ))}
+          </ul>
+        </section>
+        <div className="grid min-w-0 gap-6 md:grid-cols-2">
+          {(["strengths", "weaknesses"] as const).map((key) => (
+            <section key={key} className="flex min-w-0 flex-col gap-3">
+              <h3 className="font-medium">{t(`v12.${key}`)}</h3>
+              <ul className="report-list">
                 {report.content[key].map((line, index) => (
                   <li key={index} className="whitespace-pre-wrap break-words">
                     {line}
@@ -48,10 +64,14 @@ export function PersonalReportView({ report }: { report: PersonalReportDto }) {
                 ))}
               </ul>
             </section>
-          ),
-        )}
-        <h3 className="font-medium">{t("v12.recentTrend")}</h3>
-        <p className="whitespace-pre-wrap">{report.content.recentTrend}</p>
+          ))}
+        </div>
+        <section className="flex flex-col gap-2 border-t pt-4">
+          <h3 className="font-medium">{t("v12.recentTrend")}</h3>
+          <p className="whitespace-pre-wrap break-words leading-relaxed">
+            {report.content.recentTrend}
+          </p>
+        </section>
         {report.content.caution !== null && (
           <Alert>
             <AlertTitle>{t("v12.caution")}</AlertTitle>
@@ -59,49 +79,60 @@ export function PersonalReportView({ report }: { report: PersonalReportDto }) {
           </Alert>
         )}
       </Panel>
-      <p className="text-sm text-muted-foreground">{t("v12.frozen")}</p>
-      <AnalysisView
-        aggregate
-        dimensions
-        statistics
-        activity={false}
-        ability
-        metricTitle="metrics.snapshot"
-        analysis={{
-          ...report.statisticsSnapshot,
-          ...report.profileSnapshot,
-          window: "ALL",
-          timezone: "UTC",
-          period: { start: null, end: report.statisticsSnapshot.dataCutoffAt },
-          activityStats: [],
-          stale: false,
-        }}
-      />
-      <section
-        className="flex min-w-0 flex-col gap-4"
-        aria-label={t("v12.recentTraining")}
+      <DetailsDisclosure
+        key={report.reportId}
+        title={t("v12.reportEvidence")}
+        variant="panel"
+        keepMounted={false}
+        defaultOpen={evidenceOpen}
       >
-        <p className="break-words text-sm text-muted-foreground">
-          {report.recentTrainingSnapshot.period.start} —{" "}
-          {report.recentTrainingSnapshot.period.end}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("v12.frozen")}</p>
         <AnalysisView
           aggregate
+          dimensions
           statistics
-          ratings={false}
-          metricTitle="v12.recentTraining"
+          activity={false}
+          ability
+          metricTitle="metrics.snapshot"
           analysis={{
             ...report.statisticsSnapshot,
-            ...report.recentTrainingSnapshot,
-            overallScore: report.profileSnapshot.overallScore,
-            dimensions: report.profileSnapshot.dimensions,
-            weakestDimension: report.profileSnapshot.weakestDimension,
-            window: "30D",
+            ...report.profileSnapshot,
+            window: "ALL",
             timezone: "UTC",
+            period: {
+              start: null,
+              end: report.statisticsSnapshot.dataCutoffAt,
+            },
+            activityStats: [],
             stale: false,
           }}
         />
-      </section>
+        <section
+          className="flex min-w-0 flex-col gap-4"
+          aria-label={t("v12.recentTraining")}
+        >
+          <p className="break-words text-sm text-muted-foreground">
+            {report.recentTrainingSnapshot.period.start} —{" "}
+            {report.recentTrainingSnapshot.period.end}
+          </p>
+          <AnalysisView
+            aggregate
+            statistics
+            ratings={false}
+            metricTitle="v12.recentTraining"
+            analysis={{
+              ...report.statisticsSnapshot,
+              ...report.recentTrainingSnapshot,
+              overallScore: report.profileSnapshot.overallScore,
+              dimensions: report.profileSnapshot.dimensions,
+              weakestDimension: report.profileSnapshot.weakestDimension,
+              window: "30D",
+              timezone: "UTC",
+              stale: false,
+            }}
+          />
+        </section>
+      </DetailsDisclosure>
     </div>
   );
 }
@@ -185,7 +216,7 @@ export function PersonalReportsPage() {
       ) : (
         !displayed.isFetching && <EmptyState title={t("v12.noReport")} />
       )}
-      <Panel title="v12.reportHistory">
+      <Panel title="v12.reportHistory" variant="supporting">
         <QueryFeedback query={history} />
         {history.data?.data.map((report) => (
           <div
@@ -213,15 +244,24 @@ export function PersonalReportsPage() {
         />
       </Panel>
       <UserRebuild />
-      <Panel title="v12.aggregate">
-        <QueryFeedback query={all} />
-        {all.data && (
-          <AnalysisView analysis={all.data} dimensions ability aggregate />
-        )}
-        <QueryFeedback query={recent} />
-        {recent.data && (
-          <AnalysisView analysis={recent.data} statistics aggregate />
-        )}
+      <Panel title="v12.aggregate" variant="supporting">
+        <DetailsDisclosure
+          title={t("v12.currentEvidence")}
+          variant="panel"
+          keepMounted={false}
+        >
+          <p className="text-sm text-muted-foreground">
+            {t("v12.currentEvidenceNote")}
+          </p>
+          <QueryFeedback query={all} />
+          {all.data && (
+            <AnalysisView analysis={all.data} dimensions ability aggregate />
+          )}
+          <QueryFeedback query={recent} />
+          {recent.data && (
+            <AnalysisView analysis={recent.data} statistics aggregate />
+          )}
+        </DetailsDisclosure>
       </Panel>
     </>
   );

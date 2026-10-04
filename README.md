@@ -70,6 +70,8 @@ pnpm test:storybook
 
 Storybook documents production primitives, charts, account/user profiles, frozen reports, shared member data and audience-specific team results. Interactive collaboration stories use the same mock request/state boundary for approval, privacy, invitation and confirmation workflows. It shares production tokens, fonts, locale and providers; stories never require a backend.
 
+The [UI surface hierarchy](docs/development/ui-surface-hierarchy.md) describes the existing Card variants, semantic accents and page responsibilities. Recommendation rank and matched ability coverage come from the backend; report evidence remains separate from the current profile.
+
 ## Build and serve
 
 ```bash

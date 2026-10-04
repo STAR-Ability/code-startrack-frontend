@@ -16,12 +16,12 @@ import { StoryFrame, mobile } from "./helpers";
 const meta = {
   title: "Primitives/Card",
   component: Card,
-  args: { interaction: "surface", size: "default" },
+  args: { interaction: "surface", size: "default", variant: "default" },
   parameters: {
     docs: {
       description: {
         component:
-          "White surfaces use a thin border and token-based elevation. Use interaction=none for data, surface for passive grouping, and lift only for interactive discovery cards. Loading and empty content are compositions, not Card props.",
+          "White surfaces use a thin border and token-based elevation. Content variants distinguish metric, recommendation, analysis and supporting roles with existing semantic tokens. Use interaction=none for data, surface for passive grouping, and lift only for interactive discovery cards. Loading and empty content are compositions, not Card props.",
       },
     },
   },
@@ -57,6 +57,18 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Hover: Story = { args: { interaction: "lift" } };
 export const DataSurface: Story = { args: { interaction: "none", size: "sm" } };
+export const Recommendation: Story = {
+  args: { variant: "recommendation", size: "lg", interaction: "lift" },
+};
+export const Metric: Story = {
+  args: { variant: "metric", interaction: "none" },
+};
+export const Analysis: Story = {
+  args: { variant: "analysis", interaction: "none" },
+};
+export const Supporting: Story = {
+  args: { variant: "supporting", interaction: "none" },
+};
 export const Loading: Story = {
   render: () => (
     <Card aria-busy="true" aria-label="Loading recommendation">

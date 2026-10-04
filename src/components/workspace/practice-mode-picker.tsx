@@ -21,14 +21,14 @@ export function PracticeModePicker({
 }) {
   const { t } = useLocale();
   return (
-    <div className="flex flex-col gap-3">
+    <div className="@container/practice-modes flex flex-col gap-3">
       <ToggleGroup
         aria-label={t("v.mode")}
         value={[mode]}
         variant="outline"
         size="lg"
         disabled={disabled}
-        className="w-full flex-wrap"
+        className="grid w-full grid-cols-1 @lg/practice-modes:grid-cols-3"
         onValueChange={(values) => {
           const value = values[0] as RecommendationMode;
           if (modes.includes(value)) onChange(value);
@@ -41,7 +41,7 @@ export function PracticeModePicker({
               key={value}
               value={value}
               aria-label={t(`v.mode.${value}`)}
-              className="h-auto min-h-9 flex-1 basis-24 gap-2 py-2"
+              className="h-auto min-h-9 min-w-0 gap-2 py-2"
             >
               <Icon aria-hidden="true" />
               <span className="min-w-0 wrap-anywhere whitespace-normal">

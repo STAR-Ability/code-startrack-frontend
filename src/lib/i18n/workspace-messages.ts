@@ -75,6 +75,10 @@ export const workspaceZh = {
   "practice.step.train": "专注练习",
   "practice.step.review": "回顾成长",
   "practice.forYou": "为你推荐",
+  "practice.controls": "训练方向",
+  "recommendation.featured": "首选推荐",
+  "recommendation.matchedDimension": "覆盖能力",
+  "recommendation.coverageNote": "此题覆盖推荐匹配的能力维度。",
   "practice.forYouDescription": "结合难度与训练表现，找到适合你的下一道题。",
   "practice.historyDescription": "留住每一次选择，回看你的推荐与训练方向。",
   "practice.mode.LEVEL": "从与你当前水平相近的题目开始，稳步积累解题经验。",
@@ -409,6 +413,11 @@ export const workspaceEn = {
   "practice.step.train": "Practice deeply",
   "practice.step.review": "Review your progress",
   "practice.forYou": "Picked for you",
+  "practice.controls": "Practice direction",
+  "recommendation.featured": "First recommendation",
+  "recommendation.matchedDimension": "Skill coverage",
+  "recommendation.coverageNote":
+    "This problem covers the matched skill dimension.",
   "practice.forYouDescription":
     "Find your next problem based on difficulty and your practice progress.",
   "practice.historyDescription":

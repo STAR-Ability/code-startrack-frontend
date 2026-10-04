@@ -28,14 +28,23 @@ export function Panel({
   title,
   description,
   children,
+  variant = "default",
+  size = "sm",
 }: {
   title: CopyKey;
   description?: string;
   children: React.ReactNode;
+  variant?: React.ComponentProps<typeof Card>["variant"];
+  size?: React.ComponentProps<typeof Card>["size"];
 }) {
   const { t } = useLocale();
   return (
-    <Card size="sm" interaction="none" className="min-w-0 wrap-anywhere">
+    <Card
+      size={size}
+      variant={variant}
+      interaction="none"
+      className="min-w-0 wrap-anywhere"
+    >
       <CardHeader>
         <CardTitle>
           <h2>{t(title)}</h2>

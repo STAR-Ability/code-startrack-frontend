@@ -15,6 +15,19 @@ export const workspaceZh = {
   "metrics.analysis": "画像指标",
   "metrics.snapshot": "快照指标",
   "metrics.chartValues": "查看图表数据",
+  "profile.latestSaved": "最新保存的画像",
+  "profile.historical": "历史画像快照",
+  "profile.nextFocus": "下一步，可以关注{dimension}。",
+  "profile.historicalFocus": "这份画像的薄弱维度：{dimension}。",
+  "profile.startEvidence": "从一次练习，开始积累证据。",
+  "profile.nextFocusNote":
+    "进入写题训练，选择账号与训练方向，找到适合的下一道题。",
+  "profile.historicalNote":
+    "正在回看历史结果；进入训练后可选择当前账号与训练方向。",
+  "profile.startPractice": "找到下一道练习",
+  "profile.dimensionNote": "六个维度一起看，理解已有训练证据中的能力结构。",
+  "profile.supportingEvidence": "展开训练证据 · 活动、知识标签与难度",
+  "profile.supportingEvidenceNote": "这些统计来自当前展示的同一份画像快照。",
   "sidebar.collapse": "收起侧栏",
   "sidebar.expand": "展开侧栏",
   "sidebar.language": "切换显示语言",
@@ -356,6 +369,23 @@ export const workspaceEn = {
   "metrics.analysis": "Analysis metrics",
   "metrics.snapshot": "Snapshot metrics",
   "metrics.chartValues": "View chart data",
+  "profile.latestSaved": "Latest saved profile",
+  "profile.historical": "Historical profile snapshot",
+  "profile.nextFocus": "Next, consider practicing {dimension}.",
+  "profile.historicalFocus": "This snapshot’s weakest dimension: {dimension}.",
+  "profile.startEvidence":
+    "Build your evidence, one practice problem at a time.",
+  "profile.nextFocusNote":
+    "Choose an account and a training direction to find your next problem.",
+  "profile.historicalNote":
+    "You are reviewing historical results. Choose your current account and direction in practice.",
+  "profile.startPractice": "Find your next problem",
+  "profile.dimensionNote":
+    "Read the six dimensions together to understand the structure of your training evidence.",
+  "profile.supportingEvidence":
+    "Explore training evidence · activity, tags and difficulty",
+  "profile.supportingEvidenceNote":
+    "These statistics come from the same profile snapshot shown above.",
   "sidebar.collapse": "Collapse sidebar",
   "sidebar.expand": "Expand sidebar",
   "sidebar.language": "Switch display language",

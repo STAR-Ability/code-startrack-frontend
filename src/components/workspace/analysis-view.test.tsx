@@ -2,7 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/components/layout/locale-provider";
 import { demoAnalysis } from "@/lib/demo/fixtures";
-import { AnalysisView } from "./analysis-view";
+import { AnalysisView, AnalysisStatistics } from "./analysis-view";
+import { ProfileDirection } from "./user-analysis-page";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/profile" }));
 // Data provenance is the behavior under test; ECharts rendering is covered in
@@ -133,5 +134,54 @@ describe("analysis evidence presentation", () => {
     expect(
       screen.getByRole("img", { name: "Six dimensions · 0–100" }),
     ).toBeInTheDocument();
+  });
+
+  it("presents supporting snapshot statistics without duplicating primary metrics", () => {
+    const { container } = render(
+      <LocaleProvider initialLocale="en">
+        <AnalysisStatistics analysis={demoAnalysis()} aggregate />
+      </LocaleProvider>,
+    );
+    expect(container.querySelector("[data-metric-panel]")).toBeNull();
+    expect(
+      screen.getByRole("img", { name: "Daily practice" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "Knowledge tags" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "Difficulty distribution" }),
+    ).toBeInTheDocument();
+  });
+
+  it("labels historical guidance using the displayed snapshot rather than current-state copy", () => {
+    render(
+      <LocaleProvider initialLocale="en">
+        <ProfileDirection analysis={demoAnalysis()} historical />
+      </LocaleProvider>,
+    );
+    expect(screen.getByText("Historical profile snapshot")).toBeInTheDocument();
+    expect(screen.queryByText("Latest saved profile")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: /This snapshot’s weakest dimension/,
+      }),
+    ).toHaveTextContent("Implementation");
+    expect(
+      screen.getByRole("link", { name: "Find your next problem" }),
+    ).toHaveAttribute("href", "/practice");
+  });
+
+  it("does not interpret zero training evidence as a known weakness", () => {
+    render(
+      <LocaleProvider initialLocale="en">
+        <ProfileDirection analysis={demoAnalysis(undefined, "ALL", true)} />
+      </LocaleProvider>,
+    );
+    expect(screen.getByRole("heading")).toHaveTextContent(
+      "Build your evidence",
+    );
+    expect(screen.queryByText(/consider practicing/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Implementation")).not.toBeInTheDocument();
   });
 });

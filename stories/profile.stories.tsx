@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AnalysisView } from "@/components/workspace/analysis-view";
+import { ProfileDirection } from "@/components/workspace/user-analysis-page";
 import { EmptyState, ErrorNotice } from "@/components/workspace/feedback";
 import { demoAnalysis } from "@/lib/demo/fixtures";
 import { ApiError } from "@/lib/api/errors";
@@ -58,6 +59,28 @@ export const ZeroEvidence: Story = {
 };
 export const Stale: Story = {
   args: { analysis: { ...snapshot, stale: true } },
+};
+export const TrainingFocus: Story = {
+  render: (args) => (
+    <>
+      {args.analysis && <ProfileDirection analysis={args.analysis} />}
+      <AnalysisView {...args} metricTitle="metrics.ability" />
+    </>
+  ),
+};
+export const HistoricalFocus: Story = {
+  render: (args) => (
+    <>
+      {args.analysis && (
+        <ProfileDirection analysis={args.analysis} historical />
+      )}
+      <AnalysisView {...args} metricTitle="metrics.snapshot" />
+    </>
+  ),
+};
+export const TrainingFocusMobile: Story = {
+  ...TrainingFocus,
+  globals: { ...mobile, locale: "en" },
 };
 export const Error: Story = {
   args: { analysis: null, unavailable: true },

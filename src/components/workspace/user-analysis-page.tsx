@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { ArrowRightIcon, RadarIcon } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { v012 } from "@/lib/api/v012";
 import { keys } from "@/lib/query/keys";
@@ -9,10 +10,16 @@ import type { UserAnalysisDto } from "@/lib/api/v012-schemas";
 import { windows, type AnalysisWindow } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { useAccounts } from "./account-provider";
 import { useUserQuery } from "./use-user-query";
-import { AnalysisView } from "./analysis-view";
+import {
+  AnalysisView,
+  AnalysisStatistics,
+  type AnalysisPresentation,
+} from "./analysis-view";
 import { WindowSelector } from "./analysis-page";
 import {
   EmptyState,
@@ -75,7 +82,7 @@ export function UserSources({ analysis }: { analysis: UserAnalysisDto }) {
     </Panel>
   );
 }
-export function UserRebuild() {
+export function UserRebuild({ secondary = false }: { secondary?: boolean }) {
   const { user } = useAccounts();
   const { t } = useLocale();
   const client = useQueryClient();
@@ -103,6 +110,7 @@ export function UserRebuild() {
     <div className="flex flex-col gap-3">
       <Button
         wrap
+        variant={secondary ? "outline" : "default"}
         className="self-start"
         disabled={mutation.isPending || remaining > 0 || active}
         onClick={() => mutation.mutate()}
@@ -130,6 +138,40 @@ export function UserAnalysisEmpty({
     />
   );
 }
+export function ProfileDirection({
+  analysis,
+  historical = false,
+}: {
+  analysis: AnalysisPresentation;
+  historical?: boolean;
+}) {
+  const { t } = useLocale();
+  const evidence = analysis.summary.submissionCount > 0;
+  return (
+    <section className="profile-direction" data-historical={historical}>
+      <div className="profile-direction-copy">
+        <Badge variant={historical ? "secondary" : "insight"} wrap>
+          <RadarIcon aria-hidden="true" />
+          {t(historical ? "profile.historical" : "profile.latestSaved")}
+        </Badge>
+        <h2>
+          {evidence
+            ? t(historical ? "profile.historicalFocus" : "profile.nextFocus", {
+                dimension: t(`data.dimension.${analysis.weakestDimension}`),
+              })
+            : t("profile.startEvidence")}
+        </h2>
+        <p>
+          {t(historical ? "profile.historicalNote" : "profile.nextFocusNote")}
+        </p>
+      </div>
+      <Link href="/practice" className={buttonVariants({ wrap: true })}>
+        {t("profile.startPractice")}
+        <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+      </Link>
+    </section>
+  );
+}
 export function UserProfilePage() {
   const { t, locale } = useLocale();
   const [window, setWindow] = useState<AnalysisWindow>("ALL");
@@ -154,28 +196,34 @@ export function UserProfilePage() {
   const displayed = snapshotId ? snapshot : latest;
   return (
     <>
-      <p className="text-sm text-muted-foreground">{t("v12.aggregateNote")}</p>
-      <WindowSelector
-        value={window}
-        onChange={(value) => {
-          if (windows.includes(value)) {
-            setWindow(value);
-            setPage(1);
-            setSnapshotId(null);
-          }
-        }}
-      />
-      <UserRebuild />
-      {snapshotId && (
-        <Button
-          wrap
-          variant="outline"
-          className="self-start"
-          onClick={() => setSnapshotId(null)}
-        >
-          {t("v.latest")}
-        </Button>
+      {displayed.data && (
+        <ProfileDirection analysis={displayed.data} historical={!!snapshotId} />
       )}
+      <div className="profile-controls">
+        <div className="flex min-w-0 flex-col gap-2">
+          <p className="text-xs text-muted-foreground">
+            {t("v12.aggregateNote")}
+          </p>
+          <WindowSelector
+            value={window}
+            onChange={(value) => {
+              if (windows.includes(value)) {
+                setWindow(value);
+                setPage(1);
+                setSnapshotId(null);
+              }
+            }}
+          />
+        </div>
+        <div className="flex min-w-0 flex-wrap items-start gap-3">
+          {snapshotId && (
+            <Button wrap variant="outline" onClick={() => setSnapshotId(null)}>
+              {t("v.latest")}
+            </Button>
+          )}
+          <UserRebuild secondary />
+        </div>
+      </div>
       <QueryFeedback query={displayed} />
       {!displayed.data && (
         <AnalysisView
@@ -200,48 +248,65 @@ export function UserProfilePage() {
             aggregate
             dimensions
             ability
+            metricTitle={snapshotId ? "metrics.snapshot" : "metrics.ability"}
           />
-          <UserSources analysis={displayed.data} />
+          <DetailsDisclosure
+            title={t("profile.supportingEvidence")}
+            variant="panel"
+            keepMounted={false}
+          >
+            <p className="text-sm text-muted-foreground">
+              {t("profile.supportingEvidenceNote")}
+            </p>
+            <AnalysisStatistics analysis={displayed.data} aggregate />
+          </DetailsDisclosure>
         </>
       )}
-      <Panel title="v12.analysisHistory" variant="supporting">
-        <QueryFeedback query={history} />
-        <ul className="flex min-w-0 flex-col divide-y">
-          {history.data?.data.map((item) => (
-            <li
-              key={item.snapshotId}
-              className="flex min-w-0 flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-            >
-              <div className="flex min-w-0 flex-col gap-1">
-                <time dateTime={item.createdAt}>
-                  {formatTimestamp(item.createdAt, locale)}
-                </time>
-                <p className="text-xs text-muted-foreground">
-                  {t("v.overallScore")}:{" "}
-                  {formatNumber(item.overallScore, locale, 2)} / 100
-                </p>
-              </div>
-              <Button
-                wrap
-                variant="outline"
-                size="sm"
-                onClick={() => setSnapshotId(item.snapshotId)}
+      <div
+        className="profile-supporting-grid"
+        data-has-sources={!!displayed.data}
+      >
+        {displayed.data && <UserSources analysis={displayed.data} />}
+        <Panel title="v12.analysisHistory" variant="supporting">
+          <QueryFeedback query={history} />
+          <ul className="flex min-w-0 flex-col divide-y">
+            {history.data?.data.map((item) => (
+              <li
+                key={item.snapshotId}
+                className="flex min-w-0 flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
               >
-                {t("v.snapshot")}
-              </Button>
-            </li>
-          ))}
-        </ul>
-        {history.data?.data.length === 0 && (
-          <EmptyState title={t("v.noRecords")} embedded />
-        )}
-        <Pagination
-          meta={history.data?.meta}
-          page={page}
-          setPage={setPage}
-          pending={history.isFetching}
-        />
-      </Panel>
+                <div className="flex min-w-0 flex-col gap-1">
+                  <time dateTime={item.createdAt}>
+                    {formatTimestamp(item.createdAt, locale)}
+                  </time>
+                  <p className="text-xs text-muted-foreground">
+                    {t("v.overallScore")}:{" "}
+                    {formatNumber(item.overallScore, locale, 2)} / 100
+                  </p>
+                </div>
+                <Button
+                  wrap
+                  variant="outline"
+                  size="sm"
+                  aria-pressed={snapshotId === item.snapshotId}
+                  onClick={() => setSnapshotId(item.snapshotId)}
+                >
+                  {t("v.snapshot")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+          {history.data?.data.length === 0 && (
+            <EmptyState title={t("v.noRecords")} embedded />
+          )}
+          <Pagination
+            meta={history.data?.meta}
+            page={page}
+            setPage={setPage}
+            pending={history.isFetching}
+          />
+        </Panel>
+      </div>
     </>
   );
 }

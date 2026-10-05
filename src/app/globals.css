@@ -51,6 +51,10 @@
   --color-support: var(--support);
   --color-support-soft: var(--support-soft);
   --color-canvas: var(--canvas);
+  --color-surface-reading: var(--surface-reading);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-supporting: var(--surface-supporting);
+  --color-surface-border: var(--surface-border);
   --shadow-surface: var(--surface-shadow);
   --shadow-raised: var(--raised-shadow);
   --color-popover-foreground: var(--popover-foreground);
@@ -80,6 +84,17 @@
   --support: #22756f;
   --support-soft: #edf6f5;
   --canvas: #f3f5f8;
+  --surface-reading: color-mix(in srgb, var(--card) 96%, transparent);
+  --surface-panel: color-mix(in srgb, var(--card) 86%, transparent);
+  --surface-supporting: color-mix(in srgb, var(--card) 76%, transparent);
+  --surface-border: color-mix(in srgb, var(--border) 80%, transparent);
+  --workspace-info: color-mix(in srgb, var(--info) 12%, var(--background));
+  --workspace-insight: color-mix(
+    in srgb,
+    var(--insight) 10%,
+    var(--background)
+  );
+  --workspace-support: color-mix(in srgb, var(--support) 9%, var(--background));
   --surface-shadow:
     0 1px 2px rgb(24 32 49 / 3%), 0 4px 14px -8px rgb(24 32 49 / 12%);
   --raised-shadow:
@@ -186,18 +201,27 @@
 
 /* Surface hierarchy: white content, neutral canvas, quiet geometric context. */
 @layer components {
-  .brand-surface {
+  .brand-surface,
+  .workspace-surface,
+  .auth-shell {
     position: relative;
     isolation: isolate;
     background: var(--background);
   }
-  .brand-surface::before {
+  /* Isolation keeps the fixed decoration above the shell base and below content.
+     Keep transforms and containment on local components, never these shells. */
+  .brand-surface::before,
+  .brand-surface::after,
+  .workspace-surface::before,
+  .workspace-surface::after,
+  .auth-shell::before {
     content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 54rem;
+    position: fixed;
+    inset: 0;
     z-index: -1;
     pointer-events: none;
+  }
+  .brand-surface::before {
     background:
       radial-gradient(ellipse at 80% 18%, var(--canvas), transparent 62%),
       repeating-linear-gradient(
@@ -207,45 +231,46 @@
       );
     mask-image: linear-gradient(black, transparent);
   }
+  .brand-surface::after {
+    --orbit-radius: min(27.5vw, 21rem);
+    background: radial-gradient(
+      circle var(--orbit-radius) at calc(92% - var(--orbit-radius))
+        calc(12% + var(--orbit-radius)),
+      transparent calc(100% - 1px),
+      color-mix(in srgb, var(--border) 65%, transparent) calc(100% - 1px) 100%,
+      color-mix(in srgb, var(--canvas) 48%, transparent) 100% calc(100% + 5rem),
+      transparent calc(100% + 5rem)
+    );
+  }
   .brand-hero {
     position: relative;
-  }
-  .brand-hero::before {
-    content: "";
-    position: absolute;
-    top: 12%;
-    right: 8%;
-    width: min(55vw, 42rem);
-    aspect-ratio: 1;
-    border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
-    border-radius: 50%;
-    box-shadow: 0 0 0 5rem color-mix(in srgb, var(--canvas) 48%, transparent);
-    z-index: -1;
-    pointer-events: none;
   }
   .section-wash {
     background:
       radial-gradient(ellipse at 10% 20%, var(--background), transparent 65%),
       var(--canvas);
   }
-  .workspace-surface {
-    position: relative;
-    isolation: isolate;
+  .workspace-surface::before {
     background:
       radial-gradient(
-        ellipse 900px 420px at 90% 0%,
-        color-mix(in srgb, var(--canvas) 85%, transparent),
-        transparent
+        ellipse 58rem 42rem at 100% 2%,
+        var(--workspace-info),
+        transparent 76%
       ),
-      linear-gradient(170deg, var(--background), var(--canvas) 65%);
+      radial-gradient(
+        ellipse 46rem 36rem at 42% 56%,
+        var(--workspace-insight),
+        transparent 76%
+      ),
+      radial-gradient(
+        ellipse 48rem 34rem at 12% 100%,
+        var(--workspace-support),
+        transparent 74%
+      ),
+      linear-gradient(155deg, var(--background), var(--canvas) 70%);
   }
-  .workspace-surface::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    opacity: 0.32;
+  .workspace-surface::after {
+    opacity: 0.24;
     background-image: radial-gradient(var(--border) 0.8px, transparent 0.8px);
     background-size: 24px 24px;
     mask-image: linear-gradient(black, transparent 650px);
@@ -279,19 +304,26 @@
     display: none;
   }
   .metric-strip {
-    @apply grid grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-4;
+    @apply grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-3;
   }
   .metric-strip > div {
-    @apply flex min-w-0 flex-col gap-1 border-l-2 border-border pl-3;
+    --metric-accent: var(--border);
+    --metric-tint: transparent;
+    @apply flex min-w-0 flex-col gap-1 rounded-lg border-l-2 px-3 py-2.5;
+    border-color: color-mix(in srgb, var(--metric-accent) 40%, var(--border));
+    background: color-mix(in srgb, var(--metric-tint) 78%, transparent);
   }
   .metric-strip dt {
     @apply text-xs text-muted-foreground;
   }
   .metric-strip dd {
-    @apply font-mono text-2xl font-medium tracking-tight tabular-nums;
+    @apply font-mono text-2xl font-medium tracking-tight wrap-anywhere tabular-nums;
   }
   .metric-strip > [data-value-type="string"] dd {
     @apply font-sans text-base leading-snug;
+  }
+  .metric-strip > [data-value-type="unknown"] dd {
+    @apply font-sans text-base leading-snug font-normal text-muted-foreground;
   }
   .metric-details {
     @apply grid grid-cols-1 gap-x-6 gap-y-2 border-t pt-3 sm:grid-cols-2 xl:grid-cols-4;
@@ -303,7 +335,10 @@
     @apply text-xs text-muted-foreground;
   }
   .metric-details dd {
-    @apply text-xs font-medium tabular-nums;
+    @apply text-xs font-medium wrap-anywhere tabular-nums;
+  }
+  .metric-details > [data-value-type="unknown"] dd {
+    @apply font-normal text-muted-foreground;
   }
   .portfolio-account {
     @apply flex min-w-0 flex-wrap items-center justify-between gap-x-5 gap-y-3 py-3 first:pt-0 last:pb-0;
@@ -357,11 +392,25 @@
     @apply mb-4 text-xs font-medium tracking-widest text-muted-foreground;
   }
   .workspace-nav {
+    --navigation-accent: var(--info);
+    --navigation-tint: var(--info-soft);
     @apply flex min-w-0 items-center gap-3 rounded-lg px-3 py-3 text-sm text-muted-foreground transition-[background-color,color,box-shadow,width,height,padding] duration-200 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 active:bg-sidebar-accent/80 motion-reduce:transition-none hover:bg-sidebar-accent hover:text-foreground;
   }
+  .workspace-nav[data-tone="insight"] {
+    --navigation-accent: var(--insight);
+    --navigation-tint: var(--insight-soft);
+  }
+  .workspace-nav[data-tone="support"] {
+    --navigation-accent: var(--support);
+    --navigation-tint: var(--support-soft);
+  }
   .workspace-nav[aria-current="page"] {
-    @apply bg-sidebar-accent font-medium text-foreground;
-    box-shadow: inset 2px 0 var(--foreground);
+    @apply font-medium text-foreground;
+    background-color: var(--navigation-tint);
+    box-shadow: inset 2px 0 var(--navigation-accent);
+  }
+  .workspace-nav[aria-current="page"] > svg {
+    color: var(--navigation-accent);
   }
   .workspace-nav-mobile {
     @apply h-full flex-col gap-1 px-1 py-2 text-center text-xs wrap-anywhere;
@@ -604,7 +653,7 @@
 
 /* Authentication and shared request feedback stay within the Nova tokens. */
 @layer components {
-  .auth-shell {
+  .auth-shell::before {
     background:
       radial-gradient(ellipse at 16% 40%, var(--accent), transparent 46%),
       linear-gradient(180deg, var(--background), var(--muted));
@@ -760,9 +809,6 @@
   }
   .practice-panel:nth-child(2) {
     animation-delay: 90ms;
-  }
-  .practice-intro::after {
-    animation: auth-float 4s ease-in-out 1;
   }
 }
 
@@ -939,19 +985,37 @@
     );
   }
   .metric-strip > [data-tone="success"] {
-    border-color: color-mix(in srgb, var(--success) 40%, var(--border));
+    --metric-accent: var(--success);
+    --metric-tint: var(--success-soft);
   }
   .metric-strip > [data-tone="insight"] {
-    border-color: color-mix(in srgb, var(--insight) 40%, var(--border));
+    --metric-accent: var(--insight);
+    --metric-tint: var(--insight-soft);
   }
   .metric-strip > [data-tone="info"] {
-    border-color: color-mix(in srgb, var(--info) 40%, var(--border));
+    --metric-accent: var(--info);
+    --metric-tint: var(--info-soft);
+  }
+  .metric-strip > [data-tone="support"] {
+    --metric-accent: var(--support);
+    --metric-tint: var(--support-soft);
   }
   .metric-strip > [data-tone="warning"] {
-    border-color: color-mix(in srgb, var(--warning) 40%, var(--border));
+    --metric-accent: var(--warning);
+    --metric-tint: var(--warning-soft);
   }
   .metric-strip > [data-tone="danger"] {
-    border-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
+    --metric-accent: var(--destructive);
+    --metric-tint: var(--danger-soft);
+  }
+  .metric-strip > [data-tone="insight"] dd {
+    color: var(--insight);
+  }
+  .metric-strip > [data-tone="info"] dd {
+    color: var(--info);
+  }
+  .metric-strip > [data-tone="support"] dd {
+    color: var(--support);
   }
   [data-tone="success"] dd {
     color: var(--success);
@@ -966,10 +1030,10 @@
 
 @layer components {
   .workspace-context-header {
-    @apply relative isolate overflow-hidden rounded-2xl border bg-background p-5 sm:p-6;
+    @apply relative isolate overflow-hidden rounded-2xl border border-surface-border bg-surface-panel p-5 sm:p-6;
     background-image: radial-gradient(
       ellipse at 100% 0%,
-      color-mix(in srgb, var(--canvas) 90%, transparent),
+      color-mix(in srgb, var(--support-soft) 70%, transparent),
       transparent 65%
     );
   }
@@ -986,34 +1050,111 @@
     pointer-events: none;
   }
   .workspace-task-tile {
-    @apply relative flex min-w-0 flex-col gap-3 rounded-xl border bg-background p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transform-none motion-reduce:transition-none;
+    @apply relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-xl border border-surface-border bg-surface-panel p-4 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transform-none motion-reduce:transition-none sm:flex sm:flex-col sm:items-start sm:gap-3 sm:p-5;
   }
   .workspace-team-card {
-    @apply flex min-w-0 flex-col gap-4 rounded-xl border bg-background p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-within:border-ring/40 motion-reduce:transform-none motion-reduce:transition-none;
+    @apply flex min-w-0 flex-col gap-4 rounded-xl border border-surface-border bg-surface-panel p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-within:border-ring/40 motion-reduce:transform-none motion-reduce:transition-none;
+    background-image: linear-gradient(
+      130deg,
+      color-mix(in srgb, var(--support-soft) 42%, transparent),
+      transparent 65%
+    );
+  }
+  .coach-direction {
+    @apply flex min-w-0 flex-wrap items-center justify-between gap-5;
+  }
+  .workspace-account-card[data-selected="true"] {
+    border-color: color-mix(in srgb, var(--info) 28%, var(--surface-border));
+    background-image: radial-gradient(
+      ellipse at 100% 0%,
+      color-mix(in srgb, var(--info-soft) 65%, transparent),
+      transparent 65%
+    );
+  }
+  .account-summary {
+    @apply grid gap-4;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  }
+  .account-summary > div {
+    @apply flex min-w-0 flex-col gap-2;
+  }
+  .account-summary dt {
+    @apply text-xs text-muted-foreground;
+  }
+  .account-summary dd {
+    @apply text-sm leading-relaxed font-medium wrap-anywhere;
+  }
+  .account-summary > div:first-child dd {
+    @apply text-2xl font-semibold tracking-tight tabular-nums;
+    color: var(--info);
+  }
+  .team-card-details {
+    @apply mt-3 flex min-w-0 flex-wrap gap-x-5 gap-y-2 text-xs;
+  }
+  .team-card-details > div {
+    @apply flex min-w-0 items-baseline gap-2;
+  }
+  .team-card-details dt {
+    @apply shrink-0 text-muted-foreground;
+  }
+  .team-card-details dd {
+    @apply min-w-0 font-medium wrap-anywhere;
+  }
+  [data-team-card] [data-slot="avatar-fallback"] {
+    background-color: var(--support-soft);
+    color: var(--support);
   }
 }
 
-/* Content roles build on the existing white surfaces and semantic accents. */
+/* Translucent supporting layers reveal the stable workspace without blurring text. */
 @layer components {
+  [data-slot="card"] {
+    --card-accent: var(--border);
+    --card-tint: transparent;
+  }
+  [data-slot="card"][data-tone="info"] {
+    --card-accent: var(--info);
+    --card-tint: var(--info-soft);
+  }
+  [data-slot="card"][data-tone="insight"] {
+    --card-accent: var(--insight);
+    --card-tint: var(--insight-soft);
+  }
+  [data-slot="card"][data-tone="support"] {
+    --card-accent: var(--support);
+    --card-tint: var(--support-soft);
+  }
   [data-slot="card"][data-variant="metric"] {
-    background: linear-gradient(
-      180deg,
-      var(--card) 55%,
-      color-mix(in srgb, var(--canvas) 35%, var(--card))
+    background-image: linear-gradient(
+      125deg,
+      color-mix(in srgb, var(--card-tint) 35%, transparent),
+      transparent 60%
     );
   }
-  [data-slot="card"][data-variant="analysis"] > [data-slot="card-header"] {
+  [data-slot="card"][data-tone] > [data-slot="card-header"] {
     border-inline-start: 3px solid
-      color-mix(in srgb, var(--insight) 55%, var(--border));
+      color-mix(in srgb, var(--card-accent) 48%, var(--border));
+  }
+  [data-slot="card"][data-variant="analysis"] {
+    background-image: radial-gradient(
+      ellipse at 100% 0%,
+      color-mix(in srgb, var(--card-tint) 44%, transparent),
+      transparent 65%
+    );
   }
   [data-slot="card"][data-variant="supporting"] {
     background-image: linear-gradient(
-      color-mix(in srgb, var(--canvas) 28%, var(--card)),
-      color-mix(in srgb, var(--canvas) 28%, var(--card))
+      135deg,
+      color-mix(in srgb, var(--card-tint) 28%, transparent),
+      transparent 70%
     );
   }
   [data-slot="card"][data-variant="recommendation"] {
-    background: linear-gradient(125deg, var(--card) 15%, var(--info-soft));
+    background-image: linear-gradient(
+      125deg,
+      transparent 15%,
+      color-mix(in srgb, var(--info-soft) 82%, transparent)
+    );
   }
   [data-slot="card"][data-variant="recommendation"]
     > [data-slot="card-footer"] {
@@ -1026,19 +1167,57 @@
     @apply border-b pb-5;
   }
   .recommendation-title {
-    @apply text-xl font-semibold tracking-tight wrap-anywhere sm:text-2xl;
+    @apply text-2xl leading-tight font-semibold tracking-tight wrap-anywhere sm:text-3xl;
+  }
+  .recommendation-heading {
+    @apply flex min-w-0 items-start gap-3;
+  }
+  .recommendation-rank {
+    @apply inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-canvas font-mono text-xs font-medium tabular-nums text-muted-foreground;
+  }
+  .recommendation-title .recommendation-rank {
+    @apply size-10 rounded-xl border border-info/20 bg-info-soft text-base text-info;
   }
   .recommendation-context {
     @apply flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground;
   }
   .recommendation-facts {
-    @apply grid min-w-0 grid-cols-1 gap-4 rounded-xl border border-info/15 bg-card/70 p-4 sm:grid-cols-2;
+    @apply grid min-w-0 gap-4;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr));
   }
   .recommendation-facts dt {
     @apply text-xs text-muted-foreground;
   }
   .recommendation-facts dd {
-    @apply mt-1 font-mono text-lg font-medium tabular-nums;
+    @apply mt-1 font-mono text-2xl font-medium tabular-nums;
+  }
+  .recommendation-content {
+    @apply grid min-w-0 items-start gap-5;
+  }
+  .recommendation-action-panel {
+    @apply flex min-w-0 flex-col gap-4 rounded-xl border border-info/15 bg-surface-panel p-4 sm:p-5;
+  }
+  .recommendation-action-panel > [data-slot="button"] {
+    width: 100%;
+  }
+  .recommendation-action-note {
+    @apply text-xs leading-relaxed text-muted-foreground;
+  }
+  .recommendation-queue-heading {
+    @apply flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2;
+  }
+  .recommendation-queue-heading h2 {
+    @apply text-base font-semibold;
+  }
+  .recommendation-queue-heading p {
+    @apply text-xs text-muted-foreground;
+  }
+  .recommendation-selection {
+    @apply flex min-w-0 flex-wrap items-center gap-3;
+  }
+  .recommendation-card[data-recommendation-rank="1"]
+    > [data-slot="card-footer"] {
+    padding-block: 1rem;
   }
   .recommendation-reason {
     @apply flex min-w-0 flex-col gap-2;
@@ -1066,5 +1245,77 @@
   }
   .practice-intro[data-compact="true"] .practice-heading {
     @apply text-base font-medium tracking-normal;
+  }
+
+  .profile-direction {
+    @apply flex min-w-0 flex-wrap items-center justify-between gap-5 rounded-2xl border border-insight/15 bg-surface-panel p-5 sm:p-6;
+    background-image: linear-gradient(
+      120deg,
+      transparent 35%,
+      color-mix(in srgb, var(--insight-soft) 60%, transparent)
+    );
+  }
+  .profile-direction[data-historical="true"] {
+    border-color: var(--surface-border);
+    background-image: none;
+  }
+  .profile-direction-copy {
+    @apply flex min-w-0 flex-1 basis-72 flex-col items-start gap-3;
+  }
+  .profile-direction-copy h2 {
+    @apply text-xl leading-snug font-semibold tracking-tight wrap-anywhere sm:text-2xl;
+  }
+  .profile-direction-copy p {
+    @apply max-w-2xl text-sm leading-relaxed text-muted-foreground;
+  }
+  .profile-controls {
+    @apply flex min-w-0 flex-wrap items-end justify-between gap-4;
+  }
+  .profile-supporting-grid {
+    @apply grid min-w-0 items-start gap-5;
+  }
+  .analysis-ability-content {
+    @apply grid min-w-0 items-center gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)];
+  }
+  .analysis-ability-chart {
+    @apply min-w-0;
+  }
+  .analysis-ability-chart .chart-surface {
+    background: radial-gradient(
+      ellipse,
+      color-mix(in srgb, var(--insight-soft) 72%, transparent),
+      transparent 75%
+    );
+  }
+  .analysis-dimension-list {
+    @apply flex min-w-0 flex-col gap-1;
+  }
+  .analysis-dimension-row {
+    @apply grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-lg px-3 py-2.5;
+  }
+  .analysis-dimension-row[data-weakest="true"] {
+    background: color-mix(in srgb, var(--insight-soft) 80%, transparent);
+  }
+  .analysis-dimension-row dt {
+    @apply flex min-w-0 flex-wrap items-center gap-2 text-sm;
+  }
+  .analysis-dimension-row dd {
+    @apply font-mono text-sm tabular-nums;
+  }
+  .analysis-dimension-track {
+    @apply col-span-2 h-1.5 overflow-hidden rounded-full bg-muted;
+  }
+  .analysis-dimension-fill {
+    @apply h-full rounded-full bg-insight;
+  }
+}
+@container recommendation (min-width: 40rem) {
+  .recommendation-content-featured {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
+  }
+}
+@media (min-width: 1024px) {
+  .profile-supporting-grid[data-has-sources="true"] {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   }
 }

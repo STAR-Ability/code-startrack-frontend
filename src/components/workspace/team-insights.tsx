@@ -12,12 +12,14 @@ import type {
   TeamRecommendationBatchDto,
   TeamRecommendationMode,
 } from "@/lib/api/v012-schemas";
-import { trendOption } from "@/lib/charts/options";
+import { radarOption, trendOption } from "@/lib/charts/options";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { ChoiceSelect } from "@/components/ui/choice-select";
 import { Badge } from "@/components/ui/badge";
+import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Panel, AiJobNotice, useTeamQuery } from "./v012-shared";
 import {
@@ -32,6 +34,7 @@ import { MetricPanel } from "./metric-panel";
 import { useAccounts } from "./account-provider";
 import { ProblemLink } from "./recommendation-card";
 import { isAiJobPending } from "./use-ai-job";
+import { CompatibilityNotice } from "./compatibility-notice";
 export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
   const { t } = useLocale();
   const dimensions = [...analysis.dimensions].sort(
@@ -39,6 +42,10 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
   );
   return (
     <>
+      <CompatibilityNotice
+        version={analysis.algorithmVersion}
+        family="team-profile"
+      />
       <MetricPanel
         title="v12.teamAnalysis"
         description={t(`v12.audience.${analysis.audience}`)}
@@ -72,33 +79,20 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
       )}
       <Panel title="v.dimensions">
         {analysis.includedMemberCount === 0 ? (
-          <EmptyState title={t("v12.noAbilitySharing")} />
+          <EmptyState embedded title={t("v12.noAbilitySharing")} />
         ) : (
           <>
             <Chart
               label={t("v.dimensions")}
               palette="ability"
-              option={{
-                radar: {
-                  indicator: dimensions.map((dimension) => ({
-                    name: t(`data.dimension.${dimension.code}`),
-                    max: 100,
-                  })),
-                  radius: "52%",
-                  axisName: {
-                    fontSize: 10,
-                    formatter: (name = "") => name.replaceAll(" ", "\n"),
-                  },
-                },
-                series: [
-                  {
-                    type: "radar",
-                    data: [
-                      { value: dimensions.map((dimension) => dimension.score) },
-                    ],
-                  },
-                ],
-              }}
+              size="ability"
+              option={radarOption(
+                dimensions.map((dimension) => ({
+                  name: t(`data.dimension.${dimension.code}`),
+                  score: dimension.score,
+                })),
+                t("v.overallScore"),
+              )}
             />
             <dl className="grid gap-3 sm:grid-cols-2">
               {dimensions.map((dimension) => (
@@ -125,12 +119,12 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
       </Panel>
       <Panel title="v12.teamActivity">
         {analysis.trainingMemberCount === 0 ? (
-          <EmptyState title={t("v12.noTrainingSharing")} />
+          <EmptyState embedded title={t("v12.noTrainingSharing")} />
         ) : analysis.activityStats.length ? (
           <>
             <Chart
               label={t("v12.teamActivity")}
-              palette="activity"
+              palette="teamActivity"
               option={trendOption(
                 analysis.activityStats.map((item) => item.date),
                 [
@@ -155,24 +149,31 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
                 ],
               )}
             />
-            <dl className="flex flex-col gap-2">
-              {analysis.activityStats.map((item) => (
-                <div
-                  key={item.date}
-                  className="flex flex-wrap justify-between gap-2"
-                >
-                  <dt>{item.date}</dt>
-                  <dd>
-                    {t("v.submissions")}: {item.submissionCount} ·{" "}
-                    {t("v.accepted")}: {item.acceptedSubmissionCount} ·{" "}
-                    {t("v12.activeMembers")}: {item.activeMemberCount}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+            <DetailsDisclosure
+              title={t("metrics.chartValues")}
+              keepMounted={false}
+            >
+              <dl className="flex flex-col gap-2">
+                {analysis.activityStats.map((item) => (
+                  <div
+                    key={item.date}
+                    className="flex flex-wrap justify-between gap-2"
+                  >
+                    <dt>
+                      <time dateTime={item.date}>{item.date}</time>
+                    </dt>
+                    <dd>
+                      {t("v.submissions")}: {item.submissionCount} ·{" "}
+                      {t("v.accepted")}: {item.acceptedSubmissionCount} ·{" "}
+                      {t("v12.activeMembers")}: {item.activeMemberCount}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </DetailsDisclosure>
           </>
         ) : (
-          <EmptyState title={t("v.noRecords")} />
+          <EmptyState embedded title={t("v.noRecords")} />
         )}
       </Panel>
       {analysis.levelMemberCount === 0 && (
@@ -188,20 +189,30 @@ export function TeamBatchView({
 }: {
   batch: TeamRecommendationBatchDto;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const number = (value: number) =>
+    new Intl.NumberFormat(locale, {
+      maximumSignificantDigits: 21,
+    }).format(value);
   return (
     <div className="flex flex-col gap-3" data-team-audience={batch.audience}>
+      <CompatibilityNotice
+        version={batch.algorithmVersion}
+        family="team-recommendation"
+      />
       <p>
         {t(`v12.audience.${batch.audience}`)} · {t("v12.targetRating")}:{" "}
-        {batch.targetRating} · {t(`data.dimension.${batch.targetDimension}`)}
+        {number(batch.targetRating)} ·{" "}
+        {t(`data.dimension.${batch.targetDimension}`)}
       </p>
       <p>
-        {t("v.candidateCount")}: {batch.candidateCount} · {t("v.resultCount")}:{" "}
-        {batch.resultCount}
+        {t("v.candidateCount")}: {number(batch.candidateCount)} ·{" "}
+        {t("v.resultCount")}: {number(batch.resultCount)}
       </p>
       {batch.stale && <Badge variant="warning">{t("v.stale")}</Badge>}
       {batch.recommendations.length === 0 && (
         <EmptyState
+          embedded
           title={t("v12.candidateShortage")}
           description={t("v.noCandidates")}
         />
@@ -217,7 +228,11 @@ export function TeamBatchView({
               {item.problem.title ?? item.problem.externalProblemKey}
             </h3>
             <p>
-              {item.problem.difficulty ?? t("v.unrated")} · {item.score}
+              {t("v12.problemDifficulty")}:{" "}
+              {item.problem.difficulty === null
+                ? t("v.unrated")
+                : number(item.problem.difficulty)}{" "}
+              · {t("v12.recommendationScore")}: {number(item.score)}
             </p>
             <p className="break-words">{item.reason}</p>
             <div className="flex flex-wrap gap-2">
@@ -235,7 +250,7 @@ export function TeamBatchView({
   );
 }
 export function TeamInsights({ team }: { team: TeamDetailDto }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { user } = useAccounts();
   const client = useQueryClient();
   const [page, setPage] = useState(1);
@@ -317,7 +332,10 @@ export function TeamInsights({ team }: { team: TeamDetailDto }) {
             className="flex flex-wrap justify-between gap-3"
           >
             <span>
-              {item.createdAt} · {item.includedMemberCount}/{item.memberCount}
+              <time dateTime={item.createdAt}>
+                {formatTimestamp(item.createdAt, locale)}
+              </time>{" "}
+              · {item.includedMemberCount}/{item.memberCount}
             </span>
             <Button
               wrap
@@ -358,7 +376,7 @@ export function TeamRecommendations({ team }: { team: TeamDetailDto }) {
     (signal) => v012.teamAnalysis(team.teamId, signal),
   );
   const levelReady = !!analysis.data && analysis.data.levelMemberCount > 0;
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { user } = useAccounts();
   const client = useQueryClient();
   const id = useId();
@@ -488,7 +506,9 @@ export function TeamRecommendations({ team }: { team: TeamDetailDto }) {
           key={item.batchId}
           className="flex flex-wrap justify-between gap-2"
         >
-          <time dateTime={item.generatedAt}>{item.generatedAt}</time>
+          <time dateTime={item.generatedAt}>
+            {formatTimestamp(item.generatedAt, locale)}
+          </time>
           <Button
             wrap
             variant="outline"

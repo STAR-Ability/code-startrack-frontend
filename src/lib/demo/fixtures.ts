@@ -87,8 +87,8 @@ export function demoAnalysis(
       (second ? 20 : accountId === demoUnbound.accountId ? 30 : 10) +
         ["7D", "30D", "365D", "ALL"].indexOf(window),
     ),
-    algorithmVersion: "demo-1",
-    mappingVersion: "demo-1",
+    algorithmVersion: "profile-v0.13.1",
+    mappingVersion: "mapping-v0.11.1",
     timezone: "Asia/Shanghai",
     dataCutoffAt: "2026-10-02T02:30:00Z",
     sourceDataVersion: "1",
@@ -213,8 +213,8 @@ export function demoBatch(
     mode,
     targetRating: 1200,
     targetDimension: mode === "WEAKNESS" ? "IMPLEMENTATION" : null,
-    algorithmVersion: "demo-1",
-    mappingVersion: "demo-1",
+    algorithmVersion: "recommend-v0.11.1",
+    mappingVersion: "mapping-v0.11.1",
     candidateCount: 2,
     resultCount: 2,
     recommendations: [

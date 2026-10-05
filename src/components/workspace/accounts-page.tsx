@@ -3,7 +3,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ArrowRightIcon, CodeXmlIcon } from "lucide-react";
 import { useJobLock } from "./use-job-lock";
 import { AccountDetails } from "./account-details";
 import { api } from "@/lib/api/endpoints";
@@ -21,8 +22,8 @@ import {
   CardContent,
   CardFooter,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { accountTone } from "@/lib/ui/status";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { accountTone, jobTone } from "@/lib/ui/status";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -31,7 +32,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { FieldGroup } from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { FormInput } from "@/components/ui/form-input";
 import {
   EmptyState,
@@ -41,7 +42,7 @@ import {
 } from "./feedback";
 
 export function AccountsPage() {
-  const { user, accounts, selectAccount } = useAccounts();
+  const { user, accounts, query, selectAccount } = useAccounts();
   const { t } = useLocale();
   const client = useQueryClient();
   const [history, setHistory] = useState(false);
@@ -87,9 +88,10 @@ export function AccountsPage() {
     bind.error instanceof ApiError ? bind.error.retryAt : 0,
   );
   const list = history ? (historyQuery.data ?? []) : accounts;
+  const listQuery = history ? historyQuery : query;
   return (
     <>
-      <Card size="sm" interaction="none">
+      <Card size="sm" interaction="none" variant="supporting" tone="info">
         <CardHeader>
           <CardTitle>
             <h2>{t("v.bind")}</h2>
@@ -122,17 +124,23 @@ export function AccountsPage() {
           </form>
         </CardContent>
       </Card>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={history}
-          onChange={(event) => setHistory(event.target.checked)}
-        />
-        {t("v.historyAccounts")}
-      </label>
+      <Field orientation="horizontal">
+        <FieldLabel className="min-h-11 cursor-pointer gap-3 py-2">
+          <input
+            type="checkbox"
+            className="size-4 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4"
+            checked={history}
+            onChange={(event) => setHistory(event.target.checked)}
+          />
+          {t("v.historyAccounts")}
+        </FieldLabel>
+      </Field>
       {history && <QueryFeedback query={historyQuery} />}
-      {!list.length && <EmptyState title={t("v.noAccount")} />}
-      <div className="grid gap-4 lg:grid-cols-2">
+      {!list.length &&
+        listQuery.data !== undefined &&
+        !listQuery.isFetching &&
+        !listQuery.error && <EmptyState title={t("v.noAccount")} />}
+      <div className="grid min-w-0 items-start gap-5 lg:grid-cols-2">
         {list.map((account) => (
           <AccountCard key={account.accountId} account={account} />
         ))}
@@ -144,7 +152,6 @@ function AccountCard({ account }: { account: OjAccountDto }) {
   const { user, selectAccount, selectedAccountId } = useAccounts();
   const { t, locale } = useLocale();
   const client = useQueryClient();
-  const router = useRouter();
   const [confirm, setConfirm] = useState(false);
   const locked = useJobLock(user.publicId, account.accountId);
   const sync = useMutation({
@@ -190,50 +197,73 @@ function AccountCard({ account }: { account: OjAccountDto }) {
     sync.error instanceof ApiError ? sync.error.retryAt : 0,
   );
   return (
-    <Card>
+    <Card
+      className="workspace-account-card"
+      tone={selectedAccountId === account.accountId ? "info" : undefined}
+      interaction="none"
+      data-selected={selectedAccountId === account.accountId}
+    >
       <CardHeader>
+        <div className="mb-2 flex min-w-0 flex-wrap items-center gap-2">
+          <Badge variant={accountTone[account.bindStatus]} wrap>
+            {account.bindStatus}
+          </Badge>
+          {selectedAccountId === account.accountId && (
+            <Badge variant="info" wrap>
+              {t("accounts.currentSelection")}
+            </Badge>
+          )}
+        </div>
         <CardTitle>
-          <h2 className="break-all">{account.username}</h2>
+          <h2 className="wrap-anywhere">{account.username}</h2>
         </CardTitle>
         <CardDescription>
-          {t("v.accountId")}: {account.accountId}
+          <span className="flex min-w-0 flex-wrap items-center gap-2">
+            <CodeXmlIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            Codeforces · {t("v.accountId")}: {account.accountId}
+          </span>
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <Badge variant={accountTone[account.bindStatus]}>
-          {account.bindStatus}
-        </Badge>
-        <p>
-          {t("v.rating")}: {account.rating ?? t("v.unrated")}
-        </p>
-        <p>
-          {t("v.lastSync")}:{" "}
-          {account.lastSyncedAt
-            ? new Intl.DateTimeFormat(locale, {
-                dateStyle: "medium",
-                timeStyle: "short",
-              }).format(new Date(account.lastSyncedAt))
-            : t("v.never")}
-        </p>
+        <dl className="account-summary">
+          <div>
+            <dt>{t("v.rating")}</dt>
+            <dd>{account.rating ?? t("v.unrated")}</dd>
+          </div>
+          <div>
+            <dt>{t("v.lastSync")}</dt>
+            <dd>
+              {account.lastSyncedAt
+                ? new Intl.DateTimeFormat(locale, {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                    timeZone: user.timezone,
+                  }).format(new Date(account.lastSyncedAt))
+                : t("v.never")}
+            </dd>
+          </div>
+        </dl>
         {account.lastSyncStatus && (
-          <p>{t(`v.job.${account.lastSyncStatus}`)}</p>
+          <Badge variant={jobTone[account.lastSyncStatus]} wrap>
+            {t(`v.job.${account.lastSyncStatus}`)}
+          </Badge>
         )}
         <ErrorNotice error={sync.error ?? unbind.error} />
         <AccountDetails accountId={account.accountId} />
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          onClick={() => {
-            selectAccount(account.accountId);
-            router.push("/data");
-          }}
+        <Link
+          href="/data"
+          className={buttonVariants({ variant: "outline", wrap: true })}
+          onClick={() => selectAccount(account.accountId)}
         >
           {t("v.viewAccount")}
-        </Button>
+          <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+        </Link>
         {account.bindStatus !== "UNBOUND" && (
           <>
             <Button
+              wrap
               disabled={
                 locked ||
                 sync.isPending ||
@@ -253,6 +283,7 @@ function AccountCard({ account }: { account: OjAccountDto }) {
               {t("v.sync")}
             </Button>
             <Button
+              wrap
               variant="ghost"
               disabled={unbind.isPending}
               onClick={() => setConfirm(true)}
@@ -275,8 +306,9 @@ function AccountCard({ account }: { account: OjAccountDto }) {
               {account.username} · {t("v.unbindNote")}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
+              wrap
               variant="outline"
               disabled={unbind.isPending}
               onClick={() => setConfirm(false)}
@@ -284,6 +316,7 @@ function AccountCard({ account }: { account: OjAccountDto }) {
               {t("v.cancel")}
             </Button>
             <Button
+              wrap
               variant="destructive"
               disabled={unbind.isPending}
               onClick={() => unbind.mutate()}

@@ -35,8 +35,20 @@ for (const [route, resource, headings] of [
       }),
     });
     await expect(overview.locator("dd").filter({ hasText: /^0$/ })).toHaveCount(
-      route === "/data" ? 10 : 4,
+      0,
     );
+    const snapshotCharts =
+      route === "/data"
+        ? ["每日训练", "知识标签", "难度分布"]
+        : ["六维能力 · 0–100"];
+    for (const name of snapshotCharts)
+      await expect(
+        page.getByRole("main").getByRole("img", { name, exact: true }),
+      ).toHaveCount(0);
+    if (route === "/accounts/analysis")
+      await expect(
+        page.getByRole("img", { name: "分数趋势（当前页）", exact: true }),
+      ).toBeVisible();
     await expect(overview).toContainText("暂无");
     await configureUpstream({ errorResource: null }, true);
     await page
@@ -55,7 +67,7 @@ for (const [route, resource, headings] of [
   });
 }
 
-test("failed lists preserve filters, empty placeholders, pagination and unrelated statistics", async ({
+test("failed lists preserve filters, error recovery, pagination and unrelated statistics", async ({
   page,
 }) => {
   await configureUpstream({ errorResource: "/problems" });
@@ -66,7 +78,8 @@ test("failed lists preserve filters, empty placeholders, pagination and unrelate
   const records = page.locator('[data-slot="card"]').filter({
     has: page.getByRole("heading", { name: "做题记录", exact: true }),
   });
-  await expect(records.getByText("暂无记录", { exact: true })).toBeVisible();
+  await expect(records.locator('[data-state="error"]')).toBeVisible();
+  await expect(records.getByText("暂无记录", { exact: true })).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "应用筛选", exact: true }),
   ).toBeVisible();
@@ -91,7 +104,7 @@ test("failed lists preserve filters, empty placeholders, pagination and unrelate
         .getByText("当前无法加载数据，请检查网络或稍后重试", { exact: true })
         .first(),
     ).toBeVisible();
-    await expect(panel.getByText("暂无记录", { exact: true })).toBeVisible();
+    await expect(panel.getByText("暂无记录", { exact: true })).toHaveCount(0);
     await expect(page.getByRole("navigation", { name: "分页" })).toBeVisible();
   }
 });

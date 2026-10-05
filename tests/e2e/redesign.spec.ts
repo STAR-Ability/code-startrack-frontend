@@ -69,7 +69,7 @@ test("unbinding selects another account while history stays separate and read-on
   const historical = page
     .locator('[data-slot="card"]')
     .filter({ hasText: "9007199254740991" });
-  await historical.getByRole("button", { name: "查看此账号" }).click();
+  await historical.getByRole("link", { name: "查看此账号" }).click();
   await expect(page.getByRole("main")).toContainText("已解绑 · 只读历史");
   await expect(
     page.getByRole("button", { name: "同步数据", exact: true }),

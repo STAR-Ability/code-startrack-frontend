@@ -1,4 +1,14 @@
 export const v012Zh = {
+  "dashboard.workspace": "学习工作区",
+  "dashboard.nextStep": "下一步练习",
+  "dashboard.readyTitle": "把画像，转化为下一次练习。",
+  "dashboard.readyNote":
+    "参考全部历史的能力方向，在训练页选择适合当前阶段的下一道题。",
+  "dashboard.startTitle": "让练习，从清晰的起点开始。",
+  "dashboard.startNote":
+    "查看来源账号与同步状态，积累训练记录后再选择适合自己的练习。",
+  "dashboard.openPractice": "选择下一道题",
+
   "v12.coachStats": "工作区概况",
   "v12.expires": "邀请到期",
   "v12.overview": "概览",
@@ -45,6 +55,16 @@ export const v012Zh = {
   "v12.jobFailed": "任务失败，已有历史结果仍可查看。",
   "v12.jobSuccess": "处理完成",
   "v12.reports": "个人分析报告",
+  "v12.reportPreviewNote": "回顾最近一次分析，找到接下来的训练方向。",
+  "v12.reportGeneratedAt": "报告生成时间",
+  "v12.openReport": "查看分析报告",
+  "v12.collaborationUpdates": "团队与通知",
+  "v12.openTeams": "查看我的团队",
+  "v12.openInvitations": "查看团队邀请",
+  "v12.openNotifications": "查看通知",
+  "v12.invitedBy": "邀请人",
+  "v12.problemDifficulty": "题目难度",
+  "v12.recommendationScore": "推荐分数",
   "v12.noReport": "尚无分析报告",
   "v12.generateReport": "重新生成报告",
   "v12.frozen": "以下数据为报告生成时的冻结快照。",
@@ -196,6 +216,16 @@ export const v012Zh = {
   "v12.status.SENT": "已发送",
 } as const;
 export const v012En = {
+  "dashboard.workspace": "Learning workspace",
+  "dashboard.nextStep": "Your next practice",
+  "dashboard.readyTitle": "Turn your profile into your next practice.",
+  "dashboard.readyNote":
+    "Use your all-history ability direction to choose the next problem for your current stage in Practice.",
+  "dashboard.startTitle": "Give your practice a clear starting point.",
+  "dashboard.startNote":
+    "Review source accounts and sync status, then use your training evidence to choose your next practice.",
+  "dashboard.openPractice": "Choose your next problem",
+
   "v12.coachStats": "Workspace overview",
   "v12.expires": "Expires",
   "v12.overview": "Overview",
@@ -248,6 +278,17 @@ export const v012En = {
   "v12.jobFailed": "Job failed. Existing historical results remain available.",
   "v12.jobSuccess": "Completed",
   "v12.reports": "Personal analysis reports",
+  "v12.reportPreviewNote":
+    "Review your latest analysis and find your next practice direction.",
+  "v12.reportGeneratedAt": "Report generated",
+  "v12.openReport": "View analysis report",
+  "v12.collaborationUpdates": "Teams & notifications",
+  "v12.openTeams": "View my teams",
+  "v12.openInvitations": "View team invitations",
+  "v12.openNotifications": "View notifications",
+  "v12.invitedBy": "Invited by",
+  "v12.problemDifficulty": "Problem difficulty",
+  "v12.recommendationScore": "Recommendation score",
   "v12.noReport": "No analysis report yet",
   "v12.generateReport": "Generate report",
   "v12.frozen":

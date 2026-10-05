@@ -54,8 +54,50 @@ export const Empty: Story = {
 export const Unavailable: Story = {
   args: {
     metrics: [
+      ["v.overallScore", null],
       ["v.rating", null],
       ["v.maxRating", null],
+      ["v.solved", null],
+    ],
+    secondary: [["v.submissions", null]],
+  },
+};
+export const UnavailableMobile: Story = {
+  ...Unavailable,
+  globals: { ...mobile, locale: "en" },
+};
+export const MixedEvidence: Story = {
+  args: {
+    metrics: [
+      ["v.solved", 0],
+      ["v.submissions", 125_432],
+      ["v.rating", null],
+      ["v.activeDays", 218],
+    ],
+    secondary: [["v.pendingCount", 0]],
+  },
+};
+export const Ability: Story = {
+  args: {
+    title: "v12.abilitySummary",
+    description: "All history · synthetic aggregate evidence",
+    metrics: [
+      ["v.overallScore", 64.2],
+      ["v12.highestRating", 1520],
+      ["v12.highestMaxRating", 1680],
+      ["v.solved", 128],
+    ],
+    secondary: [["v.submissions", 246]],
+  },
+};
+export const Coach: Story = {
+  args: {
+    title: "v12.coachStats",
+    description: "Synthetic collaboration state",
+    metrics: [
+      ["v12.managedTeams", 3],
+      ["v12.activeMembers", 24],
+      ["v12.pendingApplications", 5],
     ],
     secondary: [],
   },

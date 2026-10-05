@@ -11,6 +11,7 @@ import { AnalysisView } from "./analysis-view";
 import { EmptyState, QueryFeedback, DataRegion, Pagination } from "./feedback";
 import { Chart } from "./chart";
 import { trendOption } from "@/lib/charts/options";
+import { formatTimestamp } from "@/lib/i18n/locale";
 
 export function WindowSelector({
   value,
@@ -43,7 +44,12 @@ export function AnalysisPage({
 }: {
   profileOnly?: boolean;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const date = (value: string) =>
+    new Intl.DateTimeFormat(locale, {
+      dateStyle: "medium",
+      timeZone: "UTC",
+    }).format(new Date(value));
   const [window, setWindow] = useState<AnalysisWindow>("ALL");
   const [page, setPage] = useState(1);
   const [snapshotId, setSnapshotId] = useState<string | null>(null);
@@ -120,7 +126,7 @@ export function AnalysisPage({
                     <Chart
                       label={t("v.trend")}
                       option={trendOption(
-                        trend.map((item) => item.dataCutoffAt),
+                        trend.map((item) => date(item.dataCutoffAt)),
                         [
                           {
                             name: t("v.overallScore"),
@@ -131,7 +137,11 @@ export function AnalysisPage({
                       )}
                     />
                   ) : (
-                    <EmptyState title={t("v.noRecords")} />
+                    !history.isFetching &&
+                    !history.error &&
+                    history.data && (
+                      <EmptyState embedded title={t("v.noRecords")} />
+                    )
                   )}
                 </CardContent>
               </Card>
@@ -147,16 +157,21 @@ export function AnalysisPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            {!history.isFetching && !history.data?.data.length && (
-              <EmptyState title={t("v.noRecords")} />
-            )}
+            {!history.isFetching &&
+              !history.error &&
+              history.data?.data.length === 0 && (
+                <EmptyState embedded title={t("v.noRecords")} />
+              )}
             {history.data?.data.map((item) => (
               <div
                 key={item.snapshotId}
                 className="flex flex-wrap items-center justify-between gap-3"
               >
                 <span className="text-sm">
-                  {item.dataCutoffAt} · {item.overallScore} / 100
+                  <time dateTime={item.dataCutoffAt}>
+                    {formatTimestamp(item.dataCutoffAt, locale)}
+                  </time>{" "}
+                  · {item.overallScore} / 100
                   {item.stale ? ` · ${t("v.stale")}` : ""}
                 </span>
                 <Button

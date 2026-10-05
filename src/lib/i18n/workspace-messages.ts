@@ -1,4 +1,6 @@
 export const workspaceZh = {
+  "accounts.currentSelection": "当前选中",
+  "coach.focusTitle": "查看团队状态，安排下一次训练。",
   "portfolio.title": "全部 CF 账号 · 训练汇总",
   "portfolio.accounts": "已绑定账号",
   "portfolio.solved": "按账号累计通过题数",
@@ -15,6 +17,19 @@ export const workspaceZh = {
   "metrics.analysis": "画像指标",
   "metrics.snapshot": "快照指标",
   "metrics.chartValues": "查看图表数据",
+  "profile.latestSaved": "最新保存的画像",
+  "profile.historical": "历史画像快照",
+  "profile.nextFocus": "下一步，可以关注{dimension}。",
+  "profile.historicalFocus": "这份画像的薄弱维度：{dimension}。",
+  "profile.startEvidence": "从一次练习，开始积累证据。",
+  "profile.nextFocusNote":
+    "进入写题训练，选择账号与训练方向，找到适合的下一道题。",
+  "profile.historicalNote":
+    "正在回看历史结果；进入训练后可选择当前账号与训练方向。",
+  "profile.startPractice": "找到下一道练习",
+  "profile.dimensionNote": "六个维度一起看，理解已有训练证据中的能力结构。",
+  "profile.supportingEvidence": "展开训练证据 · 活动、知识标签与难度",
+  "profile.supportingEvidenceNote": "这些统计来自当前展示的同一份画像快照。",
   "sidebar.collapse": "收起侧栏",
   "sidebar.expand": "展开侧栏",
   "sidebar.language": "切换显示语言",
@@ -43,6 +58,9 @@ export const workspaceZh = {
   "data.dimension.DYNAMIC_PROGRAMMING": "动态规划",
   "data.dimension.GRAPHS": "图论",
   "data.dimension.MATH": "数学",
+  "v.chartTagLimit": "图表按提供的顺序展示前 10 个标签，完整数值见下方。",
+  "v.activityChartNote":
+    "图表将缺失的日历日期显示为 0，快照与统计总数保持不变。",
   "data.mockTitle": "Mock 模式 · 示例数据",
   "data.mockDescription": "当前使用本地合成数据，操作仅影响临时示例环境。",
   "data.accountDetails": "账号详情",
@@ -77,6 +95,14 @@ export const workspaceZh = {
   "practice.forYou": "为你推荐",
   "practice.controls": "训练方向",
   "recommendation.featured": "首选推荐",
+  "recommendation.moreOptions": "继续选择",
+  "recommendation.orderNote": "其余题目保持原有推荐顺序。",
+  "recommendation.nextActionNote":
+    "在 Codeforces 开始解题，再回到这里同步你的训练记录。",
+  "recommendation.completedNote": "这道题已完成；可以复盘，或继续选择下一道。",
+  "recommendation.unavailableActionNote":
+    "题目链接暂不可用，可继续查看其他推荐。",
+  "recommendation.historicalBatch": "历史推荐批次",
   "recommendation.matchedDimension": "覆盖能力",
   "recommendation.coverageNote": "此题覆盖推荐匹配的能力维度。",
   "practice.forYouDescription": "结合难度与训练表现，找到适合你的下一道题。",
@@ -122,6 +148,11 @@ export const workspaceZh = {
   "ui.slowDescription": "仍在等待服务响应，你可以继续浏览。返回后会自动更新。",
   "ui.errorTitle": "这次操作还没完成",
   "ui.connectionHint": "当前无法加载数据，请检查网络或稍后重试",
+  "ui.invalidResponseTitle": "暂时无法读取这份数据",
+  "ui.invalidResponseHint":
+    "服务返回的数据格式暂不兼容。请重试；若持续出现，可提供问题详情以便排查。",
+  "compatibility.notice": "当前结果来自尚未验证的分析版本，可继续查看和使用。",
+  "compatibility.details": "查看分析版本",
   "ui.unavailableTitle": "内容暂未加载",
   "ui.preparing": "正在准备你的内容",
   "ui.refreshing": "正在更新，当前内容仍可查看",
@@ -331,6 +362,8 @@ export const workspaceZh = {
   "v.invalidExpired": "验证码已过期，请重新获取。",
 } as const;
 export const workspaceEn = {
+  "accounts.currentSelection": "Selected account",
+  "coach.focusTitle": "Review your teams and plan the next practice.",
   "portfolio.title": "All CF accounts · training totals",
   "portfolio.accounts": "Linked accounts",
   "portfolio.solved": "Solved across account records",
@@ -348,6 +381,23 @@ export const workspaceEn = {
   "metrics.analysis": "Analysis metrics",
   "metrics.snapshot": "Snapshot metrics",
   "metrics.chartValues": "View chart data",
+  "profile.latestSaved": "Latest saved profile",
+  "profile.historical": "Historical profile snapshot",
+  "profile.nextFocus": "Next, consider practicing {dimension}.",
+  "profile.historicalFocus": "This snapshot’s weakest dimension: {dimension}.",
+  "profile.startEvidence":
+    "Build your evidence, one practice problem at a time.",
+  "profile.nextFocusNote":
+    "Choose an account and a training direction to find your next problem.",
+  "profile.historicalNote":
+    "You are reviewing historical results. Choose your current account and direction in practice.",
+  "profile.startPractice": "Find your next problem",
+  "profile.dimensionNote":
+    "Read the six dimensions together to understand the structure of your training evidence.",
+  "profile.supportingEvidence":
+    "Explore training evidence · activity, tags and difficulty",
+  "profile.supportingEvidenceNote":
+    "These statistics come from the same profile snapshot shown above.",
   "sidebar.collapse": "Collapse sidebar",
   "sidebar.expand": "Expand sidebar",
   "sidebar.language": "Switch display language",
@@ -415,6 +465,20 @@ export const workspaceEn = {
   "practice.forYou": "Picked for you",
   "practice.controls": "Practice direction",
   "recommendation.featured": "First recommendation",
+  "recommendation.moreOptions": "More options",
+  "recommendation.orderNote":
+    "The remaining problems keep their original recommendation order.",
+  "recommendation.nextActionNote":
+    "Solve on Codeforces, then return here to sync your training records.",
+  "recommendation.completedNote":
+    "Completed. Review this problem or continue to the next one.",
+  "recommendation.unavailableActionNote":
+    "The problem link is unavailable. You can explore the other recommendations.",
+  "recommendation.historicalBatch": "Historical recommendation batch",
+  "v.chartTagLimit":
+    "Chart shows up to 10 tags in the supplied order. Full values are below.",
+  "v.activityChartNote":
+    "Missing calendar dates are shown as zero for this chart; the snapshot and totals are unchanged.",
   "recommendation.matchedDimension": "Skill coverage",
   "recommendation.coverageNote":
     "This problem covers the matched skill dimension.",
@@ -471,6 +535,12 @@ export const workspaceEn = {
   "ui.errorTitle": "Something needs another try",
   "ui.connectionHint":
     "Data cannot be loaded right now. Check your network or try again later.",
+  "ui.invalidResponseTitle": "We couldn’t read this data",
+  "ui.invalidResponseHint":
+    "The service returned data in an unexpected format. Retry, or share the request details if this continues.",
+  "compatibility.notice":
+    "These results use an analysis version we haven’t reviewed yet. You can keep using the available data.",
+  "compatibility.details": "Analysis version",
   "ui.unavailableTitle": "Content hasn’t loaded yet",
   "ui.preparing": "Getting things ready",
   "ui.refreshing": "Updating — you can still view the current content",

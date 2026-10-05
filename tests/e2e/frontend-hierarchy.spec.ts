@@ -40,6 +40,25 @@ test("dashboard shows activity once and keeps full ability analysis reachable", 
   await page.goto("/dashboard");
   const main = page.getByRole("main");
   await expect(main.getByText("DemoAlpha", { exact: true })).toBeVisible();
+  const nextProblem = main.getByRole("link", {
+    name: "选择下一道题",
+    exact: true,
+  });
+  await expect(nextProblem).toHaveAttribute("href", "/practice");
+  await expect(nextProblem).toBeVisible();
+  const direction = main.getByRole("heading", {
+    name: "把画像，转化为下一次练习。",
+    exact: true,
+  });
+  const activityHeading = main.getByRole("heading", {
+    name: "每日训练",
+    exact: true,
+  });
+  await expect(direction).toBeVisible();
+  await expect(activityHeading).toBeVisible();
+  expect((await direction.boundingBox())!.y).toBeLessThan(
+    (await activityHeading.boundingBox())!.y,
+  );
   await expect(
     main.getByRole("img", { name: "每日训练", exact: true }),
   ).toBeVisible();
@@ -95,4 +114,37 @@ test("report conclusions precede keyboard-accessible frozen evidence and current
   expect(
     (await upstreamCalls()).filter((call) => call.method === "POST"),
   ).toHaveLength(0);
+});
+
+test("dashboard failed profile reads do not claim missing training evidence", async ({
+  page,
+}) => {
+  const endpoint = "**/api/v1/me/analysis/latest?window=ALL";
+  await page.route(endpoint, (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({
+        code: "SERVICE_UNAVAILABLE",
+        message: "Unavailable",
+        data: null,
+      }),
+    }),
+  );
+  await page.goto("/dashboard");
+  await expect(
+    page.getByRole("button", { name: "重试", exact: true }).first(),
+  ).toBeVisible();
+  await expect(page.locator("[data-dashboard-direction]")).toHaveCount(0);
+  await expect(
+    page.getByText(
+      "查看来源账号与同步状态，积累训练记录后再选择适合自己的练习。",
+      { exact: true },
+    ),
+  ).toHaveCount(0);
+  await page.unroute(endpoint);
+  await page.getByRole("button", { name: "重试", exact: true }).first().click();
+  await expect(
+    page.getByRole("link", { name: "选择下一道题", exact: true }),
+  ).toBeVisible();
 });

@@ -4,6 +4,10 @@ import { z } from "zod";
 export const idSchema = z.string().regex(/^[1-9]\d*$/);
 export const uuidSchema = z.uuid();
 export const instantSchema = z.iso.datetime();
+// Version metadata does not define the response structure or gate usable data.
+export const algorithmVersionSchema = z
+  .string()
+  .refine((value) => value.trim().length > 0, "Missing algorithm version");
 const count = z.number().int().nonnegative().safe();
 const numeric = z.number().finite();
 const nullableNumber = numeric.nullable();
@@ -18,6 +22,18 @@ export const dimensionCodes = [
   "GRAPHS",
   "MATH",
 ] as const;
+export function hasValidDimensionRanking(value: {
+  dimensions: readonly { code: string; rankOrder: number }[];
+  weakestDimension: string;
+}): boolean {
+  return (
+    new Set(value.dimensions.map((dimension) => dimension.code)).size === 6 &&
+    new Set(value.dimensions.map((dimension) => dimension.rankOrder)).size ===
+      6 &&
+    value.dimensions.find((dimension) => dimension.rankOrder === 1)?.code ===
+      value.weakestDimension
+  );
+}
 export const verdicts = [
   "ACCEPTED",
   "PARTIAL",
@@ -200,7 +216,7 @@ export const analysisSchema = z
   .object({
     accountId: idSchema,
     snapshotId: uuidSchema,
-    algorithmVersion: z.string(),
+    algorithmVersion: algorithmVersionSchema,
     mappingVersion: z.string(),
     timezone: z.string(),
     dataCutoffAt: instantSchema,
@@ -255,14 +271,7 @@ export const analysisSchema = z
       }),
     ),
   })
-  .refine(
-    (value) =>
-      new Set(value.dimensions.map((d) => d.code)).size === 6 &&
-      new Set(value.dimensions.map((d) => d.rankOrder)).size === 6 &&
-      value.dimensions.find((d) => d.rankOrder === 1)?.code ===
-        value.weakestDimension,
-    "Invalid dimension identities or ranking",
-  );
+  .refine(hasValidDimensionRanking, "Invalid dimension identities or ranking");
 export const batchSchema = z.object({
   accountId: idSchema,
   batchId: uuidSchema,
@@ -270,7 +279,7 @@ export const batchSchema = z.object({
   mode: z.enum(modes),
   targetRating: numeric,
   targetDimension: z.enum(dimensionCodes).nullable(),
-  algorithmVersion: z.string(),
+  algorithmVersion: algorithmVersionSchema,
   mappingVersion: z.string(),
   candidateCount: count,
   resultCount: count,

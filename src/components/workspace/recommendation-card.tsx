@@ -1,9 +1,11 @@
 "use client";
+import { Fragment } from "react";
 import { ExternalLinkIcon, OrbitIcon, RouteIcon } from "lucide-react";
 import { cn } from "cn";
 import type { RecommendationBatchDto, ProblemDto } from "@/lib/api/schemas";
 import { safeProblemUrl } from "@/lib/charts/data";
 import { useLocale } from "@/components/layout/locale-provider";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import {
   Card,
   CardHeader,
@@ -16,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EmptyState } from "./feedback";
+import { CompatibilityNotice } from "./compatibility-notice";
 
 export function ProblemLink({
   problem,
@@ -30,18 +33,23 @@ export function ProblemLink({
   return url ? (
     <a
       href={url}
+      data-slot="button"
       target="_blank"
       rel="noopener noreferrer"
-      className={buttonVariants({ variant, wrap: true })}
+      className={buttonVariants({
+        variant,
+        size: primary ? "lg" : "sm",
+        wrap: true,
+      })}
     >
       <span>
         {t("recommendation.openExternal", { platform: "Codeforces" })}
       </span>
-      <ExternalLinkIcon data-icon="inline-end" />
+      <ExternalLinkIcon data-icon="inline-end" aria-hidden="true" />
       <span className="sr-only">{t("recommendation.newTab")}</span>
     </a>
   ) : (
-    <Button disabled variant={variant} wrap>
+    <Button disabled variant={variant} size={primary ? "lg" : "sm"} wrap>
       {t("recommendation.linkUnavailable")}
     </Button>
   );
@@ -53,7 +61,7 @@ export function BatchView({
   batch: RecommendationBatchDto | null;
   firstOnly?: boolean;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   if (!batch)
     return (
       <Card interaction="none">
@@ -72,6 +80,10 @@ export function BatchView({
     );
   return (
     <>
+      <CompatibilityNotice
+        version={batch.algorithmVersion}
+        family="account-recommendation"
+      />
       {batch.stale && (
         <Alert>
           <AlertDescription>
@@ -86,7 +98,9 @@ export function BatchView({
         </Badge>
         <p>
           {t("recommendation.generatedAt")}:{" "}
-          <time dateTime={batch.generatedAt}>{batch.generatedAt}</time>
+          <time dateTime={batch.generatedAt}>
+            {formatTimestamp(batch.generatedAt, locale)}
+          </time>
         </p>
         <p>
           {t("v.candidateCount")}: {batch.candidateCount} · {t("v.resultCount")}
@@ -107,12 +121,16 @@ export function BatchView({
       {(firstOnly
         ? batch.recommendations.slice(0, 1)
         : batch.recommendations
-      ).map((item) => (
-        <RecommendationCard
-          key={item.rank}
-          item={item}
-          targetRating={batch.targetRating}
-        />
+      ).map((item, index) => (
+        <Fragment key={item.rank}>
+          {index === 1 && batch.recommendations[0]?.rank === 1 && (
+            <div className="recommendation-queue-heading">
+              <h2>{t("recommendation.moreOptions")}</h2>
+              <p>{t("recommendation.orderNote")}</p>
+            </div>
+          )}
+          <RecommendationCard item={item} targetRating={batch.targetRating} />
+        </Fragment>
       ))}
     </>
   );
@@ -127,37 +145,43 @@ export function RecommendationCard({
 }) {
   const { t } = useLocale();
   const featured = item.rank === 1;
+  const linked = !!safeProblemUrl(item.problem.url);
   return (
     <Card
-      variant={featured ? "recommendation" : "default"}
+      variant={featured ? "recommendation" : "supporting"}
       size={featured ? "lg" : "sm"}
-      interaction="lift"
-      className="feedback-enter @container/recommendation"
+      interaction="none"
+      className="recommendation-card feedback-enter @container/recommendation"
       data-recommendation-rank={item.rank}
     >
       <CardHeader>
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          {featured && (
-            <Badge variant="info" wrap>
-              <OrbitIcon aria-hidden="true" />
-              {t("recommendation.featured")}
-            </Badge>
-          )}
-          <Badge variant="outline">Codeforces</Badge>
-          {item.solvedSinceGeneration && (
-            <Badge variant="success" wrap>
-              {t("v.solvedSince")}
-            </Badge>
-          )}
-        </div>
+        {(featured || item.solvedSinceGeneration) && (
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            {featured && (
+              <Badge variant="info" wrap>
+                <OrbitIcon aria-hidden="true" />
+                {t("recommendation.featured")}
+              </Badge>
+            )}
+            {featured && <Badge variant="outline">Codeforces</Badge>}
+            {item.solvedSinceGeneration && (
+              <Badge variant="success" wrap>
+                {t("v.solvedSince")}
+              </Badge>
+            )}
+          </div>
+        )}
         <CardTitle>
           <h2
-            className={cn("wrap-anywhere", featured && "recommendation-title")}
+            className={cn(
+              "recommendation-heading",
+              featured && "recommendation-title",
+            )}
           >
-            <span className="mr-3 font-mono text-muted-foreground">
-              #{item.rank}
-            </span>{" "}
-            {item.problem.title ?? item.problem.externalProblemKey}
+            <span className="recommendation-rank">#{item.rank}</span>{" "}
+            <span className="min-w-0 wrap-anywhere">
+              {item.problem.title ?? item.problem.externalProblemKey}
+            </span>
           </h2>
         </CardTitle>
         <CardDescription>
@@ -165,76 +189,94 @@ export function RecommendationCard({
           {!featured && (
             <>
               {" "}
-              · {t("recommendation.difficulty")}:{" "}
+              · Codeforces · {t("recommendation.difficulty")}:{" "}
               {item.problem.difficulty ?? t("v.unrated")}
             </>
           )}
         </CardDescription>
       </CardHeader>
-      <CardContent className={cn("flex flex-col gap-4", featured && "gap-5")}>
+      <CardContent>
         <div
           className={cn(
-            "grid min-w-0 gap-4",
-            featured &&
-              "@xl/recommendation:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]",
+            "recommendation-content",
+            featured && "recommendation-content-featured",
           )}
         >
-          <div className="recommendation-reason">
-            {featured && (
-              <h3>
-                <RouteIcon className="size-4" aria-hidden="true" />
-                {t("recommendation.reason")}
-              </h3>
-            )}
-            <p>{t(`v.reason.${item.reasonCode}`)}</p>
-            {item.matchedDimension !== null && (
-              <div className="flex flex-col gap-2">
-                <div className="recommendation-coverage">
-                  <span>{t("recommendation.matchedDimension")}</span>
-                  <Badge variant="insight" wrap>
-                    {t(`data.dimension.${item.matchedDimension}`)}
-                  </Badge>
-                </div>
-                {featured && (
-                  <p className="text-xs text-muted-foreground">
-                    {t("recommendation.coverageNote")}
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-          {featured && (
-            <dl className="recommendation-facts">
-              <div>
-                <dt>{t("recommendation.difficulty")}</dt>
-                <dd>{item.problem.difficulty ?? t("v.unrated")}</dd>
-              </div>
-              {targetRating !== undefined && (
-                <div>
-                  <dt>{t("v.targetRating")}</dt>
-                  <dd>{targetRating}</dd>
+          <div className="flex min-w-0 flex-col gap-4">
+            <div className="recommendation-reason">
+              {featured && (
+                <h3>
+                  <RouteIcon className="size-4" aria-hidden="true" />
+                  {t("recommendation.reason")}
+                </h3>
+              )}
+              <p>{t(`v.reason.${item.reasonCode}`)}</p>
+              {item.matchedDimension !== null && (
+                <div className="flex flex-col gap-2">
+                  <div className="recommendation-coverage">
+                    <span>{t("recommendation.matchedDimension")}</span>
+                    <Badge variant="insight" wrap>
+                      {t(`data.dimension.${item.matchedDimension}`)}
+                    </Badge>
+                  </div>
+                  {featured && (
+                    <p className="text-xs text-muted-foreground">
+                      {t("recommendation.coverageNote")}
+                    </p>
+                  )}
                 </div>
               )}
-            </dl>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {item.problem.tags.map((tag) => (
+                <Badge variant="outline" key={tag} wrap>
+                  {tag}
+                </Badge>
+              ))}
+              {item.problem.isGym && <Badge variant="outline">Gym</Badge>}
+              {item.problem.catalogSource === "INFERRED" && (
+                <Badge variant="outline">INFERRED</Badge>
+              )}
+            </div>
+          </div>
+          {featured && (
+            <div className="recommendation-action-panel">
+              <dl className="recommendation-facts">
+                <div>
+                  <dt>{t("recommendation.difficulty")}</dt>
+                  <dd>{item.problem.difficulty ?? t("v.unrated")}</dd>
+                </div>
+                {targetRating !== undefined && (
+                  <div>
+                    <dt>{t("v.targetRating")}</dt>
+                    <dd>{targetRating}</dd>
+                  </div>
+                )}
+              </dl>
+              <ProblemLink problem={item.problem} primary />
+              <p className="recommendation-action-note">
+                {t(
+                  item.solvedSinceGeneration
+                    ? "recommendation.completedNote"
+                    : linked
+                      ? "recommendation.nextActionNote"
+                      : "recommendation.unavailableActionNote",
+                )}
+              </p>
+            </div>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          {item.problem.tags.map((tag) => (
-            <Badge variant="outline" key={tag} wrap>
-              {tag}
-            </Badge>
-          ))}
-          {item.problem.isGym && <Badge variant="outline">Gym</Badge>}
-          {item.problem.catalogSource === "INFERRED" && (
-            <Badge variant="outline">INFERRED</Badge>
-          )}
-        </div>
+      </CardContent>
+      <CardFooter
+        className={cn(
+          "recommendation-footer flex-wrap justify-between gap-3",
+          !featured && "border-0 bg-transparent pt-0",
+        )}
+      >
         <p className="text-xs text-muted-foreground">
           {t("v.cfSolved")}: {item.problem.solvedCount ?? t("v.unavailable")}
         </p>
-      </CardContent>
-      <CardFooter className="flex-wrap gap-3">
-        <ProblemLink problem={item.problem} primary={featured} />
+        {!featured && <ProblemLink problem={item.problem} />}
       </CardFooter>
     </Card>
   );

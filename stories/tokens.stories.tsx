@@ -1,6 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { chartPalettes } from "@/lib/charts/theme";
 import { verdictTone } from "@/lib/ui/status";
 import { StoryFrame, mobile } from "./helpers";
@@ -8,14 +14,15 @@ import { StoryFrame, mobile } from "./helpers";
 function Tokens() {
   return (
     <StoryFrame>
-      <header className="space-y-2">
+      <header className="flex flex-col gap-2">
         <p className="section-kicker">codeStartrack · UI foundations</p>
         <h1 className="text-3xl font-semibold tracking-tight">
           Quiet surfaces. Meaningful color.
         </h1>
         <p className="text-muted-foreground">
-          Neutral structure, white cards and a small set of semantic accents.
-          Change the toolbar theme to inspect the same tokens in dark mode.
+          Near-white reading surfaces, translucent supporting layers and a small
+          set of semantic accents. Change the toolbar theme to inspect the same
+          tokens in dark mode.
         </p>
       </header>
       <section
@@ -23,35 +30,55 @@ function Tokens() {
         aria-label="Semantic color tokens"
       >
         {[
-          ["info", "Core data"],
+          ["info", "Guidance / account data"],
           ["success", "Accepted / growth"],
           ["warning", "Pending / stale"],
           ["insight", "Ability dimensions"],
-          ["support", "Supporting data"],
+          ["support", "Teams / training participation"],
           ["danger", "Failure / decline"],
         ].map(([tone, label]) => (
           <Card key={tone} interaction="none">
-            <CardContent className="space-y-3">
+            <CardHeader>
+              <CardTitle>
+                <h2
+                  style={{
+                    color: `var(--${tone === "danger" ? "destructive" : tone})`,
+                  }}
+                >
+                  {label}
+                </h2>
+              </CardTitle>
+              <CardDescription>--{tone}-soft</CardDescription>
+            </CardHeader>
+            <CardContent>
               <div
                 className="h-20 rounded-lg border"
                 style={{ background: `var(--${tone}-soft)` }}
               />
-              <h2
-                className="font-medium"
-                style={{
-                  color: `var(--${tone === "danger" ? "destructive" : tone})`,
-                }}
-              >
-                {label}
-              </h2>
-              <code className="text-xs text-muted-foreground">
-                --{tone}-soft
-              </code>
             </CardContent>
           </Card>
         ))}
       </section>
-      <section className="space-y-3">
+      <section className="workspace-surface flex flex-col gap-3 rounded-xl p-5">
+        <h2 className="text-xl font-medium">Surface hierarchy</h2>
+        <div className="grid min-w-0 gap-3 sm:grid-cols-3">
+          {(
+            [
+              ["default", "Reading", "--surface-reading · 96%"],
+              ["metric", "Metrics", "--surface-panel · 86%"],
+              ["supporting", "Context", "--surface-supporting · 76%"],
+            ] as const
+          ).map(([variant, title, description]) => (
+            <Card key={variant} variant={variant} interaction="none">
+              <CardHeader>
+                <CardTitle>{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+      </section>
+      <section className="flex flex-col gap-3">
         <h2 className="text-xl font-medium">Status semantics</h2>
         <div className="flex flex-wrap gap-2">
           {Object.entries(verdictTone).map(([label, variant]) => (
@@ -61,7 +88,7 @@ function Tokens() {
           ))}
         </div>
       </section>
-      <section className="space-y-3">
+      <section className="flex flex-col gap-3">
         <h2 className="text-xl font-medium">Chart palettes</h2>
         {Object.entries(chartPalettes).map(([name, palette]) => (
           <div className="flex flex-wrap items-center gap-3" key={name}>

@@ -1,10 +1,10 @@
 # codeStartrack frontend production deployment
 
-This guide records the existing `startrack-prod` architecture and historical
-V0.12.0 publication. V0.12.1 subsequently replaced the frontend using this process;
-see the [V0.12.1 production receipt](v0.12.1-production-release.md) for the current
-image, deployment evidence, retained rollback and pending public acceptance.
-The V0.12.0 evidence below remains a historical publication record.
+This guide records the inspected `startrack-prod` architecture and established
+publication/rollback method. The [V0.13.1 release acceptance Issue](https://github.com/STAR-Ability/code-startrack-frontend/issues/23)
+records current verification, merged revision, immutable image and deployment
+results as those gates complete. The [V0.12.1 production receipt](v0.12.1-production-release.md)
+records the retained rollback baseline. The V0.12.0 evidence below is historical.
 
 ## Architecture and host inspected before V0.12.1
 

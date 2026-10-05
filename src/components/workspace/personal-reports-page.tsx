@@ -7,6 +7,7 @@ import { keys } from "@/lib/query/keys";
 import { isCurrentUser } from "@/lib/query/session";
 import type { PersonalReportDto } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import { Button } from "@/components/ui/button";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -23,6 +24,7 @@ import {
 } from "./feedback";
 import { UserRebuild } from "./user-analysis-page";
 import { isAiJobPending } from "./use-ai-job";
+import { CompatibilityNotice } from "./compatibility-notice";
 export function PersonalReportView({
   report,
   evidenceOpen = false,
@@ -30,12 +32,16 @@ export function PersonalReportView({
   report: PersonalReportDto;
   evidenceOpen?: boolean;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   return (
     <div className="flex flex-col gap-4" data-report-id={report.reportId}>
+      <CompatibilityNotice
+        version={report.reportVersion}
+        family="personal-report"
+      />
       <Panel
         title="v12.reportOverview"
-        description={report.generatedAt}
+        description={formatTimestamp(report.generatedAt, locale)}
         variant="analysis"
         size="lg"
       >
@@ -137,7 +143,7 @@ export function PersonalReportView({
   );
 }
 export function PersonalReportsPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { user } = useAccounts();
   const client = useQueryClient();
   const [page, setPage] = useState(1);
@@ -214,7 +220,9 @@ export function PersonalReportsPage() {
       {displayed.data ? (
         <PersonalReportView report={displayed.data} />
       ) : (
-        !displayed.isFetching && <EmptyState title={t("v12.noReport")} />
+        !displayed.isFetching &&
+        !displayed.error &&
+        displayed.data === null && <EmptyState title={t("v12.noReport")} />
       )}
       <Panel title="v12.reportHistory" variant="supporting">
         <QueryFeedback query={history} />
@@ -223,7 +231,9 @@ export function PersonalReportsPage() {
             key={report.reportId}
             className="flex flex-wrap justify-between gap-3"
           >
-            <time dateTime={report.generatedAt}>{report.generatedAt}</time>
+            <time dateTime={report.generatedAt}>
+              {formatTimestamp(report.generatedAt, locale)}
+            </time>
             <Button
               wrap
               variant="outline"

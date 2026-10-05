@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AnalysisView } from "@/components/workspace/analysis-view";
-import { ErrorNotice } from "@/components/workspace/feedback";
+import { ProfileDirection } from "@/components/workspace/user-analysis-page";
+import { EmptyState, ErrorNotice } from "@/components/workspace/feedback";
 import { demoAnalysis } from "@/lib/demo/fixtures";
 import { ApiError } from "@/lib/api/errors";
 import { fn } from "storybook/test";
@@ -31,17 +32,58 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Loading: Story = {
-  args: { analysis: null, loading: true, dimensions: false },
+  args: { analysis: null, loading: true },
 };
 export const Empty: Story = { args: { analysis: null } };
+export const ContextualEmpty: Story = {
+  args: {
+    analysis: null,
+    aggregate: true,
+    emptyState: (
+      <EmptyState
+        embedded
+        title="Your connected accounts are waiting for a profile"
+        description="Rebuild the profile or review the account connections. No score is available yet."
+        href="/accounts"
+        action="Review account connections"
+      />
+    ),
+  },
+};
+export const ContextualEmptyMobile: Story = {
+  ...ContextualEmpty,
+  globals: { ...mobile, locale: "en" },
+};
 export const ZeroEvidence: Story = {
   args: { analysis: demoAnalysis(undefined, "ALL", true) },
 };
 export const Stale: Story = {
   args: { analysis: { ...snapshot, stale: true } },
 };
+export const TrainingFocus: Story = {
+  render: (args) => (
+    <>
+      {args.analysis && <ProfileDirection analysis={args.analysis} />}
+      <AnalysisView {...args} metricTitle="metrics.ability" />
+    </>
+  ),
+};
+export const HistoricalFocus: Story = {
+  render: (args) => (
+    <>
+      {args.analysis && (
+        <ProfileDirection analysis={args.analysis} historical />
+      )}
+      <AnalysisView {...args} metricTitle="metrics.snapshot" />
+    </>
+  ),
+};
+export const TrainingFocusMobile: Story = {
+  ...TrainingFocus,
+  globals: { ...mobile, locale: "en" },
+};
 export const Error: Story = {
-  args: { analysis: null, unavailable: true, dimensions: false },
+  args: { analysis: null, unavailable: true },
   render: (args) => (
     <>
       <ErrorNotice
@@ -55,5 +97,17 @@ export const Error: Story = {
 };
 export const Statistics: Story = {
   args: { ability: false, dimensions: false, statistics: true },
+};
+export const EmptyStatistics: Story = {
+  args: { analysis: null, ability: false, dimensions: false, statistics: true },
+};
+export const LoadingStatistics: Story = {
+  args: {
+    analysis: null,
+    loading: true,
+    ability: false,
+    dimensions: false,
+    statistics: true,
+  },
 };
 export const Mobile: Story = { globals: mobile };

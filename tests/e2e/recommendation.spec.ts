@@ -43,8 +43,9 @@ test("mode and history reads do not generate; failed generation retries with one
   // History refetches independently after generation. Select the returned batch
   // only once its row appears, rather than racing the old first history row.
   await page
-    .getByText(generatedBatch.generatedAt, { exact: false })
-    .locator("..")
+    .locator(
+      `[data-recommendation-history-row]:has(time[datetime="${generatedBatch.generatedAt}"])`,
+    )
     .getByRole("button", { name: "查看批次", exact: true })
     .click();
   await expect(
@@ -73,6 +74,7 @@ test("historical completed recommendations retain their original rank and source
     .getByRole("button", { name: "查看批次", exact: true })
     .last()
     .click();
+  await expect(page.getByText("历史推荐批次", { exact: true })).toBeVisible();
   await expect(page.getByText("已完成", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "#1 One More Step" }),

@@ -152,7 +152,7 @@ function TeamDetailContent({
             {team.canManage && (
               <Link
                 href={teamSectionHref(teamId, "applications")}
-                className={buttonVariants({ variant: "outline" })}
+                className={buttonVariants({ variant: "outline", wrap: true })}
               >
                 {t("v12.pendingApplications")}
               </Link>
@@ -177,7 +177,7 @@ function TeamDetailContent({
           )}
           <nav
             aria-label={t("v12.teamNavigation")}
-            className="z-10 md:sticky md:top-0 flex flex-wrap gap-1 rounded-xl border bg-background/95 p-1 backdrop-blur-sm"
+            className="team-section-navigation z-10 md:sticky md:top-0 flex min-w-0 flex-wrap gap-1 rounded-xl border border-surface-border bg-surface-reading p-1"
           >
             {sections.filter(visible).map((section) => (
               <Link
@@ -186,9 +186,9 @@ function TeamDetailContent({
                 prefetch={false}
                 aria-current={tab === section ? "page" : undefined}
                 className={cn(
-                  "rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transition-none",
+                  "min-w-0 rounded-lg px-3 py-2 text-sm wrap-anywhere transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transition-none",
                   tab === section &&
-                    "bg-primary font-medium text-primary-foreground hover:bg-primary/90",
+                    "bg-support-soft font-medium text-support hover:bg-support-soft",
                 )}
               >
                 {t(labels[section])}
@@ -337,12 +337,19 @@ export function TeamOverview({ team }: { team: TeamDetailDto }) {
             href={teamSectionHref(team.teamId, tab)}
             className="workspace-task-tile group"
           >
-            <Icon aria-hidden="true" className="size-5 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{t(label)}</span>
-            <strong className="text-xl font-semibold">{value}</strong>
+            <Icon
+              aria-hidden="true"
+              className="row-span-2 size-5 text-muted-foreground"
+            />
+            <span className="min-w-0 text-sm wrap-anywhere text-muted-foreground">
+              {t(label)}
+            </span>
+            <strong className="col-start-2 row-start-2 min-w-0 text-xl font-semibold wrap-anywhere tabular-nums">
+              {value}
+            </strong>
             <ArrowRightIcon
               aria-hidden="true"
-              className="absolute right-4 top-4 size-4 text-muted-foreground transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
+              className="col-start-3 row-span-2 row-start-1 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 sm:absolute sm:right-4 sm:top-4 motion-reduce:transition-none"
             />
           </Link>
         ))}

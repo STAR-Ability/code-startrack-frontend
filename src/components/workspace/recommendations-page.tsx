@@ -1,6 +1,6 @@
 "use client";
 import { Spinner } from "@/components/ui/spinner";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/errors";
@@ -8,6 +8,7 @@ import { keys } from "@/lib/query/keys";
 import { isCurrentBinding } from "@/lib/query/session";
 import { type RecommendationMode } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import { useAccounts } from "./account-provider";
 import { useAccountQuery } from "./use-account-query";
 import {
@@ -18,8 +19,10 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { PracticeModePicker } from "./practice-mode-picker";
 import { FormInput } from "@/components/ui/form-input";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +46,7 @@ export function RecommendationsPage({
 }: {
   initialMode?: RecommendationMode;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { user, account } = useAccounts();
   const client = useQueryClient();
   const [mode, setMode] = useState<RecommendationMode>(initialMode);
@@ -52,6 +55,7 @@ export function RecommendationsPage({
   const [batchId, setBatchId] = useState<string | null>(null);
   const [snapshotId, setSnapshotId] = useState<string | null>(null);
   const [allModes, setAllModes] = useState(false);
+  const allModesId = useId();
   const attempt = useRef<{
     mode: RecommendationMode;
     limit: number;
@@ -128,14 +132,18 @@ export function RecommendationsPage({
   const displayed = batchId ? batch : latest;
   return (
     <>
-      <Card interaction="none" variant="supporting">
+      <Card
+        interaction="none"
+        variant="supporting"
+        className="@container/practice-controls"
+      >
         <CardHeader>
           <CardTitle>
             <h2>{t("practice.controls")}</h2>
           </CardTitle>
           <CardDescription>{t("v.recommendationNote")}</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+        <CardContent className="grid min-w-0 items-start gap-4 @3xl/practice-controls:grid-cols-[minmax(0,1fr)_22rem]">
           <PracticeModePicker
             mode={mode}
             disabled={generate.isPending}
@@ -148,21 +156,20 @@ export function RecommendationsPage({
             }}
           />
           {account?.bindStatus === "ACTIVE" && (
-            <div className="flex flex-wrap items-end gap-3">
-              <div className="w-48 max-w-full">
-                <FormInput
-                  label={t("v.limit")}
-                  type="number"
-                  min={1}
-                  max={50}
-                  step={1}
-                  disabled={generate.isPending}
-                  value={limit}
-                  onChange={(event) => setLimit(event.target.value)}
-                />
-              </div>
+            <FieldGroup className="min-w-0 flex-row flex-wrap items-end gap-3 [&>[data-slot=field]]:min-w-0 [&>[data-slot=field]]:flex-1 [&>[data-slot=field]]:basis-24">
+              <FormInput
+                label={t("v.limit")}
+                type="number"
+                min={1}
+                max={50}
+                step={1}
+                disabled={generate.isPending}
+                value={limit}
+                onChange={(event) => setLimit(event.target.value)}
+              />
               <Button
                 wrap
+                className="min-w-0 flex-1 basis-44"
                 disabled={
                   generate.isPending ||
                   (generate.error instanceof ApiError &&
@@ -179,7 +186,7 @@ export function RecommendationsPage({
                 )}
                 {t(generate.isPending ? "v.generating" : "v.generate")}
               </Button>
-            </div>
+            </FieldGroup>
           )}
         </CardContent>
       </Card>
@@ -189,21 +196,28 @@ export function RecommendationsPage({
         pending={generate.isPending || account?.bindStatus !== "ACTIVE"}
       />
       {batchId && (
-        <Button
-          wrap
-          variant="outline"
-          className="self-start"
-          onClick={() => setBatchId(null)}
-        >
-          {t("v.latest")}
-        </Button>
+        <div className="recommendation-selection">
+          <Badge variant="secondary" wrap>
+            {t("recommendation.historicalBatch")}
+          </Badge>
+          <Button
+            wrap
+            variant="outline"
+            className="self-start"
+            onClick={() => setBatchId(null)}
+          >
+            {t("v.latest")}
+          </Button>
+        </div>
       )}
       <DataRegion
         query={displayed}
         name={t("practice.forYou")}
         empty={!displayed.data?.recommendations.length}
       >
-        <BatchView batch={displayed.data ?? null} />
+        {(displayed.data || (!displayed.error && displayed.data === null)) && (
+          <BatchView batch={displayed.data ?? null} />
+        )}
       </DataRegion>
       {displayed.data && (
         <Button
@@ -220,43 +234,63 @@ export function RecommendationsPage({
           <CardTitle>
             <h2>{t("v.recommendationHistory")}</h2>
           </CardTitle>
+          <CardDescription>{t("practice.historyDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={allModes}
-              onChange={(event) => {
-                setAllModes(event.target.checked);
-                setPage(1);
-              }}
-            />
-            {t("v.allModes")}
-          </label>
-          <QueryFeedback query={history} />
-          {!history.isFetching && !history.data?.data.length && (
-            <EmptyState
-              title={t("practice.noData")}
-              description={t("v.noRecords")}
-            />
-          )}
-          {history.data?.data.map((item) => (
-            <div
-              key={item.batchId}
-              className="flex flex-wrap items-center justify-between gap-3 border-b pb-3 last:border-b-0 last:pb-0"
+          <Field orientation="horizontal">
+            <FieldLabel
+              htmlFor={allModesId}
+              className="min-h-11 cursor-pointer gap-3 py-2"
             >
-              <span className="text-sm">
-                {item.generatedAt} · {t(`v.mode.${item.mode}`)} ·{" "}
-                {item.resultCount}
-              </span>
-              <Button
-                variant="outline"
-                onClick={() => setBatchId(item.batchId)}
+              <input
+                id={allModesId}
+                name="allModes"
+                type="checkbox"
+                checked={allModes}
+                className="size-4 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4"
+                onChange={(event) => {
+                  setAllModes(event.target.checked);
+                  setPage(1);
+                }}
+              />
+              {t("v.allModes")}
+            </FieldLabel>
+          </Field>
+          <QueryFeedback query={history} />
+          {!history.isFetching &&
+            !history.error &&
+            history.data?.data.length === 0 && (
+              <EmptyState
+                title={t("practice.noData")}
+                description={t("v.noRecords")}
+              />
+            )}
+          <ul className="flex min-w-0 flex-col divide-y">
+            {history.data?.data.map((item) => (
+              <li
+                key={item.batchId}
+                data-recommendation-history-row
+                className="flex min-w-0 flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
               >
-                {t("v.batch")}
-              </Button>
-            </div>
-          ))}
+                <div className="flex min-w-0 flex-col gap-1">
+                  <time dateTime={item.generatedAt} className="text-sm">
+                    {formatTimestamp(item.generatedAt, locale)}
+                  </time>
+                  <p className="text-xs text-muted-foreground">
+                    {t(`v.mode.${item.mode}`)} · {t("v.resultCount")}:{" "}
+                    {item.resultCount}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setBatchId(item.batchId)}
+                >
+                  {t("v.batch")}
+                </Button>
+              </li>
+            ))}
+          </ul>
           <Pagination
             meta={history.data?.meta}
             page={page}

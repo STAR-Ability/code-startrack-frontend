@@ -1,6 +1,8 @@
 import { z } from "zod";
 import {
   analysisSchema,
+  algorithmVersionSchema,
+  hasValidDimensionRanking,
   dimensionCodes,
   idSchema,
   instantSchema,
@@ -121,7 +123,7 @@ export const ratingAccountSchema = z.object({
   maxRating: number.nullable(),
   lastSyncedAt: instantSchema,
 });
-export const userAnalysisSchema = z.object({
+const userAnalysisObject = z.object({
   publicId: uuidSchema,
   snapshotId: uuidSchema,
   window: z.enum(windows),
@@ -139,14 +141,18 @@ export const userAnalysisSchema = z.object({
   sourceAccountCount: count,
   sourceAccountIds: z.array(idSchema),
   sourceFingerprint: z.string(),
-  algorithmVersion: z.literal("user-profile-v0.12.1"),
+  algorithmVersion: algorithmVersionSchema,
   mappingVersion: z.string(),
   timezone: z.string(),
   dataCutoffAt: instantSchema,
   createdAt: instantSchema,
   stale: z.boolean(),
 });
-export const sharedTrainingSchema = userAnalysisSchema.pick({
+export const userAnalysisSchema = userAnalysisObject.refine(
+  hasValidDimensionRanking,
+  "Invalid dimension identities or ranking",
+);
+export const sharedTrainingSchema = userAnalysisObject.pick({
   publicId: true,
   snapshotId: true,
   window: true,
@@ -161,16 +167,18 @@ export const sharedTrainingSchema = userAnalysisSchema.pick({
   dataCutoffAt: true,
   stale: true,
 });
-export const sharedProfileSchema = userAnalysisSchema.pick({
-  publicId: true,
-  snapshotId: true,
-  window: true,
-  overallScore: true,
-  dimensions: true,
-  weakestDimension: true,
-  dataCutoffAt: true,
-  stale: true,
-});
+export const sharedProfileSchema = userAnalysisObject
+  .pick({
+    publicId: true,
+    snapshotId: true,
+    window: true,
+    overallScore: true,
+    dimensions: true,
+    weakestDimension: true,
+    dataCutoffAt: true,
+    stale: true,
+  })
+  .refine(hasValidDimensionRanking, "Invalid dimension identities or ranking");
 export const reportContentSchema = z.object({
   overview: z.string(),
   strengths: z.array(z.string()),
@@ -186,13 +194,15 @@ export const reportStatisticsSchema = z.object({
   sourceAccountCount: count,
   dataCutoffAt: instantSchema,
 });
-export const reportProfileSchema = z.object({
-  overallScore: number.min(0).max(100),
-  dimensions,
-  weakestDimension: z.enum(dimensionCodes),
-  tagStats,
-  difficultyStats,
-});
+export const reportProfileSchema = z
+  .object({
+    overallScore: number.min(0).max(100),
+    dimensions,
+    weakestDimension: z.enum(dimensionCodes),
+    tagStats,
+    difficultyStats,
+  })
+  .refine(hasValidDimensionRanking, "Invalid dimension identities or ranking");
 export const reportRecentSchema = z.object({
   period: z.object({ start: instantSchema, end: instantSchema }),
   summary: summarySchema,
@@ -209,7 +219,7 @@ export const personalReportSchema = z.object({
   profileSnapshot: reportProfileSchema,
   recentTrainingSnapshot: reportRecentSchema,
   content: reportContentSchema,
-  reportVersion: z.literal("personal-report-v0.12.1"),
+  reportVersion: algorithmVersionSchema,
   promptVersion: z.string(),
   modelName: z.string(),
   triggerType: z.enum(["SCHEDULED", "MANUAL"]),
@@ -271,27 +281,29 @@ export const teamActivitySchema = z.object({
   acceptedSubmissionCount: count,
   activeMemberCount: count,
 });
-export const teamAnalysisSchema = z.object({
-  snapshotId: uuidSchema,
-  teamId: uuidSchema,
-  audience: z.enum(audiences),
-  memberCount: count,
-  includedMemberCount: count,
-  excludedMemberCount: count,
-  trainingMemberCount: count,
-  levelMemberCount: count,
-  overallScore: number.min(0).max(100),
-  dimensions: z.array(teamDimensionSchema).length(6),
-  weakestDimension: z.enum(dimensionCodes),
-  activityStats: z.array(teamActivitySchema),
-  targetRating: number.nullable(),
-  sourceFingerprint: z.string(),
-  algorithmVersion: z.literal("team-profile-v0.12.1"),
-  mappingVersion: z.string(),
-  dataCutoffAt: instantSchema,
-  createdAt: instantSchema,
-  stale: z.boolean(),
-});
+export const teamAnalysisSchema = z
+  .object({
+    snapshotId: uuidSchema,
+    teamId: uuidSchema,
+    audience: z.enum(audiences),
+    memberCount: count,
+    includedMemberCount: count,
+    excludedMemberCount: count,
+    trainingMemberCount: count,
+    levelMemberCount: count,
+    overallScore: number.min(0).max(100),
+    dimensions: z.array(teamDimensionSchema).length(6),
+    weakestDimension: z.enum(dimensionCodes),
+    activityStats: z.array(teamActivitySchema),
+    targetRating: number.nullable(),
+    sourceFingerprint: z.string(),
+    algorithmVersion: algorithmVersionSchema,
+    mappingVersion: z.string(),
+    dataCutoffAt: instantSchema,
+    createdAt: instantSchema,
+    stale: z.boolean(),
+  })
+  .refine(hasValidDimensionRanking, "Invalid dimension identities or ranking");
 export const teamRecommendationItemSchema = z.object({
   rank: z.number().int().positive(),
   problem: problemSchema,
@@ -315,7 +327,7 @@ export const teamBatchSchema = z.object({
   candidateCount: count,
   resultCount: count,
   recommendations: z.array(teamRecommendationItemSchema),
-  algorithmVersion: z.literal("team-recommend-v0.12.1"),
+  algorithmVersion: algorithmVersionSchema,
   mappingVersion: z.string(),
   generatedAt: instantSchema,
   stale: z.boolean(),

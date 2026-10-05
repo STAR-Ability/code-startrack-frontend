@@ -17,6 +17,24 @@ const metricTones: Partial<Record<CopyKey, string>> = {
   "v.pendingCount": "warning",
   "v.overallScore": "insight",
   "v.rating": "info",
+  "v.maxRating": "info",
+  "v12.highestRating": "info",
+  "v12.highestMaxRating": "info",
+  "v.activeDays": "support",
+  "v12.managedTeams": "support",
+  "v12.activeMembers": "support",
+  "v12.pendingApplications": "warning",
+  "v12.included": "support",
+  "v12.trainingMembers": "support",
+  "v12.levelMembers": "info",
+};
+const panelTones: Partial<Record<CopyKey, "info" | "insight" | "support">> = {
+  "metrics.ability": "insight",
+  "metrics.analysis": "insight",
+  "metrics.snapshot": "insight",
+  "v12.abilitySummary": "insight",
+  "v12.teamAnalysis": "support",
+  "v12.coachStats": "support",
 };
 export type Metric = readonly [CopyKey, number | string | null];
 export function MetricPanel({
@@ -40,7 +58,12 @@ export function MetricPanel({
         ? new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(v)
         : v;
   return (
-    <Card variant="metric" interaction="none" data-metric-panel>
+    <Card
+      variant="metric"
+      tone={panelTones[title]}
+      interaction="none"
+      data-metric-panel
+    >
       <CardHeader>
         <CardTitle>
           <h2>{t(title)}</h2>
@@ -52,8 +75,8 @@ export function MetricPanel({
           {metrics.map(([label, v]) => (
             <div
               key={label}
-              data-tone={metricTones[label]}
-              data-value-type={typeof v}
+              data-tone={v === null ? undefined : metricTones[label]}
+              data-value-type={v === null ? "unknown" : typeof v}
             >
               <dt>{t(label)}</dt>
               <dd>{loading ? <Skeleton className="h-7 w-12" /> : value(v)}</dd>
@@ -63,7 +86,10 @@ export function MetricPanel({
         {!!secondary.length && (
           <dl className="metric-details">
             {secondary.map(([label, v]) => (
-              <div key={label}>
+              <div
+                key={label}
+                data-value-type={v === null ? "unknown" : typeof v}
+              >
                 <dt>{t(label)}</dt>
                 <dd>{loading ? <Skeleton className="h-4 w-8" /> : value(v)}</dd>
               </div>

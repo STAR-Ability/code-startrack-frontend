@@ -12,6 +12,8 @@ import {
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
 import { verdictTone } from "@/lib/ui/status";
+import { trendOption } from "@/lib/charts/options";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -39,6 +41,7 @@ import { useAccountQuery } from "./use-account-query";
 import { QueryFeedback, DataRegion, EmptyState, Pagination } from "./feedback";
 import { ProblemLink } from "./recommendation-card";
 import { Chart } from "./chart";
+import { useAccountTimezone } from "./account-provider";
 
 export function DataPage() {
   const { t } = useLocale();
@@ -178,7 +181,7 @@ function Problems() {
           </FieldGroup>
         </form>
         <QueryFeedback query={query} />
-        {!query.isFetching && !query.data?.data.length && (
+        {!query.isFetching && !query.error && query.data?.data.length === 0 && (
           <EmptyState title={t("v.noRecords")} />
         )}
         {query.data?.data.map((item) => (
@@ -331,7 +334,7 @@ function Submissions({ problemId }: { problemId?: string }) {
         </form>
       )}
       <QueryFeedback query={query} />
-      {!query.isFetching && !query.data?.data.length && (
+      {!query.isFetching && !query.error && query.data?.data.length === 0 && (
         <EmptyState title={t("v.noRecords")} />
       )}
       {query.data?.data.map((item) => (
@@ -399,7 +402,14 @@ function Submission({ item }: { item: SubmissionDto }) {
   );
 }
 function Ratings() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const timezone = useAccountTimezone();
+  const date = (value: string) =>
+    new Intl.DateTimeFormat(locale, {
+      dateStyle: "medium",
+      timeZone: timezone,
+    }).format(new Date(value));
+  const number = (value: number) => new Intl.NumberFormat(locale).format(value);
   const [page, setPage] = useState(1);
   const query = useAccountQuery("ratings", { page }, (id, signal) =>
     api.ratings(id, page, signal),
@@ -414,24 +424,29 @@ function Ratings() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <QueryFeedback query={query} />
-        {!query.isFetching && !query.data?.data.length && (
+        {!query.isFetching && !query.error && query.data?.data.length === 0 && (
           <EmptyState title={t("v.noRecords")} />
         )}
         {chronological.length > 0 && (
           <Chart
             label={t("v.ratingHistory")}
             option={{
-              xAxis: {
-                type: "category",
-                data: chronological.map((item) => item.occurredAt),
+              ...trendOption(
+                chronological.map((item) => date(item.occurredAt)),
+                [
+                  {
+                    name: t("v.rating"),
+                    values: chronological.map((item) => item.newRating),
+                  },
+                ],
+              ),
+              yAxis: {
+                type: "value",
+                scale: true,
+                minInterval: 1,
+                axisLabel: { fontSize: 11 },
+                splitLine: { lineStyle: { type: "dashed" } },
               },
-              yAxis: { type: "value" },
-              series: [
-                {
-                  type: "line",
-                  data: chronological.map((item) => item.newRating),
-                },
-              ],
             }}
           />
         )}
@@ -442,9 +457,12 @@ function Ratings() {
           >
             <p className="font-medium">{item.contestName}</p>
             <p>
-              {t("v.rank")}: {item.rank} · {item.oldRating} → {item.newRating}
+              {t("v.rank")}: {number(item.rank)} · {number(item.oldRating)} →{" "}
+              {number(item.newRating)}
             </p>
-            <time dateTime={item.occurredAt}>{item.occurredAt}</time>
+            <time dateTime={item.occurredAt}>
+              {formatTimestamp(item.occurredAt, locale)}
+            </time>
           </div>
         ))}
         <Pagination

@@ -1,9 +1,12 @@
 "use client";
-import { emptySummary } from "@/lib/api/data-state";
-import { dimensionCodes, type AnalysisDto } from "@/lib/api/schemas";
+import type { AnalysisDto } from "@/lib/api/schemas";
 import type { CopyKey } from "@/lib/i18n/messages";
 import { activitySeries } from "@/lib/charts/data";
-import { distributionOption, trendOption } from "@/lib/charts/options";
+import {
+  distributionOption,
+  radarOption,
+  trendOption,
+} from "@/lib/charts/options";
 import { useLocale } from "@/components/layout/locale-provider";
 import {
   Card,
@@ -15,10 +18,12 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
+import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "./feedback";
 import { MetricPanel } from "./metric-panel";
 import { Chart } from "./chart";
 import { useAccountTimezone } from "./account-provider";
+import { CompatibilityNotice } from "./compatibility-notice";
 
 export type AnalysisPresentation = Pick<
   AnalysisDto,
@@ -36,7 +41,8 @@ export type AnalysisPresentation = Pick<
   | "tagStats"
   | "difficultyStats"
   | "activityStats"
->;
+> &
+  Partial<Pick<AnalysisDto, "algorithmVersion">>;
 
 export function AnalysisView({
   analysis,
@@ -51,6 +57,7 @@ export function AnalysisView({
   activity = true,
   ratings = true,
   distributions = true,
+  emptyState,
 }: {
   analysis: AnalysisPresentation | null;
   aggregate?: boolean;
@@ -64,6 +71,7 @@ export function AnalysisView({
   metricTitle?: CopyKey;
   ability?: boolean;
   trend?: React.ReactNode;
+  emptyState?: React.ReactNode;
 }) {
   const { t, locale } = useLocale();
   const accountTimezone = useAccountTimezone();
@@ -78,23 +86,18 @@ export function AnalysisView({
       timeStyle: "short",
       timeZone: timezone,
     }).format(new Date(v));
-  const scores = [
-    ...(analysis?.dimensions ??
-      dimensionCodes.map((code, index) => ({
-        code,
-        displayOrder: index + 1,
-        score: 0,
-      }))),
-  ].sort((a, b) => a.displayOrder - b.displayOrder);
-  const summary = analysis?.summary ?? emptySummary;
-  const daily = statistics && analysis ? activitySeries(analysis) : [];
-  const tags = analysis?.tagStats ?? [];
-  const difficulty = analysis?.difficultyStats ?? [];
-  const weakest = analysis
-    ? t(`data.dimension.${analysis.weakestDimension}`)
-    : t("v.unavailable");
+  const scores = [...(analysis?.dimensions ?? [])].sort(
+    (a, b) => a.displayOrder - b.displayOrder,
+  );
+  const summary = analysis?.summary;
   return (
     <>
+      {analysis?.algorithmVersion && (
+        <CompatibilityNotice
+          version={analysis.algorithmVersion}
+          family={aggregate ? "user-profile" : "account-profile"}
+        />
+      )}
       <MetricPanel
         title={metricTitle}
         loading={loading}
@@ -107,7 +110,7 @@ export function AnalysisView({
         metrics={
           ability
             ? [
-                ["v.overallScore", analysis?.overallScore ?? 0],
+                ["v.overallScore", analysis?.overallScore ?? null],
                 [
                   aggregate ? "v12.highestRating" : "v.rating",
                   analysis?.currentRating ?? null,
@@ -116,31 +119,33 @@ export function AnalysisView({
                   aggregate ? "v12.highestMaxRating" : "v.maxRating",
                   analysis?.maxRating ?? null,
                 ],
-                ["v.solved", summary.solvedCount],
+                ["v.solved", summary?.solvedCount ?? null],
               ]
             : [
-                ["v.attempted", summary.attemptedProblemCount],
-                ["v.solved", summary.solvedCount],
-                ["v.submissions", summary.submissionCount],
-                ["v.activeDays", summary.activeDays],
+                ["v.attempted", summary?.attemptedProblemCount ?? null],
+                ["v.solved", summary?.solvedCount ?? null],
+                ["v.submissions", summary?.submissionCount ?? null],
+                ["v.activeDays", summary?.activeDays ?? null],
               ]
         }
         secondary={
           ability
             ? [
-                ["v.weakest", weakest],
-                ["v.submissions", summary.submissionCount],
-                ["v.attempted", summary.attemptedProblemCount],
+                ["v.submissions", summary?.submissionCount ?? null],
+                ["v.attempted", summary?.attemptedProblemCount ?? null],
               ]
             : [
-                ["v.unsolved", summary.unsolvedProblemCount],
-                ["v.accepted", summary.acceptedSubmissionCount],
-                ["v.failed", summary.failedSubmissionCount],
-                ["v.pendingCount", summary.pendingSubmissionCount],
-                ["profile.averageDifficulty", summary.averageSolvedDifficulty],
-                ["profile.maxDifficulty", summary.maxSolvedDifficulty],
-                ["v.ratedSolved", summary.ratedSolvedCount],
-                ["v.unratedSolved", summary.unratedSolvedCount],
+                ["v.unsolved", summary?.unsolvedProblemCount ?? null],
+                ["v.accepted", summary?.acceptedSubmissionCount ?? null],
+                ["v.failed", summary?.failedSubmissionCount ?? null],
+                ["v.pendingCount", summary?.pendingSubmissionCount ?? null],
+                [
+                  "profile.averageDifficulty",
+                  summary?.averageSolvedDifficulty ?? null,
+                ],
+                ["profile.maxDifficulty", summary?.maxSolvedDifficulty ?? null],
+                ["v.ratedSolved", summary?.ratedSolvedCount ?? null],
+                ["v.unratedSolved", summary?.unratedSolvedCount ?? null],
               ]
         }
       />
@@ -173,225 +178,305 @@ export function AnalysisView({
           </AlertDescription>
         </Alert>
       )}
-      {!analysis && !loading && (
+      {!analysis && !loading && !dimensions && (
         <EmptyState
           title={t(unavailable ? "practice.noData" : "v.noAnalysis")}
         />
       )}
-      {analysis && !summary.submissionCount && (
+      {analysis && !analysis.summary.submissionCount && (
         <EmptyState title={t("v.noEvidence")} />
       )}
-      {trend}
-      {statistics && (
-        <>
-          {activity && (
-            <Card variant="analysis" interaction="none">
-              <CardHeader>
-                <CardTitle>
-                  <h2>{t("v.activityStats")}</h2>
-                </CardTitle>
-                <CardDescription>
-                  {t(aggregate ? "v12.activityNote" : "v.windowNote")}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {daily.length ? (
-                  <Chart
-                    palette="activity"
-                    label={t("v.activityStats")}
-                    option={trendOption(
-                      daily.map((item) => item.date),
-                      [
-                        {
-                          name: t("v.submissions"),
-                          values: daily.map((item) => item.submissionCount),
-                        },
-                        {
-                          name: t("v.solved"),
-                          values: daily.map((item) => item.solvedCount),
-                        },
-                        {
-                          name: t("v.pendingCount"),
-                          values: daily.map(
-                            (item) => item.pendingSubmissionCount,
-                          ),
-                        },
-                      ],
-                    )}
-                  />
-                ) : (
-                  <EmptyState title={t("v.noRecords")} />
-                )}
-              </CardContent>
-            </Card>
-          )}
-          {distributions && (
-            <div className="grid min-w-0 gap-4 lg:grid-cols-2">
-              <Card variant="analysis" interaction="none">
-                <CardHeader>
-                  <CardTitle>
-                    <h2>{t("v.tagStats")}</h2>
-                  </CardTitle>
-                  <CardDescription>{t("v.statsNote")}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {tags.length ? (
-                    <>
-                      <Chart
-                        palette="distribution"
-                        label={t("v.tagStats")}
-                        option={distributionOption(
-                          tags.slice(0, 10).map((item) => item.tag),
-                          tags
-                            .slice(0, 10)
-                            .map((item) => item.attemptedProblemCount),
-                          tags.slice(0, 10).map((item) => item.solvedCount),
-                          [t("v.attempted"), t("v.solved")],
-                          true,
-                        )}
-                      />
-                      <DetailsDisclosure title={t("metrics.chartValues")}>
-                        <dl className="flex flex-col gap-2">
-                          {tags.map((item) => (
-                            <div
-                              key={item.tag}
-                              className="flex flex-wrap justify-between gap-2"
-                            >
-                              <dt>{item.tag}</dt>
-                              <dd>
-                                {t("v.solved")}: {number(item.solvedCount)} /{" "}
-                                {t("v.attempted")}:{" "}
-                                {number(item.attemptedProblemCount)} ·{" "}
-                                {t("v.submissions")}:{" "}
-                                {number(item.submissionCount)}
-                              </dd>
-                            </div>
-                          ))}
-                        </dl>
-                      </DetailsDisclosure>
-                    </>
-                  ) : (
-                    <EmptyState title={t("v.noRecords")} />
-                  )}
-                </CardContent>
-              </Card>
-              <Card variant="analysis" interaction="none">
-                <CardHeader>
-                  <CardTitle>
-                    <h2>{t("v.difficultyStats")}</h2>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {difficulty.length ? (
-                    <>
-                      <Chart
-                        palette="distribution"
-                        label={t("v.difficultyStats")}
-                        option={distributionOption(
-                          difficulty.map(
-                            (item) => item.difficulty ?? t("v.unrated"),
-                          ),
-                          difficulty.map((item) => item.attemptedProblemCount),
-                          difficulty.map((item) => item.solvedCount),
-                          [t("v.attempted"), t("v.solved")],
-                        )}
-                      />
-                      <DetailsDisclosure title={t("metrics.chartValues")}>
-                        <dl className="flex flex-col gap-1">
-                          {difficulty.map((item) => (
-                            <div
-                              key={item.difficulty ?? "unrated"}
-                              className="flex justify-between gap-2"
-                            >
-                              <dt>{item.difficulty ?? t("v.unrated")}</dt>
-                              <dd>
-                                {number(item.solvedCount)} /{" "}
-                                {number(item.attemptedProblemCount)}
-                              </dd>
-                            </div>
-                          ))}
-                        </dl>
-                      </DetailsDisclosure>
-                    </>
-                  ) : (
-                    <EmptyState title={t("v.noRecords")} />
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-        </>
-      )}
       {dimensions && (
-        <Card variant="analysis" interaction="none">
+        <Card variant="analysis" interaction="none" data-analysis-ability>
           <CardHeader>
             <CardTitle>
               <h2>{t("v.dimensions")}</h2>
             </CardTitle>
+            <CardDescription>{t("profile.dimensionNote")}</CardDescription>
           </CardHeader>
-          <CardContent className="grid min-w-0 items-center gap-4 lg:grid-cols-2">
-            <Chart
-              palette="ability"
-              label={t("v.dimensions")}
-              option={{
-                radar: {
-                  indicator: scores.map((item) => ({
-                    name: t(`data.dimension.${item.code}`),
-                    max: 100,
-                  })),
-                  radius: "52%",
-                  axisName: {
-                    formatter: (name = "") => name.replaceAll(" ", "\n"),
-                    fontSize: 10,
-                  },
-                  splitNumber: 4,
-                },
-                series: [
-                  {
-                    type: "radar",
-                    symbolSize: 4,
-                    lineStyle: { width: 2 },
-                    areaStyle: { opacity: 0.12 },
-                    data: [
-                      {
-                        name: t("v.overallScore"),
-                        value: scores.map((item) => item.score),
-                      },
-                    ],
-                  },
-                ],
-              }}
-            />
-            <div className="flex min-w-0 flex-col gap-3">
-              {scores.map((item) => (
-                <div key={item.code} className="flex flex-col gap-1">
-                  <dl className="flex flex-wrap items-center justify-between gap-2">
-                    <dt className="text-sm">
-                      {t(`data.dimension.${item.code}`)}
-                      {item.code === analysis?.weakestDimension && (
-                        <Badge variant="outline" wrap className="ml-2">
-                          {t("v.weakest")}
-                        </Badge>
-                      )}
-                    </dt>
-                    <dd className="font-mono text-sm tabular-nums">
-                      {number(item.score)} / 100
-                    </dd>
-                  </dl>
-                  <div
-                    aria-hidden="true"
-                    className="h-1 overflow-hidden rounded-full bg-muted"
-                  >
-                    <div
-                      className="h-full rounded-full bg-insight"
-                      style={{ width: `${item.score}%` }}
-                    />
+          <CardContent className="analysis-ability-content">
+            {!analysis ? (
+              loading ? (
+                <>
+                  <Skeleton className="h-64 w-full" />
+                  <div className="flex flex-col gap-4">
+                    {Array.from({ length: 6 }, (_, index) => (
+                      <Skeleton key={index} className="h-7 w-full" />
+                    ))}
                   </div>
+                </>
+              ) : (
+                <div className="min-w-0 lg:col-span-2">
+                  {emptyState ?? (
+                    <EmptyState
+                      embedded
+                      title={t(
+                        unavailable ? "practice.noData" : "v.noAnalysis",
+                      )}
+                    />
+                  )}
                 </div>
-              ))}
-            </div>
+              )
+            ) : (
+              <>
+                <div className="analysis-ability-chart">
+                  <Chart
+                    palette="ability"
+                    label={t("v.dimensions")}
+                    size="ability"
+                    option={radarOption(
+                      scores.map((item) => ({
+                        name: t(`data.dimension.${item.code}`),
+                        score: item.score,
+                      })),
+                      t("v.overallScore"),
+                    )}
+                  />
+                </div>
+                <dl className="analysis-dimension-list">
+                  {scores.map((item) => (
+                    <div
+                      key={item.code}
+                      className="analysis-dimension-row"
+                      data-weakest={item.code === analysis.weakestDimension}
+                    >
+                      <dt>
+                        {t(`data.dimension.${item.code}`)}
+                        {item.code === analysis?.weakestDimension && (
+                          <Badge variant="outline" wrap className="ml-2">
+                            {t("v.weakest")}
+                          </Badge>
+                        )}
+                      </dt>
+                      <dd>{number(item.score)} / 100</dd>
+                      <div
+                        aria-hidden="true"
+                        className="analysis-dimension-track"
+                      >
+                        <div
+                          className="analysis-dimension-fill"
+                          style={{ width: `${item.score}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            )}
           </CardContent>
         </Card>
+      )}
+      {trend}
+      {statistics && (
+        <AnalysisStatistics
+          analysis={analysis}
+          aggregate={aggregate}
+          loading={loading}
+          activity={activity}
+          distributions={distributions}
+        />
+      )}
+    </>
+  );
+}
+
+export function AnalysisStatistics({
+  analysis,
+  aggregate = false,
+  loading = false,
+  activity = true,
+  distributions = true,
+}: {
+  analysis: AnalysisPresentation | null;
+  aggregate?: boolean;
+  loading?: boolean;
+  activity?: boolean;
+  distributions?: boolean;
+}) {
+  const { t, locale } = useLocale();
+  const number = (value: number) =>
+    new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(value);
+  const daily = analysis ? activitySeries(analysis) : [];
+  const tags = analysis?.tagStats ?? [];
+  const difficulty = analysis?.difficultyStats ?? [];
+  return (
+    <>
+      {activity && (
+        <Card variant="analysis" interaction="none">
+          <CardHeader>
+            <CardTitle>
+              <h2>{t("v.activityStats")}</h2>
+            </CardTitle>
+            <CardDescription>
+              {t(aggregate ? "v12.activityNote" : "v.windowNote")}
+              {daily.length > 0 && <> {t("v.activityChartNote")}</>}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading && !analysis ? (
+              <Skeleton className="h-64 w-full" />
+            ) : daily.length ? (
+              <>
+                <Chart
+                  palette="activity"
+                  label={t("v.activityStats")}
+                  option={trendOption(
+                    daily.map((item) => item.date),
+                    [
+                      {
+                        name: t("v.submissions"),
+                        values: daily.map((item) => item.submissionCount),
+                      },
+                      {
+                        name: t("v.solved"),
+                        values: daily.map((item) => item.solvedCount),
+                      },
+                      {
+                        name: t("v.pendingCount"),
+                        values: daily.map(
+                          (item) => item.pendingSubmissionCount,
+                        ),
+                      },
+                    ],
+                  )}
+                />
+                <DetailsDisclosure
+                  title={t("metrics.chartValues")}
+                  keepMounted={false}
+                >
+                  <dl className="flex flex-col gap-2">
+                    {daily.map((item) => (
+                      <div
+                        key={item.date}
+                        className="flex flex-wrap justify-between gap-2"
+                      >
+                        <dt>
+                          <time dateTime={item.date}>{item.date}</time>
+                        </dt>
+                        <dd>
+                          {t("v.submissions")}: {number(item.submissionCount)} ·{" "}
+                          {t("v.solved")}: {number(item.solvedCount)} ·{" "}
+                          {t("v.pendingCount")}:{" "}
+                          {number(item.pendingSubmissionCount)}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </DetailsDisclosure>
+              </>
+            ) : (
+              <EmptyState embedded title={t("v.noRecords")} />
+            )}
+          </CardContent>
+        </Card>
+      )}
+      {distributions && (
+        <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+          <Card variant="analysis" interaction="none">
+            <CardHeader>
+              <CardTitle>
+                <h2>{t("v.tagStats")}</h2>
+              </CardTitle>
+              <CardDescription>
+                {t("v.statsNote")}
+                {tags.length > 10 && <> {t("v.chartTagLimit")}</>}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading && !analysis ? (
+                <Skeleton className="h-64 w-full" />
+              ) : tags.length ? (
+                <>
+                  <Chart
+                    palette="distribution"
+                    label={t("v.tagStats")}
+                    option={distributionOption(
+                      tags.slice(0, 10).map((item) => item.tag),
+                      tags
+                        .slice(0, 10)
+                        .map((item) => item.attemptedProblemCount),
+                      tags.slice(0, 10).map((item) => item.solvedCount),
+                      [t("v.attempted"), t("v.solved")],
+                      true,
+                    )}
+                  />
+                  <DetailsDisclosure
+                    title={t("metrics.chartValues")}
+                    keepMounted={false}
+                  >
+                    <dl className="flex flex-col gap-2">
+                      {tags.map((item) => (
+                        <div
+                          key={item.tag}
+                          className="flex flex-wrap justify-between gap-2"
+                        >
+                          <dt>{item.tag}</dt>
+                          <dd>
+                            {t("v.solved")}: {number(item.solvedCount)} /{" "}
+                            {t("v.attempted")}:{" "}
+                            {number(item.attemptedProblemCount)} ·{" "}
+                            {t("v.submissions")}: {number(item.submissionCount)}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </DetailsDisclosure>
+                </>
+              ) : (
+                <EmptyState embedded title={t("v.noRecords")} />
+              )}
+            </CardContent>
+          </Card>
+          <Card variant="analysis" interaction="none">
+            <CardHeader>
+              <CardTitle>
+                <h2>{t("v.difficultyStats")}</h2>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading && !analysis ? (
+                <Skeleton className="h-64 w-full" />
+              ) : difficulty.length ? (
+                <>
+                  <Chart
+                    palette="distribution"
+                    label={t("v.difficultyStats")}
+                    option={distributionOption(
+                      difficulty.map(
+                        (item) => item.difficulty ?? t("v.unrated"),
+                      ),
+                      difficulty.map((item) => item.attemptedProblemCount),
+                      difficulty.map((item) => item.solvedCount),
+                      [t("v.attempted"), t("v.solved")],
+                    )}
+                  />
+                  <DetailsDisclosure
+                    title={t("metrics.chartValues")}
+                    keepMounted={false}
+                  >
+                    <dl className="flex flex-col gap-1">
+                      {difficulty.map((item) => (
+                        <div
+                          key={item.difficulty ?? "unrated"}
+                          className="flex flex-wrap justify-between gap-2"
+                        >
+                          <dt>{item.difficulty ?? t("v.unrated")}</dt>
+                          <dd>
+                            {t("v.solved")}: {number(item.solvedCount)} /{" "}
+                            {t("v.attempted")}:{" "}
+                            {number(item.attemptedProblemCount)}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </DetailsDisclosure>
+                </>
+              ) : (
+                <EmptyState embedded title={t("v.noRecords")} />
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
     </>
   );

@@ -1,4 +1,6 @@
 export const workspaceZh = {
+  "accounts.currentSelection": "当前选中",
+  "coach.focusTitle": "查看团队状态，安排下一次训练。",
   "portfolio.title": "全部 CF 账号 · 训练汇总",
   "portfolio.accounts": "已绑定账号",
   "portfolio.solved": "按账号累计通过题数",
@@ -360,6 +362,8 @@ export const workspaceZh = {
   "v.invalidExpired": "验证码已过期，请重新获取。",
 } as const;
 export const workspaceEn = {
+  "accounts.currentSelection": "Selected account",
+  "coach.focusTitle": "Review your teams and plan the next practice.",
   "portfolio.title": "All CF accounts · training totals",
   "portfolio.accounts": "Linked accounts",
   "portfolio.solved": "Solved across account records",

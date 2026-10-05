@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { v012 } from "@/lib/api/v012";
 import type {
@@ -52,15 +53,15 @@ export function TeamCard({
     );
   const href = `/teams/detail?teamId=${team.teamId}&tab=${section}`;
   return (
-    <article className="workspace-team-card">
+    <article className="workspace-team-card" data-team-card>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1 basis-48">
+          <div className="flex min-w-0 items-center gap-3">
             <Avatar size="lg">
               {team.avatarUrl && <AvatarImage src={team.avatarUrl} alt="" />}
               <AvatarFallback>{team.name.slice(0, 2)}</AvatarFallback>
             </Avatar>
-            <h3 className="break-words font-semibold">
+            <h3 className="min-w-0 text-lg font-semibold wrap-anywhere">
               <Link
                 href={href}
                 className="rounded-sm hover:underline focus-visible:outline-2 focus-visible:outline-ring"
@@ -69,10 +70,16 @@ export function TeamCard({
               </Link>
             </h3>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {team.owner.displayName ?? team.owner.username} · {t("v12.members")}
-            : {team.memberCount}
-          </p>
+          <dl className="team-card-details">
+            <div>
+              <dt>{t("v12.owner")}</dt>
+              <dd>{team.owner.displayName ?? team.owner.username}</dd>
+            </div>
+            <div>
+              <dt>{t("v12.members")}</dt>
+              <dd>{team.memberCount}</dd>
+            </div>
+          </dl>
         </div>
         <Status value={team.status} />
       </div>
@@ -84,10 +91,14 @@ export function TeamCard({
       <div className="flex flex-wrap gap-3">
         <Link
           href={href}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
+          className={buttonVariants({
+            variant: "outline",
+            size: "sm",
+            wrap: true,
+          })}
         >
           {t("v12.openTeam")}{" "}
-          <ArrowUpRightIcon aria-hidden="true" className="size-4" />
+          <ArrowUpRightIcon aria-hidden="true" data-icon="inline-end" />
         </Link>
         {team.myMembershipRole && (
           <Badge variant="secondary">
@@ -108,34 +119,42 @@ export function TeamCard({
               <MoreHorizontalIcon aria-hidden="true" />
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuItem
-                render={
-                  <Link
-                    href={`/teams/detail?teamId=${team.teamId}&tab=members`}
-                  />
-                }
-              >
-                {t("v12.members")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                render={
-                  <Link
-                    href={`/teams/detail?teamId=${team.teamId}&tab=analysis`}
-                  />
-                }
-              >
-                {t("v12.teamAnalysis")}
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  render={
+                    <Link
+                      href={`/teams/detail?teamId=${team.teamId}&tab=members`}
+                    />
+                  }
+                >
+                  {t("v12.members")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  render={
+                    <Link
+                      href={`/teams/detail?teamId=${team.teamId}&tab=analysis`}
+                    />
+                  }
+                >
+                  {t("v12.teamAnalysis")}
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
         {team.myJoinApplicationStatus === "PENDING" && (
-          <Link href="/teams?tab=applications">
+          <Link
+            href="/teams?tab=applications"
+            className="auth-text-link text-sm wrap-anywhere"
+          >
             {t("v12.pendingApplication")}
           </Link>
         )}
         {team.myInvitationStatus === "PENDING" && (
-          <Link href="/teams?tab=invitations">
+          <Link
+            href="/teams?tab=invitations"
+            className="auth-text-link text-sm wrap-anywhere"
+          >
             {t("v12.pendingInvitation")}
           </Link>
         )}

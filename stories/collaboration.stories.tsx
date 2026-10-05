@@ -84,6 +84,25 @@ export const Settings: Story = {
   render: () => <TeamSettings team={owner.teams[0]} />,
 };
 export const CoachDashboard: Story = { render: () => <CoachPage /> };
+export const CoachDashboardMobile: Story = {
+  globals: { ...mobile, locale: "en" },
+  render: () => <CoachPage />,
+};
+export const LongTeamName: Story = {
+  globals: { ...mobile, locale: "en" },
+  render: () => (
+    <TeamCard
+      team={{
+        ...owner.teams[0],
+        name: "A collaborative programming team with a deliberately long name",
+        owner: {
+          ...owner.teams[0].owner,
+          displayName: "A coach with a deliberately long display name",
+        },
+      }}
+    />
+  ),
+};
 export const CoachNoTeams: Story = {
   parameters: { mockScenario: "coach-no-teams" },
   render: () => <CoachPage />,

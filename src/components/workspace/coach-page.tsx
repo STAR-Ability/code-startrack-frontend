@@ -1,6 +1,7 @@
 "use client";
 import { useId, useState } from "react";
 import Link from "next/link";
+import { ArrowRightIcon, GraduationCapIcon } from "lucide-react";
 import { v012 } from "@/lib/api/v012";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -25,31 +26,63 @@ export function CoachPage() {
   return (
     <>
       <QueryFeedback query={query} />
+      <section className="workspace-context-header coach-direction">
+        <div className="flex min-w-0 flex-1 basis-72 flex-col gap-3">
+          <h2 className="flex items-start gap-3 text-xl font-semibold tracking-tight">
+            <GraduationCapIcon
+              className="size-6 shrink-0 text-support"
+              aria-hidden="true"
+            />
+            {t("coach.focusTitle")}
+          </h2>
+          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+            {t("v12.coachNote")}
+          </p>
+        </div>
+        <div className="flex min-w-0 flex-wrap gap-2">
+          <Link
+            href={
+              query.data?.pendingApplicationCount
+                ? "/coach/teams?task=applications"
+                : "/coach/teams"
+            }
+            className={buttonVariants({ wrap: true })}
+          >
+            {t(
+              query.data?.pendingApplicationCount
+                ? "v12.pendingApplications"
+                : "v12.manage",
+            )}
+            <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+          </Link>
+          {!!query.data?.pendingApplicationCount && (
+            <Link
+              href="/coach/teams"
+              className={buttonVariants({ variant: "outline", wrap: true })}
+            >
+              {t("v12.manage")}
+            </Link>
+          )}
+          <Link
+            href="/coach/teams/create"
+            className={buttonVariants({ variant: "outline", wrap: true })}
+          >
+            {t("v12.createTeam")}
+          </Link>
+        </div>
+      </section>
       <MetricPanel
         title="v12.coachStats"
         loading={query.isFetching && query.data === undefined}
         metrics={[
-          ["v12.managedTeams", query.data?.managedTeamCount ?? 0],
-          ["v12.activeMembers", query.data?.activeMemberCount ?? 0],
-          ["v12.pendingApplications", query.data?.pendingApplicationCount ?? 0],
+          ["v12.managedTeams", query.data?.managedTeamCount ?? null],
+          ["v12.activeMembers", query.data?.activeMemberCount ?? null],
+          [
+            "v12.pendingApplications",
+            query.data?.pendingApplicationCount ?? null,
+          ],
         ]}
       />
-      <div className="workspace-context-header flex flex-wrap items-center justify-between gap-4">
-        <p className="max-w-xl text-sm text-muted-foreground">
-          {t("v12.coachNote")}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/coach/teams"
-            className={buttonVariants({ variant: "outline" })}
-          >
-            {t("v12.manage")}
-          </Link>
-          <Link href="/coach/teams/create" className={buttonVariants()}>
-            {t("v12.createTeam")}
-          </Link>
-        </div>
-      </div>
       <div className="grid min-w-0 gap-5 xl:grid-cols-3">
         <section className="flex min-w-0 flex-col gap-4 xl:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -74,7 +107,11 @@ export function CoachPage() {
             />
           )}
         </section>
-        <Panel title="v12.recentNotifications">
+        <Panel
+          title="v12.recentNotifications"
+          variant="supporting"
+          tone="support"
+        >
           {query.data?.recentNotifications.map((notification) => (
             <NotificationRow
               key={notification.notificationId}
@@ -82,7 +119,7 @@ export function CoachPage() {
             />
           ))}
           {query.data?.recentNotifications.length === 0 && (
-            <EmptyState title={t("v12.noNotifications")} />
+            <EmptyState title={t("v12.noNotifications")} embedded />
           )}
         </Panel>
       </div>

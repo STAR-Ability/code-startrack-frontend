@@ -31,6 +31,7 @@ export function AccountDetails({ accountId }: { accountId: string }) {
   return (
     <div className="flex flex-col gap-3">
       <Button
+        wrap
         variant="outline"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}

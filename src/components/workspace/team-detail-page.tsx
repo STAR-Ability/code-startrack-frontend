@@ -152,7 +152,7 @@ function TeamDetailContent({
             {team.canManage && (
               <Link
                 href={teamSectionHref(teamId, "applications")}
-                className={buttonVariants({ variant: "outline" })}
+                className={buttonVariants({ variant: "outline", wrap: true })}
               >
                 {t("v12.pendingApplications")}
               </Link>
@@ -177,7 +177,7 @@ function TeamDetailContent({
           )}
           <nav
             aria-label={t("v12.teamNavigation")}
-            className="z-10 md:sticky md:top-0 flex flex-wrap gap-1 rounded-xl border bg-background/95 p-1 backdrop-blur-sm"
+            className="team-section-navigation z-10 md:sticky md:top-0 flex min-w-0 flex-wrap gap-1 rounded-xl border border-surface-border bg-surface-reading p-1"
           >
             {sections.filter(visible).map((section) => (
               <Link
@@ -186,9 +186,9 @@ function TeamDetailContent({
                 prefetch={false}
                 aria-current={tab === section ? "page" : undefined}
                 className={cn(
-                  "rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transition-none",
+                  "min-w-0 rounded-lg px-3 py-2 text-sm wrap-anywhere transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transition-none",
                   tab === section &&
-                    "bg-primary font-medium text-primary-foreground hover:bg-primary/90",
+                    "bg-support-soft font-medium text-support hover:bg-support-soft",
                 )}
               >
                 {t(labels[section])}

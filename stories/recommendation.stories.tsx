@@ -36,6 +36,17 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Hover: Story = {};
 export const Featured: Story = {};
+export const AvailableAction: Story = {
+  args: {
+    item: {
+      ...item,
+      problem: {
+        ...item.problem,
+        url: "https://codeforces.com/problemset/problem/1/A",
+      },
+    },
+  },
+};
 export const Secondary: Story = { args: { item: batch.recommendations[1] } };
 export const MatchedDimension: Story = { args: { item } };
 export const NoMatchedDimension: Story = {

@@ -19,6 +19,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { PracticeModePicker } from "./practice-mode-picker";
 import { FormInput } from "@/components/ui/form-input";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -194,14 +195,19 @@ export function RecommendationsPage({
         pending={generate.isPending || account?.bindStatus !== "ACTIVE"}
       />
       {batchId && (
-        <Button
-          wrap
-          variant="outline"
-          className="self-start"
-          onClick={() => setBatchId(null)}
-        >
-          {t("v.latest")}
-        </Button>
+        <div className="recommendation-selection">
+          <Badge variant="secondary" wrap>
+            {t("recommendation.historicalBatch")}
+          </Badge>
+          <Button
+            wrap
+            variant="outline"
+            className="self-start"
+            onClick={() => setBatchId(null)}
+          >
+            {t("v.latest")}
+          </Button>
+        </div>
       )}
       <DataRegion
         query={displayed}

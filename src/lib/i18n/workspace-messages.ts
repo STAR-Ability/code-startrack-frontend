@@ -93,6 +93,14 @@ export const workspaceZh = {
   "practice.forYou": "为你推荐",
   "practice.controls": "训练方向",
   "recommendation.featured": "首选推荐",
+  "recommendation.moreOptions": "继续选择",
+  "recommendation.orderNote": "其余题目保持原有推荐顺序。",
+  "recommendation.nextActionNote":
+    "在 Codeforces 开始解题，再回到这里同步你的训练记录。",
+  "recommendation.completedNote": "这道题已完成；可以复盘，或继续选择下一道。",
+  "recommendation.unavailableActionNote":
+    "题目链接暂不可用，可继续查看其他推荐。",
+  "recommendation.historicalBatch": "历史推荐批次",
   "recommendation.matchedDimension": "覆盖能力",
   "recommendation.coverageNote": "此题覆盖推荐匹配的能力维度。",
   "practice.forYouDescription": "结合难度与训练表现，找到适合你的下一道题。",
@@ -453,6 +461,16 @@ export const workspaceEn = {
   "practice.forYou": "Picked for you",
   "practice.controls": "Practice direction",
   "recommendation.featured": "First recommendation",
+  "recommendation.moreOptions": "More options",
+  "recommendation.orderNote":
+    "The remaining problems keep their original recommendation order.",
+  "recommendation.nextActionNote":
+    "Solve on Codeforces, then return here to sync your training records.",
+  "recommendation.completedNote":
+    "Completed. Review this problem or continue to the next one.",
+  "recommendation.unavailableActionNote":
+    "The problem link is unavailable. You can explore the other recommendations.",
+  "recommendation.historicalBatch": "Historical recommendation batch",
   "v.chartTagLimit":
     "Chart shows up to 10 tags in the supplied order. Full values are below.",
   "v.activityChartNote":

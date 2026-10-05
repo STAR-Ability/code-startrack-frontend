@@ -1109,7 +1109,7 @@
     @apply border-b pb-5;
   }
   .recommendation-title {
-    @apply text-xl font-semibold tracking-tight wrap-anywhere sm:text-2xl;
+    @apply text-2xl leading-tight font-semibold tracking-tight wrap-anywhere sm:text-3xl;
   }
   .recommendation-heading {
     @apply flex min-w-0 items-start gap-3;
@@ -1124,14 +1124,42 @@
     @apply flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground;
   }
   .recommendation-facts {
-    @apply grid min-w-0 gap-4 rounded-xl border border-info/15 bg-card/70 p-4;
+    @apply grid min-w-0 gap-4;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr));
   }
   .recommendation-facts dt {
     @apply text-xs text-muted-foreground;
   }
   .recommendation-facts dd {
-    @apply mt-1 font-mono text-lg font-medium tabular-nums;
+    @apply mt-1 font-mono text-2xl font-medium tabular-nums;
+  }
+  .recommendation-content {
+    @apply grid min-w-0 items-start gap-5;
+  }
+  .recommendation-action-panel {
+    @apply flex min-w-0 flex-col gap-4 rounded-xl border border-info/15 bg-surface-panel p-4 sm:p-5;
+  }
+  .recommendation-action-panel > [data-slot="button"] {
+    width: 100%;
+  }
+  .recommendation-action-note {
+    @apply text-xs leading-relaxed text-muted-foreground;
+  }
+  .recommendation-queue-heading {
+    @apply flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2;
+  }
+  .recommendation-queue-heading h2 {
+    @apply text-base font-semibold;
+  }
+  .recommendation-queue-heading p {
+    @apply text-xs text-muted-foreground;
+  }
+  .recommendation-selection {
+    @apply flex min-w-0 flex-wrap items-center gap-3;
+  }
+  .recommendation-card[data-recommendation-rank="1"]
+    > [data-slot="card-footer"] {
+    padding-block: 1rem;
   }
   .recommendation-reason {
     @apply flex min-w-0 flex-col gap-2;
@@ -1222,6 +1250,11 @@
   }
   .analysis-dimension-fill {
     @apply h-full rounded-full bg-insight;
+  }
+}
+@container recommendation (min-width: 40rem) {
+  .recommendation-content-featured {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
   }
 }
 @media (min-width: 1024px) {

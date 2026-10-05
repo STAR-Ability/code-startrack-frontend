@@ -7,6 +7,7 @@ import { keys } from "@/lib/query/keys";
 import { isCurrentUser } from "@/lib/query/session";
 import type { PersonalReportDto } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import { Button } from "@/components/ui/button";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -31,7 +32,7 @@ export function PersonalReportView({
   report: PersonalReportDto;
   evidenceOpen?: boolean;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   return (
     <div className="flex flex-col gap-4" data-report-id={report.reportId}>
       <CompatibilityNotice
@@ -40,7 +41,7 @@ export function PersonalReportView({
       />
       <Panel
         title="v12.reportOverview"
-        description={report.generatedAt}
+        description={formatTimestamp(report.generatedAt, locale)}
         variant="analysis"
         size="lg"
       >
@@ -142,7 +143,7 @@ export function PersonalReportView({
   );
 }
 export function PersonalReportsPage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { user } = useAccounts();
   const client = useQueryClient();
   const [page, setPage] = useState(1);
@@ -230,7 +231,9 @@ export function PersonalReportsPage() {
             key={report.reportId}
             className="flex flex-wrap justify-between gap-3"
           >
-            <time dateTime={report.generatedAt}>{report.generatedAt}</time>
+            <time dateTime={report.generatedAt}>
+              {formatTimestamp(report.generatedAt, locale)}
+            </time>
             <Button
               wrap
               variant="outline"

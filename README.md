@@ -1,6 +1,6 @@
 # codeStartrack Frontend
 
-**码练星轨 (codeStartrack) V0.12** adds backend-owned multi-account personal profiles, frozen analysis reports, teams, coach tools, privacy settings and notifications while retaining V0.11 account functionality. It uses Next.js App Router, Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
+**码练星轨 (codeStartrack) V0.13.1** renders evolving backend algorithm versions with strong structural validation and refines profiles, recommendations, dashboards, charts and collaboration workspaces. It retains multi-account data, frozen reports, coach tools, privacy and notifications. It uses Next.js App Router, Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
 
 The public landing page and `/demo` use local illustrations and synthetic fixtures. Workspace shells, including `/practice`, are browsable without login. Personal data and actions require a backend Session and the `STUDENT` role; visitors see login prompts within those panels. Empty responses preserve card/list structure; failed reads show safe placeholders, a visible error and retry without blocking navigation:
 
@@ -27,7 +27,7 @@ The public landing page and `/demo` use local illustrations and synthetic fixtur
 
 ## Contract and architecture
 
-The baseline contracts are [V0.11 API](prompts/前端api文档.md) and [V0.11 data model](prompts/前端需要知道的数据库.md). The [V0.12 API](prompts/V0.12-前端api文档.md) and [V0.12 data model](prompts/V0.12-前端需要知道的数据库.md) define the new functionality and override personal aggregate behavior. See the [integration guide](docs/development/v0.12-integration.md) for routes, cache boundaries, mocks and contract gaps.
+The baseline contracts are [V0.11 API](prompts/前端api文档.md) and [V0.11 data model](prompts/前端需要知道的数据库.md). The [V0.12 API](prompts/V0.12-前端api文档.md) and [V0.12 data model](prompts/V0.12-前端需要知道的数据库.md) define the new functionality and override personal aggregate behavior. The current [V0.13.1 integration audit](docs/development/v0.13-integration.md) compares the running OpenAPI contract and responses with frontend validation. The [V0.12 integration guide](docs/development/v0.12-integration.md) remains the functional and cache-boundary baseline.
 
 Every browser API request uses same-origin `/api/v1/**` and `credentials: "include"`. There are no browser tokens, fixed demo-user API calls, database connections, Algorithm calls or Codeforces data API calls. Problem URLs are navigation links supplied by the backend.
 

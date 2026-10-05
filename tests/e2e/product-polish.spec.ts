@@ -9,6 +9,79 @@ import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 
 test.beforeEach(() => configureUpstream());
 
+for (const state of ["missing", "failed"] as const) {
+  test(`mobile team tasks preserve long ${state} analysis states and keyboard navigation`, async ({
+    page,
+    context,
+  }) => {
+    await configureUpstream({ coach: true });
+    await context.addCookies([
+      {
+        name: "codestartrack_locale",
+        value: "en",
+        url: "http://127.0.0.1:3100",
+      },
+    ]);
+    const teamId = "00000000-0000-4000-8000-000000001001";
+    await page.route(`**/api/v1/teams/${teamId}/analysis/latest`, (route) =>
+      route.fulfill({
+        status: state === "missing" ? 200 : 503,
+        json:
+          state === "missing"
+            ? { data: null, requestId: "00000000-0000-4000-8000-000000000900" }
+            : {
+                error: {
+                  code: "ALGORITHM_UNAVAILABLE",
+                  message: "Synthetic failure",
+                  details: {},
+                },
+                requestId: "00000000-0000-4000-8000-000000000900",
+              },
+      }),
+    );
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.goto(`/teams/detail?teamId=${teamId}`);
+    const tasks = page.locator(".workspace-task-tile");
+    await expect(tasks).toHaveCount(4);
+    const analysis = tasks.filter({
+      has: page.getByText(translate("en", "v12.teamAnalysis"), { exact: true }),
+    });
+    await expect(analysis.locator("strong")).toHaveText(
+      translate(
+        "en",
+        state === "missing" ? "v12.noTeamAnalysis" : "v12.unavailableState",
+      ),
+    );
+    for (const fontSize of ["100%", "200%"]) {
+      await page.evaluate((size) => {
+        document.documentElement.style.fontSize = size;
+      }, fontSize);
+      for (const task of await tasks.all()) {
+        await expect(task).toBeVisible();
+        for (const element of [
+          task,
+          task.locator("span"),
+          task.locator("strong"),
+        ]) {
+          await expect
+            .poll(() =>
+              element.evaluate(
+                (node) => node.scrollWidth <= node.clientWidth + 1,
+              ),
+            )
+            .toBe(true);
+        }
+      }
+    }
+    await analysis.focus();
+    await page.keyboard.press("Enter");
+    await expect(page).toHaveURL(`/teams/detail?teamId=${teamId}&tab=analysis`);
+    expect((await upstreamCalls()).every((call) => call.method === "GET")).toBe(
+      true,
+    );
+  });
+}
+
 test("the labeled history filter supports keyboard and label activation using account-scoped reads", async ({
   page,
 }) => {

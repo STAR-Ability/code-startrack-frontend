@@ -143,7 +143,7 @@ export function RecommendationsPage({
           </CardTitle>
           <CardDescription>{t("v.recommendationNote")}</CardDescription>
         </CardHeader>
-        <CardContent className="grid min-w-0 items-start gap-4 @3xl/practice-controls:grid-cols-[minmax(0,1fr)_19rem]">
+        <CardContent className="grid min-w-0 items-start gap-4 @3xl/practice-controls:grid-cols-[minmax(0,1fr)_22rem]">
           <PracticeModePicker
             mode={mode}
             disabled={generate.isPending}

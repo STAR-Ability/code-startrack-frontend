@@ -1281,7 +1281,6 @@
     @apply min-w-0;
   }
   .analysis-ability-chart .chart-surface {
-    height: 20rem;
     background: radial-gradient(
       ellipse,
       color-mix(in srgb, var(--insight-soft) 72%, transparent),

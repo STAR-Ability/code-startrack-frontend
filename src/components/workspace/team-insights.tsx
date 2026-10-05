@@ -12,7 +12,8 @@ import type {
   TeamRecommendationBatchDto,
   TeamRecommendationMode,
 } from "@/lib/api/v012-schemas";
-import { trendOption } from "@/lib/charts/options";
+import { radarOption, trendOption } from "@/lib/charts/options";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
@@ -84,27 +85,14 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
             <Chart
               label={t("v.dimensions")}
               palette="ability"
-              option={{
-                radar: {
-                  indicator: dimensions.map((dimension) => ({
-                    name: t(`data.dimension.${dimension.code}`),
-                    max: 100,
-                  })),
-                  radius: "52%",
-                  axisName: {
-                    fontSize: 10,
-                    formatter: (name = "") => name.replaceAll(" ", "\n"),
-                  },
-                },
-                series: [
-                  {
-                    type: "radar",
-                    data: [
-                      { value: dimensions.map((dimension) => dimension.score) },
-                    ],
-                  },
-                ],
-              }}
+              size="ability"
+              option={radarOption(
+                dimensions.map((dimension) => ({
+                  name: t(`data.dimension.${dimension.code}`),
+                  score: dimension.score,
+                })),
+                t("v.overallScore"),
+              )}
             />
             <dl className="grid gap-3 sm:grid-cols-2">
               {dimensions.map((dimension) => (
@@ -136,7 +124,7 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
           <>
             <Chart
               label={t("v12.teamActivity")}
-              palette="activity"
+              palette="teamActivity"
               option={trendOption(
                 analysis.activityStats.map((item) => item.date),
                 [
@@ -262,7 +250,7 @@ export function TeamBatchView({
   );
 }
 export function TeamInsights({ team }: { team: TeamDetailDto }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { user } = useAccounts();
   const client = useQueryClient();
   const [page, setPage] = useState(1);
@@ -344,7 +332,10 @@ export function TeamInsights({ team }: { team: TeamDetailDto }) {
             className="flex flex-wrap justify-between gap-3"
           >
             <span>
-              {item.createdAt} · {item.includedMemberCount}/{item.memberCount}
+              <time dateTime={item.createdAt}>
+                {formatTimestamp(item.createdAt, locale)}
+              </time>{" "}
+              · {item.includedMemberCount}/{item.memberCount}
             </span>
             <Button
               wrap
@@ -385,7 +376,7 @@ export function TeamRecommendations({ team }: { team: TeamDetailDto }) {
     (signal) => v012.teamAnalysis(team.teamId, signal),
   );
   const levelReady = !!analysis.data && analysis.data.levelMemberCount > 0;
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { user } = useAccounts();
   const client = useQueryClient();
   const id = useId();
@@ -515,7 +506,9 @@ export function TeamRecommendations({ team }: { team: TeamDetailDto }) {
           key={item.batchId}
           className="flex flex-wrap justify-between gap-2"
         >
-          <time dateTime={item.generatedAt}>{item.generatedAt}</time>
+          <time dateTime={item.generatedAt}>
+            {formatTimestamp(item.generatedAt, locale)}
+          </time>
           <Button
             wrap
             variant="outline"

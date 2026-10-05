@@ -2,7 +2,11 @@
 import type { AnalysisDto } from "@/lib/api/schemas";
 import type { CopyKey } from "@/lib/i18n/messages";
 import { activitySeries } from "@/lib/charts/data";
-import { distributionOption, trendOption } from "@/lib/charts/options";
+import {
+  distributionOption,
+  radarOption,
+  trendOption,
+} from "@/lib/charts/options";
 import { useLocale } from "@/components/layout/locale-provider";
 import {
   Card,
@@ -219,34 +223,14 @@ export function AnalysisView({
                   <Chart
                     palette="ability"
                     label={t("v.dimensions")}
-                    option={{
-                      radar: {
-                        indicator: scores.map((item) => ({
-                          name: t(`data.dimension.${item.code}`),
-                          max: 100,
-                        })),
-                        radius: "62%",
-                        axisName: {
-                          formatter: (name = "") => name.replaceAll(" ", "\n"),
-                          fontSize: 11,
-                        },
-                        splitNumber: 4,
-                      },
-                      series: [
-                        {
-                          type: "radar",
-                          symbolSize: 4,
-                          lineStyle: { width: 2 },
-                          areaStyle: { opacity: 0.12 },
-                          data: [
-                            {
-                              name: t("v.overallScore"),
-                              value: scores.map((item) => item.score),
-                            },
-                          ],
-                        },
-                      ],
-                    }}
+                    size="ability"
+                    option={radarOption(
+                      scores.map((item) => ({
+                        name: t(`data.dimension.${item.code}`),
+                        score: item.score,
+                      })),
+                      t("v.overallScore"),
+                    )}
                   />
                 </div>
                 <dl className="analysis-dimension-list">

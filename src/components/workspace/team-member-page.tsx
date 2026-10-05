@@ -17,7 +17,12 @@ import { Panel, useTeamQuery } from "./v012-shared";
 import { EmptyState, Pagination, QueryFeedback } from "./feedback";
 import { MetricPanel } from "./metric-panel";
 import { Chart } from "./chart";
-import { trendOption, distributionOption } from "@/lib/charts/options";
+import {
+  trendOption,
+  distributionOption,
+  radarOption,
+} from "@/lib/charts/options";
+import { formatTimestamp } from "@/lib/i18n/locale";
 import { PersonalReportView } from "./personal-reports-page";
 import { useAccounts } from "./account-provider";
 const views = [
@@ -215,25 +220,14 @@ export function SharedProfileView({ data }: { data: SharedAbilityProfileDto }) {
       <Chart
         label={t("v.dimensions")}
         palette="ability"
-        option={{
-          radar: {
-            indicator: dimensions.map((item) => ({
-              name: t(`data.dimension.${item.code}`),
-              max: 100,
-            })),
-            radius: "52%",
-            axisName: {
-              fontSize: 10,
-              formatter: (name = "") => name.replaceAll(" ", "\n"),
-            },
-          },
-          series: [
-            {
-              type: "radar",
-              data: [{ value: dimensions.map((item) => item.score) }],
-            },
-          ],
-        }}
+        size="ability"
+        option={radarOption(
+          dimensions.map((item) => ({
+            name: t(`data.dimension.${item.code}`),
+            score: item.score,
+          })),
+          t("v.overallScore"),
+        )}
       />
       <dl className="grid gap-2 sm:grid-cols-2">
         {dimensions.map((item) => (
@@ -359,7 +353,7 @@ function MemberData({
   view: MemberView;
   refreshAccess: () => void;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [page, setPage] = useState(1);
   const [reportId, setReportId] = useState<string | null>(null);
   const params = { publicId, view, page, reportId };
@@ -468,7 +462,9 @@ function MemberData({
                   key={item.reportId}
                   className="flex flex-wrap justify-between gap-2"
                 >
-                  <time dateTime={item.generatedAt}>{item.generatedAt}</time>
+                  <time dateTime={item.generatedAt}>
+                    {formatTimestamp(item.generatedAt, locale)}
+                  </time>
                   <Button
                     wrap
                     variant="outline"

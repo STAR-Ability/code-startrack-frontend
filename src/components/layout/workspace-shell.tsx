@@ -136,6 +136,14 @@ function Navigation() {
                         aria-label={t(label)}
                         aria-current={active ? "page" : undefined}
                         className="workspace-nav"
+                        data-tone={
+                          section.label === "v12.navTeams" ||
+                          section.label === "v12.navCoach"
+                            ? "support"
+                            : href === "/profile" || href === "/analysis"
+                              ? "insight"
+                              : "info"
+                        }
                         onClick={() => setOpenMobile(false)}
                       >
                         <Icon className="size-4 shrink-0" aria-hidden="true" />

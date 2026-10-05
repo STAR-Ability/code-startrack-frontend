@@ -1,6 +1,10 @@
 "use client";
 import Link from "next/link";
-import { ArrowRightIcon, ChartNoAxesCombinedIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  ChartNoAxesCombinedIcon,
+  TargetIcon,
+} from "lucide-react";
 import { v012 } from "@/lib/api/v012";
 import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
 import { useLocale } from "@/components/layout/locale-provider";
@@ -26,6 +30,78 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MetricPanel } from "./metric-panel";
+import type { UserAnalysisDto } from "@/lib/api/v012-schemas";
+import { Skeleton } from "@/components/ui/skeleton";
+function DashboardDirection({
+  analysis,
+  loading,
+  failed,
+}: {
+  analysis: UserAnalysisDto | null;
+  loading: boolean;
+  failed: boolean;
+}) {
+  const { t } = useLocale();
+  if (failed && !analysis) return null;
+  const ready = !!analysis && analysis.summary.submissionCount > 0;
+  return (
+    <Card
+      variant="recommendation"
+      interaction="none"
+      size="lg"
+      data-dashboard-direction
+    >
+      <CardHeader>
+        <CardDescription>{t("dashboard.nextStep")}</CardDescription>
+        <CardTitle>
+          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            {loading ? (
+              <Skeleton className="h-8 w-48 max-w-full" />
+            ) : (
+              t(ready ? "dashboard.readyTitle" : "dashboard.startTitle")
+            )}
+          </h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex min-w-0 flex-wrap items-center justify-between gap-5">
+        <div className="flex min-w-0 flex-col gap-3">
+          {ready && (
+            <Badge variant="insight" wrap className="self-start">
+              <TargetIcon aria-hidden="true" />
+              {t("v.weakest")} ·{" "}
+              {t(`data.dimension.${analysis.weakestDimension}`)}
+            </Badge>
+          )}
+          {loading ? (
+            <Skeleton className="h-5 w-64 max-w-full" />
+          ) : (
+            <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+              {t(ready ? "dashboard.readyNote" : "dashboard.startNote")}
+            </p>
+          )}
+        </div>
+        {!loading && (
+          <div className="flex min-w-0 flex-wrap gap-3">
+            <Link
+              href={ready ? "/practice" : "/accounts"}
+              className={buttonVariants({ wrap: true, size: "lg" })}
+            >
+              {t(ready ? "dashboard.openPractice" : "v.accounts")}
+              <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+            </Link>
+            <Link
+              href="/profile"
+              className={buttonVariants({ variant: "outline", wrap: true })}
+            >
+              {t("v12.openProfile")}
+            </Link>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function UserDashboardPage() {
   const { t, locale } = useLocale();
   const overview = useUserQuery(
@@ -59,27 +135,11 @@ export function UserDashboardPage() {
   );
   return (
     <>
-      <DataRegion
-        query={overview}
-        name={t("v12.aggregate")}
-        empty={!!overview.data && overview.data.summary.submissionCount === 0}
-      >
-        <p className="text-sm text-muted-foreground">
-          {t("v12.aggregateNote")}
-        </p>
-
-        {overview.data ? (
-          <AnalysisView
-            analysis={overview.data}
-            statistics
-            aggregate
-            distributions={false}
-            ratings={false}
-          />
-        ) : (
-          !overview.isFetching && <UserAnalysisEmpty />
-        )}
-      </DataRegion>
+      <DashboardDirection
+        analysis={analysis.data ?? null}
+        loading={analysis.isFetching && !analysis.data}
+        failed={!!analysis.error}
+      />
       <QueryFeedback query={analysis} />
       {analysis.data && (
         <>
@@ -104,12 +164,9 @@ export function UserDashboardPage() {
             }
             metrics={[
               ["v.overallScore", analysis.data.overallScore],
-              [
-                "v.weakest",
-                t(`data.dimension.${analysis.data.weakestDimension}`),
-              ],
               ["v12.highestRating", analysis.data.currentRating],
               ["v12.highestMaxRating", analysis.data.maxRating],
+              ["v12.sources", analysis.data.sourceAccountCount],
             ]}
           />
           {analysis.data.stale && (
@@ -120,19 +177,32 @@ export function UserDashboardPage() {
           {!analysis.data.summary.submissionCount && (
             <EmptyState title={t("v.noEvidence")} />
           )}
-          <Link
-            href="/profile"
-            className={buttonVariants({
-              variant: "outline",
-              wrap: true,
-              className: "self-start",
-            })}
-          >
-            {t("v12.openProfile")}
-          </Link>
-          <UserSources analysis={analysis.data} />
         </>
       )}
+      <DataRegion
+        query={overview}
+        name={t("v12.aggregate")}
+        empty={!!overview.data && overview.data.summary.submissionCount === 0}
+      >
+        <p className="text-sm text-muted-foreground">
+          {t("v12.aggregateNote")}
+        </p>
+
+        {overview.data ? (
+          <AnalysisView
+            analysis={overview.data}
+            statistics
+            aggregate
+            distributions={false}
+            ratings={false}
+          />
+        ) : (
+          !overview.isFetching &&
+          !overview.error &&
+          overview.data === null && <UserAnalysisEmpty />
+        )}
+      </DataRegion>
+      {analysis.data && <UserSources analysis={analysis.data} />}
       <UserRebuild />
       <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <Card variant="analysis" interaction="none" className="min-w-0">
@@ -174,7 +244,11 @@ export function UserDashboardPage() {
             </Link>
           </CardFooter>
         </Card>
-        <Panel title="v12.collaborationUpdates" variant="supporting">
+        <Panel
+          title="v12.collaborationUpdates"
+          variant="supporting"
+          tone="support"
+        >
           <section className="flex min-w-0 flex-col gap-3">
             <h3 className="text-sm font-medium">{t("v12.myTeams")}</h3>
             <QueryFeedback query={teams} />

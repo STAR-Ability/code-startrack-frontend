@@ -392,11 +392,25 @@
     @apply mb-4 text-xs font-medium tracking-widest text-muted-foreground;
   }
   .workspace-nav {
+    --navigation-accent: var(--info);
+    --navigation-tint: var(--info-soft);
     @apply flex min-w-0 items-center gap-3 rounded-lg px-3 py-3 text-sm text-muted-foreground transition-[background-color,color,box-shadow,width,height,padding] duration-200 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 active:bg-sidebar-accent/80 motion-reduce:transition-none hover:bg-sidebar-accent hover:text-foreground;
   }
+  .workspace-nav[data-tone="insight"] {
+    --navigation-accent: var(--insight);
+    --navigation-tint: var(--insight-soft);
+  }
+  .workspace-nav[data-tone="support"] {
+    --navigation-accent: var(--support);
+    --navigation-tint: var(--support-soft);
+  }
   .workspace-nav[aria-current="page"] {
-    @apply bg-sidebar-accent font-medium text-foreground;
-    box-shadow: inset 2px 0 var(--foreground);
+    @apply font-medium text-foreground;
+    background-color: var(--navigation-tint);
+    box-shadow: inset 2px 0 var(--navigation-accent);
+  }
+  .workspace-nav[aria-current="page"] > svg {
+    color: var(--navigation-accent);
   }
   .workspace-nav-mobile {
     @apply h-full flex-col gap-1 px-1 py-2 text-center text-xs wrap-anywhere;

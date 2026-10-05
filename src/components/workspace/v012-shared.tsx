@@ -30,18 +30,21 @@ export function Panel({
   children,
   variant = "default",
   size = "sm",
+  tone,
 }: {
   title: CopyKey;
   description?: string;
   children: React.ReactNode;
   variant?: React.ComponentProps<typeof Card>["variant"];
   size?: React.ComponentProps<typeof Card>["size"];
+  tone?: React.ComponentProps<typeof Card>["tone"];
 }) {
   const { t } = useLocale();
   return (
     <Card
       size={size}
       variant={variant}
+      tone={tone}
       interaction="none"
       className="min-w-0 wrap-anywhere"
     >

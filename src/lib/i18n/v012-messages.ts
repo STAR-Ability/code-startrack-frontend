@@ -1,4 +1,14 @@
 export const v012Zh = {
+  "dashboard.workspace": "学习工作区",
+  "dashboard.nextStep": "下一步练习",
+  "dashboard.readyTitle": "把画像，转化为下一次练习。",
+  "dashboard.readyNote":
+    "参考全部历史的能力方向，在训练页选择适合当前阶段的下一道题。",
+  "dashboard.startTitle": "让练习，从清晰的起点开始。",
+  "dashboard.startNote":
+    "查看来源账号与同步状态，积累训练记录后再选择适合自己的练习。",
+  "dashboard.openPractice": "选择下一道题",
+
   "v12.coachStats": "工作区概况",
   "v12.expires": "邀请到期",
   "v12.overview": "概览",
@@ -206,6 +216,16 @@ export const v012Zh = {
   "v12.status.SENT": "已发送",
 } as const;
 export const v012En = {
+  "dashboard.workspace": "Learning workspace",
+  "dashboard.nextStep": "Your next practice",
+  "dashboard.readyTitle": "Turn your profile into your next practice.",
+  "dashboard.readyNote":
+    "Use your all-history ability direction to choose the next problem for your current stage in Practice.",
+  "dashboard.startTitle": "Give your practice a clear starting point.",
+  "dashboard.startNote":
+    "Review source accounts and sync status, then use your training evidence to choose your next practice.",
+  "dashboard.openPractice": "Choose your next problem",
+
   "v12.coachStats": "Workspace overview",
   "v12.expires": "Expires",
   "v12.overview": "Overview",

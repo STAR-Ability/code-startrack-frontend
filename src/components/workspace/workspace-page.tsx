@@ -98,8 +98,10 @@ export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
         </Field>
       )}
       {!inline && (
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span>{user.displayName ?? user.username}</span>
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3 text-sm">
+          <span className="min-w-0 wrap-anywhere">
+            {user.displayName ?? user.username}
+          </span>
           <Link href="/accounts" className="underline underline-offset-4">
             {t("v.accounts")}
           </Link>
@@ -133,7 +135,7 @@ export function WorkspacePage({
     >
       <header className="workspace-page-header flex flex-col gap-3">
         <p className="text-xs tracking-widest text-muted-foreground">
-          codeStartrack · V0.12
+          codeStartrack · {t("dashboard.workspace")}
         </p>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl font-semibold tracking-tight">{t(title)}</h1>

@@ -51,6 +51,7 @@ export function AnalysisView({
   activity = true,
   ratings = true,
   distributions = true,
+  emptyState,
 }: {
   analysis: AnalysisPresentation | null;
   aggregate?: boolean;
@@ -64,6 +65,7 @@ export function AnalysisView({
   metricTitle?: CopyKey;
   ability?: boolean;
   trend?: React.ReactNode;
+  emptyState?: React.ReactNode;
 }) {
   const { t, locale } = useLocale();
   const accountTimezone = useAccountTimezone();
@@ -246,7 +248,7 @@ export function AnalysisView({
                     </DetailsDisclosure>
                   </>
                 ) : (
-                  <EmptyState title={t("v.noRecords")} />
+                  <EmptyState embedded title={t("v.noRecords")} />
                 )}
               </CardContent>
             </Card>
@@ -305,7 +307,7 @@ export function AnalysisView({
                       </DetailsDisclosure>
                     </>
                   ) : (
-                    <EmptyState title={t("v.noRecords")} />
+                    <EmptyState embedded title={t("v.noRecords")} />
                   )}
                 </CardContent>
               </Card>
@@ -354,7 +356,7 @@ export function AnalysisView({
                       </DetailsDisclosure>
                     </>
                   ) : (
-                    <EmptyState title={t("v.noRecords")} />
+                    <EmptyState embedded title={t("v.noRecords")} />
                   )}
                 </CardContent>
               </Card>
@@ -381,10 +383,15 @@ export function AnalysisView({
                   </div>
                 </>
               ) : (
-                <div className="lg:col-span-2">
-                  <EmptyState
-                    title={t(unavailable ? "practice.noData" : "v.noAnalysis")}
-                  />
+                <div className="min-w-0 lg:col-span-2">
+                  {emptyState ?? (
+                    <EmptyState
+                      embedded
+                      title={t(
+                        unavailable ? "practice.noData" : "v.noAnalysis",
+                      )}
+                    />
+                  )}
                 </div>
               )
             ) : (

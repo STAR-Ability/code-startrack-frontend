@@ -95,4 +95,43 @@ describe("analysis evidence presentation", () => {
       screen.queryByText("No training evidence yet"),
     ).not.toBeInTheDocument();
   });
+
+  it("shows contextual recovery only for a settled absent dimensional snapshot", () => {
+    const view = (
+      analysis: ReturnType<typeof demoAnalysis> | null,
+      loading = false,
+    ) => (
+      <LocaleProvider initialLocale="en">
+        <AnalysisView
+          analysis={analysis}
+          dimensions
+          ability
+          loading={loading}
+          emptyState={<a href="/accounts">Review source accounts</a>}
+        />
+      </LocaleProvider>
+    );
+    const { rerender } = render(view(null));
+    expect(
+      screen.getByRole("link", { name: "Review source accounts" }),
+    ).toHaveAttribute("href", "/accounts");
+    expect(
+      screen.queryByText("No analysis generated yet"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+
+    rerender(view(null, true));
+    expect(
+      screen.queryByRole("link", { name: "Review source accounts" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+
+    rerender(view(demoAnalysis()));
+    expect(
+      screen.queryByRole("link", { name: "Review source accounts" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "Six dimensions · 0–100" }),
+    ).toBeInTheDocument();
+  });
 });

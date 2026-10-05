@@ -52,8 +52,8 @@ export function MetricPanel({
           {metrics.map(([label, v]) => (
             <div
               key={label}
-              data-tone={metricTones[label]}
-              data-value-type={typeof v}
+              data-tone={v === null ? undefined : metricTones[label]}
+              data-value-type={v === null ? "unknown" : typeof v}
             >
               <dt>{t(label)}</dt>
               <dd>{loading ? <Skeleton className="h-7 w-12" /> : value(v)}</dd>
@@ -63,7 +63,10 @@ export function MetricPanel({
         {!!secondary.length && (
           <dl className="metric-details">
             {secondary.map(([label, v]) => (
-              <div key={label}>
+              <div
+                key={label}
+                data-value-type={v === null ? "unknown" : typeof v}
+              >
                 <dt>{t(label)}</dt>
                 <dd>{loading ? <Skeleton className="h-4 w-8" /> : value(v)}</dd>
               </div>

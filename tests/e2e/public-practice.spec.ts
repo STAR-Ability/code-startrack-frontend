@@ -1,4 +1,5 @@
 import type { Route } from "@playwright/test";
+import { translate } from "@/lib/i18n/locale";
 import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 
 const failure = (route: Route, code: string, status: number) =>
@@ -22,7 +23,13 @@ test("visitors browse practice modes and navigate without private account reads"
   await expect(page).toHaveURL("/practice");
   await expect(
     page.getByText("请登录查看更多数据", { exact: true }),
-  ).toHaveCount(2);
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole("heading", { name: "为你推荐", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "推荐历史", exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "弱项训练", exact: true }).click();
   await expect(
     page.getByText("围绕相对薄弱的知识点，进行更有针对性的练习。"),
@@ -71,7 +78,10 @@ for (const status of [404, 503]) {
     ).toBeVisible();
     await expect(
       page.getByText("请登录查看更多数据", { exact: true }),
-    ).toHaveCount(2);
+    ).toHaveCount(1);
+    await expect(
+      page.getByRole("heading", { name: "推荐历史", exact: true }),
+    ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "重试", exact: true }),
     ).toBeEnabled();
@@ -229,7 +239,7 @@ test("a missing cached record disappears and session expiry removes all private 
   await page.clock.runFor(200);
   await expect(
     page.getByText("请登录查看更多数据", { exact: true }),
-  ).toHaveCount(2);
+  ).toHaveCount(1);
   await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
   await expect(page).toHaveURL("/practice");
 });
@@ -247,10 +257,49 @@ test("guest practice fits narrow screens and respects reduced motion", async ({
   await page.goto("/practice");
   await expect(
     page.getByText("Log in to see more data", { exact: true }),
-  ).toHaveCount(2);
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole("heading", { name: "Picked for you", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Recommendation history", exact: true }),
+  ).toBeVisible();
   await page.evaluate(() => {
     document.documentElement.style.fontSize = "200%";
   });
+  const loginPrompt = page.locator('[data-slot="empty"]').filter({
+    has: page.getByText("Log in to see more data", { exact: true }),
+  });
+  const login = loginPrompt.getByRole("link", {
+    name: translate("en", "auth.login"),
+    exact: true,
+  });
+  const demo = loginPrompt.getByRole("link", {
+    name: translate("en", "ui.exploreDemo"),
+    exact: true,
+  });
+  await expect(login).toHaveAttribute("href", "/login");
+  await expect(demo).toHaveAttribute("href", "/demo");
+  for (const target of [
+    loginPrompt,
+    loginPrompt.locator('[data-slot="empty-header"]'),
+    loginPrompt.locator('[data-slot="empty-content"]'),
+    login,
+    demo,
+  ]) {
+    await expect(target).toBeVisible();
+    await expect
+      .poll(
+        () =>
+          target.evaluate(
+            (element) => element.scrollWidth <= element.clientWidth + 1,
+          ),
+        {
+          message: "Guest guidance and its actions fit at 320px with 200% text",
+        },
+      )
+      .toBe(true);
+  }
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

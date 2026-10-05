@@ -108,7 +108,7 @@ export function SharedTrainingView({
             </DetailsDisclosure>
           </>
         ) : (
-          <EmptyState title={t("v.noRecords")} />
+          <EmptyState embedded title={t("v.noRecords")} />
         )}
       </Panel>
       <Panel
@@ -155,7 +155,7 @@ export function SharedTrainingView({
             </DetailsDisclosure>
           </>
         ) : (
-          <EmptyState title={t("v.noRecords")} />
+          <EmptyState embedded title={t("v.noRecords")} />
         )}
       </Panel>
       <Panel title="v.difficultyStats" variant="analysis">
@@ -194,7 +194,7 @@ export function SharedTrainingView({
             </DetailsDisclosure>
           </>
         ) : (
-          <EmptyState title={t("v.noRecords")} />
+          <EmptyState embedded title={t("v.noRecords")} />
         )}
       </Panel>
     </>

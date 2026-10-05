@@ -105,3 +105,30 @@ locally. Supporting problems use compact composition rather than repeating the
 hero. Generated timestamps use the existing locale formatter and explicit UTC
 context, retaining the original instant in `time[datetime]`. Backend ordering,
 rank, completion, mode and generation behavior remain unchanged.
+
+## Supporting information and absence
+
+Use the embedded EmptyState composition inside existing cards and chart panels;
+the enclosing surface already supplies grouping. Keep the standalone variant for
+page-level guidance. A missing aggregate profile composes its account/rebuild
+guidance into the dimension section once rather than repeating empty containers.
+Unknown metric values use neutral text; valid numeric zero retains the metric's
+semantic tone.
+
+The dashboard gives the personal report a distinct analysis surface and groups
+teams, invitations and notifications as supporting updates. Destination links
+name their purpose, and lists retain complete supplied names and counts. Guest
+practice uses one authentication prompt beside the history explanation. Reuse
+Field and FieldLabel with native checkbox semantics for history filtering; keep
+the whole label clickable, visible keyboard focus and the original read-only
+behavior.
+
+Responsive checks must inspect overflow inside cards and feedback actions, not
+only document width. Empty headers and guidance accept their available width;
+recovery actions wrap, and nested guest prompts use the enclosing card's spacing
+on narrow screens. The metric strip uses a content-aware minimum below desktop
+width so enlarged text can stack instead of becoming letter-width columns.
+
+Recommendation reads with no known result show the shared loading feedback.
+Render the settled empty batch only after that initial read resolves; retain
+known cached results while a refresh is pending.

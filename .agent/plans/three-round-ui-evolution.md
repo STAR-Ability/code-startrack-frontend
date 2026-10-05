@@ -32,9 +32,9 @@ The old completed hierarchy plan describes previous work, not new requirements. 
 - [x] Mock dev startup collision repaired; synthetic scenarios, normal dev and production export verified.
 - [x] Recommendations prioritize next action using only supplied data; chart evidence remains accessible.
 - [x] Missing analysis never masquerades as zero ability; genuine zero evidence retains its meaning.
-- [ ] Responsive, bilingual, keyboard and reduced-motion checks pass on rendered pages.
-- [ ] Required scripts pass, complete diffs reviewed, scope and limitations recorded.
-- [ ] Three Issues have results and are closed after each accepted commit is pushed and verified on dev.
+- [x] Responsive, bilingual, keyboard and reduced-motion checks pass on rendered pages.
+- [x] Required scripts pass, complete diffs reviewed, scope and limitations recorded.
+- Git publication acceptance: each tracking Issue closes only after its reviewed round commit is pushed and verified on dev. Publication receipts belong in Issues #11, #12 and #13.
 
 ## Implementation stages
 
@@ -58,11 +58,21 @@ subagent owns recommendation/CSS/copy, engineering owns analysis/chart views,
 independent reviewer owns state/evidence regressions and profile state stories.
 Main owns final docs/integration and browser/build/suite verification.
 
-### Stage 3 — Final product polish
+### Stage 3 — Final product polish (Issue #13)
 
 Areas: remaining dashboard/actions/state/accessibility/responsive consistency.
 Start with a separate Issue after Round 2 acceptance. Refine targeted deficiencies discovered in browser; no unnecessary architecture changes.
 Expected: cohesive final interface with explicit action labels and complete validation.
+
+Approved after Main screenshots and independent review: primary report beside
+one collaboration surface, one guest login prompt, wrapping account sources,
+contextual aggregate absence composed once, embedded EmptyState variant,
+neutral unknown metric typography, readable analysis/history timestamps,
+labeled team score/difficulty and consistent labeled history checkbox.
+Visual owns dashboard, user analysis/sources, guest practice and bilingual V0.12
+copy; engineering owns shared feedback/metrics/CSS, AnalysisView/account history,
+team metadata and history checkbox. Reviewer owns behavioral tests/stories.
+Main retains integration, docs, rendered/full diff review and verification.
 
 ## Testing
 
@@ -86,7 +96,7 @@ Each round is a scoped coherent commit with no data/schema migration. Revert thr
 - [x] Initial audit and clean dev checkout.
 - [x] Round 1 implementation, verification and Main acceptance; commit/push and Issue closure recorded in Issue #11.
 - [x] Round 2 implementation, verification and Main acceptance; commit/push and Issue closure recorded in Issue #12.
-- [ ] Round 3 implementation, verification, Main acceptance, push and Issue closure.
+- [x] Round 3 implementation, verification and Main acceptance. Final publication and closure receipt is recorded in Issue #13 after remote verification.
 
 ## Decisions / deviations
 
@@ -129,3 +139,37 @@ confirmed API/rank/completion/cache/audience boundaries remain unchanged.
 Round 3 targets the observed repetitive empty containers, dashboard actions and
 times, guest login duplication and long account names. Real backend/deployment
 remain NOT RUN. GitHub CI for Round 1 also completed successfully.
+
+## Round 3 acceptance
+
+PASS: lint, format check, typecheck, 175 unit tests, production export,
+Storybook build and 324 Storybook browser checks. Full E2E: 196 passed, one
+intentional mobile skip, four failures from two selectors in both projects.
+The new recovery test incorrectly rooted its relative card filter at main;
+the existing no-account test still expected a combined team-name/count link.
+Both selectors now follow the semantic composition, retaining local overflow
+checks and adding exact destination and labeled member-count assertions.
+All four corrected cases passed; all 200 applicable E2E cases have passing
+results. Product source did not change after the complete browser suites.
+
+Main independently inspected production dashboard, practice and team
+recommendations, desktop through 320px, visible keyboard focus, chart roles,
+and contextual/mixed-evidence Storybook examples. No page errors or external
+requests occurred in the production dashboard/practice review. Dev mock was
+restarted and verified against its dynamically assigned synthetic fixture.
+Delayed recommendations now show loading without premature empty copy and
+retain known cached results during refresh.
+
+Main's 320px/200% text review found local clipping hidden by Card overflow;
+shared Empty sizing/wrapping, a content-aware metric grid and guest prompt
+spacing repaired it. Local card/header/action regression assertions passed.
+The fixed shell remains stable during scrolling; content and local controls
+remain interactive. Independent source review found no API/auth/query-scope,
+snapshot provenance or team audience regression. The existing white-led
+identity, shadcn foundation and ECharts stack are preserved.
+
+An unrelated .gitignore edit present after interrupted execution is preserved
+and excluded from the round commit. Its pre-existing trailing whitespace is
+excluded from the task diff check. Real authenticated backend, Safari-specific
+behavior, production performance profiling and deployment are NOT RUN.
+GitHub CI for both earlier round commits completed successfully.

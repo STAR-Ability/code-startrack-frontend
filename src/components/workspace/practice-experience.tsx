@@ -25,38 +25,38 @@ import { SyncPanel } from "./sync-panel";
 function GuestPracticePanels() {
   const { t } = useLocale();
   return (
-    <div className="flex flex-col gap-6">
-      <div className="practice-panels grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        {(
-          [
-            {
-              title: "practice.forYou",
-              description: "practice.forYouDescription",
-              icon: BookOpenIcon,
-            },
-            {
-              title: "v.recommendationHistory",
-              description: "practice.historyDescription",
-              icon: HistoryIcon,
-            },
-          ] as const
-        ).map(({ title, description, icon: Icon }) => (
-          <Card key={title} size="lg" className="practice-panel">
-            <CardHeader>
-              <CardTitle>
-                <h2 className="flex items-center gap-2">
-                  <Icon className="size-4" aria-hidden="true" />
-                  {t(title)}
-                </h2>
-              </CardTitle>
-              <CardDescription>{t(description)}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <LoginPrompt />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div className="practice-panels grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+      <Card
+        variant="recommendation"
+        size="lg"
+        interaction="none"
+        className="practice-panel"
+      >
+        <CardHeader>
+          <CardTitle>
+            <h2 className="flex items-center gap-2">
+              <BookOpenIcon className="size-4" aria-hidden="true" />
+              {t("practice.forYou")}
+            </h2>
+          </CardTitle>
+          <CardDescription>{t("practice.forYouDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LoginPrompt />
+        </CardContent>
+      </Card>
+      <section className="flex min-w-0 flex-col gap-3 px-1 py-5">
+        <h2 className="flex items-center gap-2 font-medium">
+          <HistoryIcon
+            className="size-4 text-muted-foreground"
+            aria-hidden="true"
+          />
+          {t("v.recommendationHistory")}
+        </h2>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {t("practice.historyDescription")}
+        </p>
+      </section>
     </div>
   );
 }

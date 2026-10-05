@@ -8,6 +8,7 @@ import { isCurrentUser } from "@/lib/query/session";
 import type { UserAnalysisDto } from "@/lib/api/v012-schemas";
 import { windows, type AnalysisWindow } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
+import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
 import { Button } from "@/components/ui/button";
 import { useAccounts } from "./account-provider";
 import { useUserQuery } from "./use-user-query";
@@ -24,35 +25,53 @@ import { Panel, AiJobNotice } from "./v012-shared";
 import { ApiError } from "@/lib/api/errors";
 import { isAiJobPending } from "./use-ai-job";
 export function UserSources({ analysis }: { analysis: UserAnalysisDto }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const { selectAccount } = useAccounts();
   return (
     <Panel
       title="v12.sourceAccounts"
-      description={`${t("v12.sources")}: ${analysis.sourceAccountCount}`}
+      variant="supporting"
+      description={`${t("v12.sources")}: ${formatNumber(analysis.sourceAccountCount, locale)}`}
     >
-      <dl className="flex flex-col gap-3">
+      <dl className="flex min-w-0 flex-col divide-y">
         {analysis.ratingAccounts.map((account) => (
           <div
             key={account.accountId}
-            className="flex flex-wrap justify-between gap-2"
+            className="flex min-w-0 flex-wrap items-start justify-between gap-x-6 gap-y-2 py-3 first:pt-0 last:pb-0"
           >
-            <dt>
+            <dt className="min-w-0">
               <Link
                 href="/accounts"
                 onClick={() => selectAccount(account.accountId)}
-                className="underline"
+                className="auth-text-link wrap-anywhere font-medium"
               >
                 {account.username}
               </Link>
             </dt>
-            <dd>
-              {t("v.rating")}: {account.currentRating ?? "—"} ·{" "}
-              {t("v.maxRating")}: {account.maxRating ?? "—"}
+            <dd className="flex min-w-0 flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
+              <span>
+                {t("v.rating")}:{" "}
+                <span className="font-medium tabular-nums text-foreground">
+                  {account.currentRating === null
+                    ? "—"
+                    : formatNumber(account.currentRating, locale)}
+                </span>
+              </span>
+              <span>
+                {t("v.maxRating")}:{" "}
+                <span className="font-medium tabular-nums text-foreground">
+                  {account.maxRating === null
+                    ? "—"
+                    : formatNumber(account.maxRating, locale)}
+                </span>
+              </span>
             </dd>
           </div>
         ))}
       </dl>
+      {!analysis.ratingAccounts.length && (
+        <EmptyState title={t("v.noRecords")} embedded />
+      )}
     </Panel>
   );
 }
@@ -95,11 +114,16 @@ export function UserRebuild() {
     </div>
   );
 }
-export function UserAnalysisEmpty() {
+export function UserAnalysisEmpty({
+  embedded = false,
+}: {
+  embedded?: boolean;
+}) {
   const { accounts } = useAccounts();
   const { t } = useLocale();
   return (
     <EmptyState
+      embedded={embedded}
       title={t(accounts.length ? "v12.sourcePending" : "v12.bindGuide")}
       href="/accounts"
       action={t("v.accounts")}
@@ -107,7 +131,7 @@ export function UserAnalysisEmpty() {
   );
 }
 export function UserProfilePage() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [window, setWindow] = useState<AnalysisWindow>("ALL");
   const [page, setPage] = useState(1);
   const [snapshotId, setSnapshotId] = useState<string | null>(null);
@@ -162,9 +186,14 @@ export function UserProfilePage() {
           loading={displayed.isFetching}
           unavailable={!!displayed.error}
           metricTitle="metrics.ability"
+          emptyState={
+            displayed.isSuccess && !displayed.error ? (
+              <UserAnalysisEmpty embedded />
+            ) : undefined
+          }
         />
       )}
-      {displayed.data ? (
+      {displayed.data && (
         <>
           <AnalysisView
             analysis={displayed.data}
@@ -174,30 +203,37 @@ export function UserProfilePage() {
           />
           <UserSources analysis={displayed.data} />
         </>
-      ) : (
-        !displayed.isFetching && <UserAnalysisEmpty />
       )}
-      <Panel title="v12.analysisHistory">
+      <Panel title="v12.analysisHistory" variant="supporting">
         <QueryFeedback query={history} />
-        {history.data?.data.map((item) => (
-          <div
-            key={item.snapshotId}
-            className="flex flex-wrap items-center justify-between gap-3"
-          >
-            <span>
-              {item.createdAt} · {item.overallScore} / 100
-            </span>
-            <Button
-              wrap
-              variant="outline"
-              onClick={() => setSnapshotId(item.snapshotId)}
+        <ul className="flex min-w-0 flex-col divide-y">
+          {history.data?.data.map((item) => (
+            <li
+              key={item.snapshotId}
+              className="flex min-w-0 flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
             >
-              {t("v.snapshot")}
-            </Button>
-          </div>
-        ))}
+              <div className="flex min-w-0 flex-col gap-1">
+                <time dateTime={item.createdAt}>
+                  {formatTimestamp(item.createdAt, locale)}
+                </time>
+                <p className="text-xs text-muted-foreground">
+                  {t("v.overallScore")}:{" "}
+                  {formatNumber(item.overallScore, locale, 2)} / 100
+                </p>
+              </div>
+              <Button
+                wrap
+                variant="outline"
+                size="sm"
+                onClick={() => setSnapshotId(item.snapshotId)}
+              >
+                {t("v.snapshot")}
+              </Button>
+            </li>
+          ))}
+        </ul>
         {history.data?.data.length === 0 && (
-          <EmptyState title={t("v.noRecords")} />
+          <EmptyState title={t("v.noRecords")} embedded />
         )}
         <Pagination
           meta={history.data?.meta}

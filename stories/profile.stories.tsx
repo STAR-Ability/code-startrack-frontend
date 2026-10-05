@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { AnalysisView } from "@/components/workspace/analysis-view";
-import { ErrorNotice } from "@/components/workspace/feedback";
+import { EmptyState, ErrorNotice } from "@/components/workspace/feedback";
 import { demoAnalysis } from "@/lib/demo/fixtures";
 import { ApiError } from "@/lib/api/errors";
 import { fn } from "storybook/test";
@@ -34,6 +34,25 @@ export const Loading: Story = {
   args: { analysis: null, loading: true },
 };
 export const Empty: Story = { args: { analysis: null } };
+export const ContextualEmpty: Story = {
+  args: {
+    analysis: null,
+    aggregate: true,
+    emptyState: (
+      <EmptyState
+        embedded
+        title="Your connected accounts are waiting for a profile"
+        description="Rebuild the profile or review the account connections. No score is available yet."
+        href="/accounts"
+        action="Review account connections"
+      />
+    ),
+  },
+};
+export const ContextualEmptyMobile: Story = {
+  ...ContextualEmpty,
+  globals: { ...mobile, locale: "en" },
+};
 export const ZeroEvidence: Story = {
   args: { analysis: demoAnalysis(undefined, "ALL", true) },
 };

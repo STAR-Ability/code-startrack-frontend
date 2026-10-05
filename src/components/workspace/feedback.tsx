@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { cn } from "cn";
 import { useEffect, useState, useId } from "react";
 import {
   CircleAlertIcon,
@@ -306,14 +307,24 @@ export function EmptyState({
   description,
   href,
   action,
+  embedded = false,
 }: {
   title: string;
   description?: string;
   href?: string;
   action?: string;
+  embedded?: boolean;
 }) {
   return (
-    <Empty className="personal-data-empty feedback-enter border border-dashed">
+    <Empty
+      data-embedded={embedded || undefined}
+      className={cn(
+        "feedback-enter",
+        embedded
+          ? "gap-3 rounded-none border-0 bg-transparent px-0 py-4"
+          : "personal-data-empty border border-dashed",
+      )}
+    >
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <InboxIcon aria-hidden="true" />
@@ -322,7 +333,10 @@ export function EmptyState({
         {description && <EmptyDescription>{description}</EmptyDescription>}
       </EmptyHeader>
       {href && (
-        <Link href={href} className={buttonVariants({ variant: "outline" })}>
+        <Link
+          href={href}
+          className={buttonVariants({ variant: "outline", wrap: true })}
+        >
           {action}
         </Link>
       )}

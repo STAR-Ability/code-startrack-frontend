@@ -73,7 +73,7 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
       )}
       <Panel title="v.dimensions">
         {analysis.includedMemberCount === 0 ? (
-          <EmptyState title={t("v12.noAbilitySharing")} />
+          <EmptyState embedded title={t("v12.noAbilitySharing")} />
         ) : (
           <>
             <Chart
@@ -126,7 +126,7 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
       </Panel>
       <Panel title="v12.teamActivity">
         {analysis.trainingMemberCount === 0 ? (
-          <EmptyState title={t("v12.noTrainingSharing")} />
+          <EmptyState embedded title={t("v12.noTrainingSharing")} />
         ) : analysis.activityStats.length ? (
           <>
             <Chart
@@ -180,7 +180,7 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
             </DetailsDisclosure>
           </>
         ) : (
-          <EmptyState title={t("v.noRecords")} />
+          <EmptyState embedded title={t("v.noRecords")} />
         )}
       </Panel>
       {analysis.levelMemberCount === 0 && (
@@ -196,20 +196,26 @@ export function TeamBatchView({
 }: {
   batch: TeamRecommendationBatchDto;
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const number = (value: number) =>
+    new Intl.NumberFormat(locale, {
+      maximumSignificantDigits: 21,
+    }).format(value);
   return (
     <div className="flex flex-col gap-3" data-team-audience={batch.audience}>
       <p>
         {t(`v12.audience.${batch.audience}`)} · {t("v12.targetRating")}:{" "}
-        {batch.targetRating} · {t(`data.dimension.${batch.targetDimension}`)}
+        {number(batch.targetRating)} ·{" "}
+        {t(`data.dimension.${batch.targetDimension}`)}
       </p>
       <p>
-        {t("v.candidateCount")}: {batch.candidateCount} · {t("v.resultCount")}:{" "}
-        {batch.resultCount}
+        {t("v.candidateCount")}: {number(batch.candidateCount)} ·{" "}
+        {t("v.resultCount")}: {number(batch.resultCount)}
       </p>
       {batch.stale && <Badge variant="warning">{t("v.stale")}</Badge>}
       {batch.recommendations.length === 0 && (
         <EmptyState
+          embedded
           title={t("v12.candidateShortage")}
           description={t("v.noCandidates")}
         />
@@ -225,7 +231,11 @@ export function TeamBatchView({
               {item.problem.title ?? item.problem.externalProblemKey}
             </h3>
             <p>
-              {item.problem.difficulty ?? t("v.unrated")} · {item.score}
+              {t("v12.problemDifficulty")}:{" "}
+              {item.problem.difficulty === null
+                ? t("v.unrated")
+                : number(item.problem.difficulty)}{" "}
+              · {t("v12.recommendationScore")}: {number(item.score)}
             </p>
             <p className="break-words">{item.reason}</p>
             <div className="flex flex-wrap gap-2">

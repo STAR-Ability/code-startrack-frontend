@@ -6,6 +6,7 @@ import {
   ErrorNotice,
 } from "@/components/workspace/feedback";
 import { ApiError } from "@/lib/api/errors";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StoryFrame, mobile } from "./helpers";
 
 const meta = {
@@ -37,6 +38,22 @@ export const Empty: Story = {};
 export const WithAction: Story = {
   args: { href: "/accounts", action: "Connect an account" },
 };
+export const Embedded: Story = {
+  args: { embedded: true, href: "/accounts", action: "Connect an account" },
+  render: (args) => (
+    <Card variant="supporting" interaction="none">
+      <CardHeader>
+        <CardTitle>
+          <h2>Account sources</h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <EmptyState {...args} />
+      </CardContent>
+    </Card>
+  ),
+};
+export const EmbeddedMobile: Story = { ...Embedded, globals: mobile };
 export const Loading: Story = { render: () => <LoadingState /> };
 export const CompactLoading: Story = { render: () => <LoadingState compact /> };
 export const Error: Story = {

@@ -74,11 +74,21 @@ test("no CF binding preserves team and notification panels", async ({
   await expect(
     page.getByRole("heading", { name: "我的团队", exact: true }),
   ).toBeVisible();
-  await expect(
-    page
-      .getByRole("main")
-      .getByRole("link", { name: "星轨训练队 · 2", exact: true }),
-  ).toBeVisible();
+  const teamLink = page
+    .getByRole("main")
+    .getByRole("link", { name: "星轨训练队", exact: true });
+  await expect(teamLink).toBeVisible();
+  await expect(teamLink).toHaveAttribute(
+    "href",
+    `/teams/detail?teamId=${owner}`,
+  );
+  const teamRow = page
+    .getByRole("main")
+    .getByRole("listitem")
+    .filter({
+      has: page.getByRole("link", { name: "星轨训练队", exact: true }),
+    });
+  await expect(teamRow.getByText("团队成员: 2", { exact: true })).toBeVisible();
   await expect(
     page
       .getByRole("main")

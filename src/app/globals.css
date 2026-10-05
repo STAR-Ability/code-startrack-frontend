@@ -279,7 +279,7 @@
     display: none;
   }
   .metric-strip {
-    @apply grid grid-cols-2 gap-x-4 gap-y-3 lg:grid-cols-4;
+    @apply grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-x-4 gap-y-3 lg:grid-cols-4;
   }
   .metric-strip > div {
     @apply flex min-w-0 flex-col gap-1 border-l-2 border-border pl-3;
@@ -288,10 +288,13 @@
     @apply text-xs text-muted-foreground;
   }
   .metric-strip dd {
-    @apply font-mono text-2xl font-medium tracking-tight tabular-nums;
+    @apply font-mono text-2xl font-medium tracking-tight wrap-anywhere tabular-nums;
   }
   .metric-strip > [data-value-type="string"] dd {
     @apply font-sans text-base leading-snug;
+  }
+  .metric-strip > [data-value-type="unknown"] dd {
+    @apply font-sans text-base leading-snug font-normal text-muted-foreground;
   }
   .metric-details {
     @apply grid grid-cols-1 gap-x-6 gap-y-2 border-t pt-3 sm:grid-cols-2 xl:grid-cols-4;
@@ -303,7 +306,10 @@
     @apply text-xs text-muted-foreground;
   }
   .metric-details dd {
-    @apply text-xs font-medium tabular-nums;
+    @apply text-xs font-medium wrap-anywhere tabular-nums;
+  }
+  .metric-details > [data-value-type="unknown"] dd {
+    @apply font-normal text-muted-foreground;
   }
   .portfolio-account {
     @apply flex min-w-0 flex-wrap items-center justify-between gap-x-5 gap-y-3 py-3 first:pt-0 last:pb-0;

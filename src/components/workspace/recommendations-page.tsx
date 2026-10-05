@@ -1,6 +1,6 @@
 "use client";
 import { Spinner } from "@/components/ui/spinner";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/errors";
@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { PracticeModePicker } from "./practice-mode-picker";
 import { FormInput } from "@/components/ui/form-input";
-import { FieldGroup } from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +54,7 @@ export function RecommendationsPage({
   const [batchId, setBatchId] = useState<string | null>(null);
   const [snapshotId, setSnapshotId] = useState<string | null>(null);
   const [allModes, setAllModes] = useState(false);
+  const allModesId = useId();
   const attempt = useRef<{
     mode: RecommendationMode;
     limit: number;
@@ -207,7 +208,10 @@ export function RecommendationsPage({
         name={t("practice.forYou")}
         empty={!displayed.data?.recommendations.length}
       >
-        <BatchView batch={displayed.data ?? null} />
+        {!(
+          displayed.data === undefined &&
+          (displayed.isPending || displayed.isFetching)
+        ) && <BatchView batch={displayed.data ?? null} />}
       </DataRegion>
       {displayed.data && (
         <Button
@@ -227,17 +231,25 @@ export function RecommendationsPage({
           <CardDescription>{t("practice.historyDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={allModes}
-              onChange={(event) => {
-                setAllModes(event.target.checked);
-                setPage(1);
-              }}
-            />
-            {t("v.allModes")}
-          </label>
+          <Field orientation="horizontal">
+            <FieldLabel
+              htmlFor={allModesId}
+              className="min-h-11 cursor-pointer gap-3 py-2"
+            >
+              <input
+                id={allModesId}
+                name="allModes"
+                type="checkbox"
+                checked={allModes}
+                className="size-4 shrink-0 accent-primary focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-4"
+                onChange={(event) => {
+                  setAllModes(event.target.checked);
+                  setPage(1);
+                }}
+              />
+              {t("v.allModes")}
+            </FieldLabel>
+          </Field>
           <QueryFeedback query={history} />
           {!history.isFetching && !history.data?.data.length && (
             <EmptyState

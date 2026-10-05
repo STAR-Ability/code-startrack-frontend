@@ -109,7 +109,7 @@ function PersonalDataPlaceholder({ loading = false }: { loading?: boolean }) {
 export function LoginPrompt() {
   const { t } = useLocale();
   return (
-    <Empty className="personal-data-empty">
+    <Empty className="personal-data-empty px-0 sm:px-6">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <LogInIcon aria-hidden="true" />
@@ -118,13 +118,17 @@ export function LoginPrompt() {
         <EmptyDescription>{t("practice.loginDescription")}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Link href="/login" className={buttonVariants()}>
+        <Link href="/login" className={buttonVariants({ wrap: true })}>
           {t("auth.login")}
           <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
         </Link>
         <Link
           href="/demo"
-          className={buttonVariants({ variant: "ghost", size: "sm" })}
+          className={buttonVariants({
+            variant: "ghost",
+            size: "sm",
+            wrap: true,
+          })}
         >
           {t("ui.exploreDemo")}
         </Link>

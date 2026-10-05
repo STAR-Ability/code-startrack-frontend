@@ -54,10 +54,27 @@ export const Empty: Story = {
 export const Unavailable: Story = {
   args: {
     metrics: [
+      ["v.overallScore", null],
       ["v.rating", null],
       ["v.maxRating", null],
+      ["v.solved", null],
     ],
-    secondary: [],
+    secondary: [["v.submissions", null]],
+  },
+};
+export const UnavailableMobile: Story = {
+  ...Unavailable,
+  globals: { ...mobile, locale: "en" },
+};
+export const MixedEvidence: Story = {
+  args: {
+    metrics: [
+      ["v.solved", 0],
+      ["v.submissions", 125_432],
+      ["v.rating", null],
+      ["v.activeDays", 218],
+    ],
+    secondary: [["v.pendingCount", 0]],
   },
 };
 export const Mobile: Story = { globals: mobile };

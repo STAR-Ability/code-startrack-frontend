@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
+import { ArrowRightIcon, ChartNoAxesCombinedIcon } from "lucide-react";
 import { v012 } from "@/lib/api/v012";
+import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
 import { useLocale } from "@/components/layout/locale-provider";
 import { useUserQuery } from "./use-user-query";
 import { AnalysisView } from "./analysis-view";
@@ -14,6 +16,15 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { MetricPanel } from "./metric-panel";
 export function UserDashboardPage() {
   const { t, locale } = useLocale();
@@ -123,63 +134,143 @@ export function UserDashboardPage() {
         </>
       )}
       <UserRebuild />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Panel title="v12.reports" variant="analysis">
-          <QueryFeedback query={report} />
-          {report.data ? (
-            <>
-              <p className="whitespace-pre-wrap break-words">
-                {report.data.content.overview}
-              </p>
-              <time dateTime={report.data.generatedAt}>
-                {report.data.generatedAt}
-              </time>
-            </>
-          ) : (
-            <EmptyState title={t("v12.noReport")} />
-          )}
-          <Link
-            href="/analysis"
-            className={buttonVariants({ variant: "outline" })}
-          >
-            {t("v12.open")}
-          </Link>
-        </Panel>
-        <Panel title="v12.myTeams" variant="supporting">
-          <QueryFeedback query={teams} />
-          {teams.data?.data.map((team) => (
-            <Link
-              key={team.teamId}
-              href={`/teams/detail?teamId=${team.teamId}`}
-              className="underline"
-            >
-              {team.name} · {team.memberCount}
+      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <Card variant="analysis" interaction="none" className="min-w-0">
+          <CardHeader className="gap-2">
+            <CardTitle>
+              <h2 className="flex items-center gap-2">
+                <ChartNoAxesCombinedIcon
+                  className="size-4 shrink-0 text-insight"
+                  aria-hidden="true"
+                />
+                {t("v12.reports")}
+              </h2>
+            </CardTitle>
+            <CardDescription>{t("v12.reportPreviewNote")}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex min-w-0 flex-col gap-4">
+            <QueryFeedback query={report} />
+            {report.data ? (
+              <>
+                <p className="whitespace-pre-wrap wrap-anywhere leading-relaxed">
+                  {report.data.content.overview}
+                </p>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  {t("v12.reportGeneratedAt")}:{" "}
+                  <time dateTime={report.data.generatedAt}>
+                    {formatTimestamp(report.data.generatedAt, locale)}
+                  </time>
+                </p>
+              </>
+            ) : (
+              !report.isFetching &&
+              !report.error && <EmptyState title={t("v12.noReport")} embedded />
+            )}
+          </CardContent>
+          <CardFooter>
+            <Link href="/analysis" className={buttonVariants({ wrap: true })}>
+              {t("v12.openReport")}
+              <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
             </Link>
-          ))}
-          {teams.data?.data.length === 0 && (
-            <EmptyState title={t("v12.noTeams")} />
-          )}
-          <Link href="/teams">{t("v12.teams")}</Link>
-        </Panel>
-        <Panel title="v12.invitations" variant="supporting">
-          <QueryFeedback query={invitations} />
-          {invitations.data?.data.map((invite) => (
-            <p key={invite.invitationId}>
-              {invite.team.name} ·{" "}
-              {invite.inviter.displayName ?? invite.inviter.username}
+          </CardFooter>
+        </Card>
+        <Panel title="v12.collaborationUpdates" variant="supporting">
+          <section className="flex min-w-0 flex-col gap-3">
+            <h3 className="text-sm font-medium">{t("v12.myTeams")}</h3>
+            <QueryFeedback query={teams} />
+            <ul className="flex min-w-0 flex-col divide-y">
+              {teams.data?.data.map((team) => (
+                <li
+                  key={team.teamId}
+                  className="flex min-w-0 flex-col gap-1 py-2 first:pt-0 last:pb-0"
+                >
+                  <Link
+                    href={`/teams/detail?teamId=${team.teamId}`}
+                    className="auth-text-link wrap-anywhere font-medium"
+                  >
+                    {team.name}
+                  </Link>
+                  <p className="text-xs text-muted-foreground">
+                    {t("v12.members")}: {formatNumber(team.memberCount, locale)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {teams.data?.data.length === 0 && (
+              <EmptyState title={t("v12.noTeams")} embedded />
+            )}
+            <Link
+              href="/teams"
+              className={buttonVariants({
+                variant: "link",
+                size: "sm",
+                wrap: true,
+                className: "self-start",
+              })}
+            >
+              {t("v12.openTeams")}
+              <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+            </Link>
+          </section>
+          <Separator />
+          <section className="flex min-w-0 flex-col gap-3">
+            <h3 className="text-sm font-medium">{t("v12.invitations")}</h3>
+            <QueryFeedback query={invitations} />
+            <ul className="flex min-w-0 flex-col divide-y">
+              {invitations.data?.data.map((invite) => (
+                <li
+                  key={invite.invitationId}
+                  className="flex min-w-0 flex-col gap-1 py-2 first:pt-0 last:pb-0"
+                >
+                  <p className="wrap-anywhere font-medium">
+                    {invite.team.name}
+                  </p>
+                  <p className="wrap-anywhere text-xs text-muted-foreground">
+                    {t("v12.invitedBy")}:{" "}
+                    {invite.inviter.displayName ?? invite.inviter.username}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            {invitations.data?.data.length === 0 && (
+              <EmptyState title={t("v12.noInvitations")} embedded />
+            )}
+            <Link
+              href="/teams?tab=invitations"
+              className={buttonVariants({
+                variant: "link",
+                size: "sm",
+                wrap: true,
+                className: "self-start",
+              })}
+            >
+              {t("v12.openInvitations")}
+              <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+            </Link>
+          </section>
+          <Separator />
+          <section className="flex min-w-0 flex-col gap-3">
+            <h3 className="text-sm font-medium">{t("v12.notifications")}</h3>
+            <QueryFeedback query={unread} />
+            <p className="text-xs text-muted-foreground">
+              {t("v12.unread")}:{" "}
+              <span className="font-medium tabular-nums text-foreground">
+                {unread.data ? formatNumber(unread.data.count, locale) : "—"}
+              </span>
             </p>
-          ))}
-          {invitations.data?.data.length === 0 && (
-            <EmptyState title={t("v12.noInvitations")} />
-          )}
-          <Link href="/teams?tab=invitations">{t("v12.open")}</Link>
-        </Panel>
-        <Panel title="v12.notifications" variant="supporting">
-          <QueryFeedback query={unread} />
-          <p>
-            {t("v12.unread")}: {unread.data?.count ?? "—"}
-          </p>
-          <Link href="/notifications">{t("v12.open")}</Link>
+            <Link
+              href="/notifications"
+              className={buttonVariants({
+                variant: "link",
+                size: "sm",
+                wrap: true,
+                className: "self-start",
+              })}
+            >
+              {t("v12.openNotifications")}
+              <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+            </Link>
+          </section>
         </Panel>
       </div>
     </>

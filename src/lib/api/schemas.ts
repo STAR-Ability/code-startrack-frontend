@@ -4,6 +4,10 @@ import { z } from "zod";
 export const idSchema = z.string().regex(/^[1-9]\d*$/);
 export const uuidSchema = z.uuid();
 export const instantSchema = z.iso.datetime();
+// Version metadata does not define the response structure or gate usable data.
+export const algorithmVersionSchema = z
+  .string()
+  .refine((value) => value.trim().length > 0, "Missing algorithm version");
 const count = z.number().int().nonnegative().safe();
 const numeric = z.number().finite();
 const nullableNumber = numeric.nullable();
@@ -200,7 +204,7 @@ export const analysisSchema = z
   .object({
     accountId: idSchema,
     snapshotId: uuidSchema,
-    algorithmVersion: z.string(),
+    algorithmVersion: algorithmVersionSchema,
     mappingVersion: z.string(),
     timezone: z.string(),
     dataCutoffAt: instantSchema,
@@ -270,7 +274,7 @@ export const batchSchema = z.object({
   mode: z.enum(modes),
   targetRating: numeric,
   targetDimension: z.enum(dimensionCodes).nullable(),
-  algorithmVersion: z.string(),
+  algorithmVersion: algorithmVersionSchema,
   mappingVersion: z.string(),
   candidateCount: count,
   resultCount: count,

@@ -19,6 +19,7 @@ import { EmptyState } from "./feedback";
 import { MetricPanel } from "./metric-panel";
 import { Chart } from "./chart";
 import { useAccountTimezone } from "./account-provider";
+import { CompatibilityNotice } from "./compatibility-notice";
 
 export type AnalysisPresentation = Pick<
   AnalysisDto,
@@ -36,7 +37,8 @@ export type AnalysisPresentation = Pick<
   | "tagStats"
   | "difficultyStats"
   | "activityStats"
->;
+> &
+  Partial<Pick<AnalysisDto, "algorithmVersion">>;
 
 export function AnalysisView({
   analysis,
@@ -92,6 +94,12 @@ export function AnalysisView({
     : t("v.unavailable");
   return (
     <>
+      {analysis?.algorithmVersion && (
+        <CompatibilityNotice
+          version={analysis.algorithmVersion}
+          family={aggregate ? "user-profile" : "account-profile"}
+        />
+      )}
       <MetricPanel
         title={metricTitle}
         loading={loading}

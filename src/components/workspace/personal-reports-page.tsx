@@ -23,6 +23,7 @@ import {
 } from "./feedback";
 import { UserRebuild } from "./user-analysis-page";
 import { isAiJobPending } from "./use-ai-job";
+import { CompatibilityNotice } from "./compatibility-notice";
 export function PersonalReportView({
   report,
   evidenceOpen = false,
@@ -33,6 +34,10 @@ export function PersonalReportView({
   const { t } = useLocale();
   return (
     <div className="flex flex-col gap-4" data-report-id={report.reportId}>
+      <CompatibilityNotice
+        version={report.reportVersion}
+        family="personal-report"
+      />
       <Panel
         title="v12.reportOverview"
         description={report.generatedAt}
@@ -214,7 +219,9 @@ export function PersonalReportsPage() {
       {displayed.data ? (
         <PersonalReportView report={displayed.data} />
       ) : (
-        !displayed.isFetching && <EmptyState title={t("v12.noReport")} />
+        !displayed.isFetching &&
+        !displayed.error &&
+        displayed.data === null && <EmptyState title={t("v12.noReport")} />
       )}
       <Panel title="v12.reportHistory" variant="supporting">
         <QueryFeedback query={history} />

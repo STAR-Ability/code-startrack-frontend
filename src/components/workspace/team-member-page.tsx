@@ -339,7 +339,11 @@ function MemberAccess({
           }}
         />
       ) : (
-        !query.isFetching && <EmptyState title={t("v12.PRIVATE_DENIED")} />
+        !query.isFetching &&
+        !query.error &&
+        query.data !== undefined && (
+          <EmptyState title={t("v12.PRIVATE_DENIED")} />
+        )
       )}
     </>
   );

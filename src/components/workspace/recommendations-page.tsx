@@ -208,10 +208,9 @@ export function RecommendationsPage({
         name={t("practice.forYou")}
         empty={!displayed.data?.recommendations.length}
       >
-        {!(
-          displayed.data === undefined &&
-          (displayed.isPending || displayed.isFetching)
-        ) && <BatchView batch={displayed.data ?? null} />}
+        {(displayed.data || (!displayed.error && displayed.data === null)) && (
+          <BatchView batch={displayed.data ?? null} />
+        )}
       </DataRegion>
       {displayed.data && (
         <Button
@@ -251,12 +250,14 @@ export function RecommendationsPage({
             </FieldLabel>
           </Field>
           <QueryFeedback query={history} />
-          {!history.isFetching && !history.data?.data.length && (
-            <EmptyState
-              title={t("practice.noData")}
-              description={t("v.noRecords")}
-            />
-          )}
+          {!history.isFetching &&
+            !history.error &&
+            history.data?.data.length === 0 && (
+              <EmptyState
+                title={t("practice.noData")}
+                description={t("v.noRecords")}
+              />
+            )}
           <ul className="flex min-w-0 flex-col divide-y">
             {history.data?.data.map((item) => (
               <li

@@ -33,6 +33,7 @@ import { MetricPanel } from "./metric-panel";
 import { useAccounts } from "./account-provider";
 import { ProblemLink } from "./recommendation-card";
 import { isAiJobPending } from "./use-ai-job";
+import { CompatibilityNotice } from "./compatibility-notice";
 export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
   const { t } = useLocale();
   const dimensions = [...analysis.dimensions].sort(
@@ -40,6 +41,10 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
   );
   return (
     <>
+      <CompatibilityNotice
+        version={analysis.algorithmVersion}
+        family="team-profile"
+      />
       <MetricPanel
         title="v12.teamAnalysis"
         description={t(`v12.audience.${analysis.audience}`)}
@@ -203,6 +208,10 @@ export function TeamBatchView({
     }).format(value);
   return (
     <div className="flex flex-col gap-3" data-team-audience={batch.audience}>
+      <CompatibilityNotice
+        version={batch.algorithmVersion}
+        family="team-recommendation"
+      />
       <p>
         {t(`v12.audience.${batch.audience}`)} · {t("v12.targetRating")}:{" "}
         {number(batch.targetRating)} ·{" "}

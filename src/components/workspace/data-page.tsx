@@ -181,7 +181,7 @@ function Problems() {
           </FieldGroup>
         </form>
         <QueryFeedback query={query} />
-        {!query.isFetching && !query.data?.data.length && (
+        {!query.isFetching && !query.error && query.data?.data.length === 0 && (
           <EmptyState title={t("v.noRecords")} />
         )}
         {query.data?.data.map((item) => (
@@ -334,7 +334,7 @@ function Submissions({ problemId }: { problemId?: string }) {
         </form>
       )}
       <QueryFeedback query={query} />
-      {!query.isFetching && !query.data?.data.length && (
+      {!query.isFetching && !query.error && query.data?.data.length === 0 && (
         <EmptyState title={t("v.noRecords")} />
       )}
       {query.data?.data.map((item) => (
@@ -424,7 +424,7 @@ function Ratings() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <QueryFeedback query={query} />
-        {!query.isFetching && !query.data?.data.length && (
+        {!query.isFetching && !query.error && query.data?.data.length === 0 && (
           <EmptyState title={t("v.noRecords")} />
         )}
         {chronological.length > 0 && (

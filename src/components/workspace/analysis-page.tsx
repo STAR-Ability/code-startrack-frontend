@@ -137,7 +137,11 @@ export function AnalysisPage({
                       )}
                     />
                   ) : (
-                    <EmptyState embedded title={t("v.noRecords")} />
+                    !history.isFetching &&
+                    !history.error &&
+                    history.data && (
+                      <EmptyState embedded title={t("v.noRecords")} />
+                    )
                   )}
                 </CardContent>
               </Card>
@@ -153,9 +157,11 @@ export function AnalysisPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            {!history.isFetching && !history.data?.data.length && (
-              <EmptyState embedded title={t("v.noRecords")} />
-            )}
+            {!history.isFetching &&
+              !history.error &&
+              history.data?.data.length === 0 && (
+                <EmptyState embedded title={t("v.noRecords")} />
+              )}
             {history.data?.data.map((item) => (
               <div
                 key={item.snapshotId}

@@ -125,6 +125,11 @@ export const workspaceZh = {
   "ui.slowDescription": "仍在等待服务响应，你可以继续浏览。返回后会自动更新。",
   "ui.errorTitle": "这次操作还没完成",
   "ui.connectionHint": "当前无法加载数据，请检查网络或稍后重试",
+  "ui.invalidResponseTitle": "暂时无法读取这份数据",
+  "ui.invalidResponseHint":
+    "服务返回的数据格式暂不兼容。请重试；若持续出现，可提供问题详情以便排查。",
+  "compatibility.notice": "当前结果来自尚未验证的分析版本，可继续查看和使用。",
+  "compatibility.details": "查看分析版本",
   "ui.unavailableTitle": "内容暂未加载",
   "ui.preparing": "正在准备你的内容",
   "ui.refreshing": "正在更新，当前内容仍可查看",
@@ -478,6 +483,12 @@ export const workspaceEn = {
   "ui.errorTitle": "Something needs another try",
   "ui.connectionHint":
     "Data cannot be loaded right now. Check your network or try again later.",
+  "ui.invalidResponseTitle": "We couldn’t read this data",
+  "ui.invalidResponseHint":
+    "The service returned data in an unexpected format. Retry, or share the request details if this continues.",
+  "compatibility.notice":
+    "These results use an analysis version we haven’t reviewed yet. You can keep using the available data.",
+  "compatibility.details": "Analysis version",
   "ui.unavailableTitle": "Content hasn’t loaded yet",
   "ui.preparing": "Getting things ready",
   "ui.refreshing": "Updating — you can still view the current content",

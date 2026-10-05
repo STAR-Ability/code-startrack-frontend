@@ -8,6 +8,8 @@ import {
   teamAnalysisSchema,
   teamBatchSchema,
   userAnalysisSchema,
+  sharedProfileSchema,
+  reportProfileSchema,
 } from "./v012-schemas";
 import { demoAnalysis, demoBatch, fixtureUuid } from "../demo/fixtures";
 import {
@@ -166,5 +168,58 @@ describe("algorithm metadata compatibility", () => {
         code: "ACCOUNT_MISMATCH",
       },
     );
+  });
+  it("rejects duplicate dimension identities, duplicate ranks and a mismatched weakest dimension", () => {
+    const user = {
+      ...v012Analysis(),
+      algorithmVersion: "user-profile-v0.13.2",
+    };
+    const team = {
+      ...v012TeamAnalysis(),
+      algorithmVersion: "team-profile-v0.13.2",
+    };
+    for (const payload of [user, team]) {
+      const schema =
+        "publicId" in payload ? userAnalysisSchema : teamAnalysisSchema;
+      expect(schema.safeParse(payload).success).toBe(true);
+      expect(
+        schema.safeParse({
+          ...payload,
+          dimensions: payload.dimensions.map((item, index) => ({
+            ...item,
+            code: index === 0 ? payload.dimensions[1].code : item.code,
+          })),
+        }).success,
+      ).toBe(false);
+      expect(
+        schema.safeParse({
+          ...payload,
+          dimensions: payload.dimensions.map((item, index) => ({
+            ...item,
+            rankOrder:
+              index === 0 ? payload.dimensions[1].rankOrder : item.rankOrder,
+          })),
+        }).success,
+      ).toBe(false);
+      expect(
+        schema.safeParse({ ...payload, weakestDimension: "MATH" }).success,
+      ).toBe(false);
+      expect(
+        schema.safeParse({
+          ...payload,
+          dimensions: [...payload.dimensions].reverse(),
+        }).success,
+      ).toBe(true);
+    }
+    expect(
+      sharedProfileSchema.safeParse({ ...user, weakestDimension: "MATH" })
+        .success,
+    ).toBe(false);
+    expect(
+      reportProfileSchema.safeParse({
+        ...v012Report().profileSnapshot,
+        weakestDimension: "MATH",
+      }).success,
+    ).toBe(false);
   });
 });

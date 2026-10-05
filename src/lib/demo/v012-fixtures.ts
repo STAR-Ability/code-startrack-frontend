@@ -216,7 +216,7 @@ export function v012Analysis(
     sourceAccountCount: 2,
     sourceAccountIds: demoAccounts.map((account) => account.accountId),
     sourceFingerprint: "synthetic-user-source-v1",
-    algorithmVersion: "user-profile-v0.12.1",
+    algorithmVersion: "user-profile-v0.13.1",
   };
 }
 export function v012Report(

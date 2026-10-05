@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { EmptyState } from "./feedback";
+import { CompatibilityNotice } from "./compatibility-notice";
 
 export function ProblemLink({
   problem,
@@ -78,6 +79,10 @@ export function BatchView({
     );
   return (
     <>
+      <CompatibilityNotice
+        version={batch.algorithmVersion}
+        family="account-recommendation"
+      />
       {batch.stale && (
         <Alert>
           <AlertDescription>

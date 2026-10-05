@@ -22,6 +22,18 @@ export const dimensionCodes = [
   "GRAPHS",
   "MATH",
 ] as const;
+export function hasValidDimensionRanking(value: {
+  dimensions: readonly { code: string; rankOrder: number }[];
+  weakestDimension: string;
+}): boolean {
+  return (
+    new Set(value.dimensions.map((dimension) => dimension.code)).size === 6 &&
+    new Set(value.dimensions.map((dimension) => dimension.rankOrder)).size ===
+      6 &&
+    value.dimensions.find((dimension) => dimension.rankOrder === 1)?.code ===
+      value.weakestDimension
+  );
+}
 export const verdicts = [
   "ACCEPTED",
   "PARTIAL",
@@ -259,14 +271,7 @@ export const analysisSchema = z
       }),
     ),
   })
-  .refine(
-    (value) =>
-      new Set(value.dimensions.map((d) => d.code)).size === 6 &&
-      new Set(value.dimensions.map((d) => d.rankOrder)).size === 6 &&
-      value.dimensions.find((d) => d.rankOrder === 1)?.code ===
-        value.weakestDimension,
-    "Invalid dimension identities or ranking",
-  );
+  .refine(hasValidDimensionRanking, "Invalid dimension identities or ranking");
 export const batchSchema = z.object({
   accountId: idSchema,
   batchId: uuidSchema,

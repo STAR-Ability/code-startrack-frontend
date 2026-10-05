@@ -69,6 +69,7 @@ export function useSlowRequest(pending: boolean) {
 
 function errorMessage(error: unknown) {
   const apiError = error instanceof ApiError ? error : null;
+  if (apiError?.code === "INVALID_RESPONSE") return "ui.invalidResponseHint";
   const v12Code =
     apiError?.code === "PRIVACY_DENIED" ? "PRIVATE_DENIED" : apiError?.code;
   const key = `v12.${v12Code}`;
@@ -109,9 +110,11 @@ export function ErrorNotice({
   const { t } = useLocale();
   const id = useId();
   const apiError = error instanceof ApiError ? error : null;
+  const invalidResponse = apiError?.code === "INVALID_RESPONSE";
   const remaining = useCountdown(apiError?.retryAt ?? 0);
   const message = t(
     dataError &&
+      !invalidResponse &&
       !(
         error instanceof ApiError &&
         (`v12.${error.code}` in v012Zh || error.code === "PRIVACY_DENIED")
@@ -119,7 +122,9 @@ export function ErrorNotice({
       ? "ui.connectionHint"
       : errorMessage(error),
   );
-  const title = t("ui.errorTitle");
+  const title = t(
+    invalidResponse ? "ui.invalidResponseTitle" : "ui.errorTitle",
+  );
   const active = !!error && !pending && apiError?.status !== 401;
   const signature = apiError?.code ?? (error ? "UNKNOWN" : "");
   useEffect(() => {
@@ -173,9 +178,15 @@ export function ErrorNotice({
     <Empty className="feedback-enter border bg-card">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <WifiOffIcon aria-hidden="true" />
+          {invalidResponse ? (
+            <CircleAlertIcon aria-hidden="true" />
+          ) : (
+            <WifiOffIcon aria-hidden="true" />
+          )}
         </EmptyMedia>
-        <EmptyTitle>{t("ui.unavailableTitle")}</EmptyTitle>
+        <EmptyTitle>
+          {invalidResponse ? title : t("ui.unavailableTitle")}
+        </EmptyTitle>
         <EmptyDescription>{message}</EmptyDescription>
       </EmptyHeader>
       <div className="flex w-full flex-col items-center gap-3">{recovery}</div>

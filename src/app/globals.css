@@ -51,6 +51,10 @@
   --color-support: var(--support);
   --color-support-soft: var(--support-soft);
   --color-canvas: var(--canvas);
+  --color-surface-reading: var(--surface-reading);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-supporting: var(--surface-supporting);
+  --color-surface-border: var(--surface-border);
   --shadow-surface: var(--surface-shadow);
   --shadow-raised: var(--raised-shadow);
   --color-popover-foreground: var(--popover-foreground);
@@ -80,6 +84,17 @@
   --support: #22756f;
   --support-soft: #edf6f5;
   --canvas: #f3f5f8;
+  --surface-reading: color-mix(in srgb, var(--card) 96%, transparent);
+  --surface-panel: color-mix(in srgb, var(--card) 86%, transparent);
+  --surface-supporting: color-mix(in srgb, var(--card) 76%, transparent);
+  --surface-border: color-mix(in srgb, var(--border) 80%, transparent);
+  --workspace-info: color-mix(in srgb, var(--info) 12%, var(--background));
+  --workspace-insight: color-mix(
+    in srgb,
+    var(--insight) 10%,
+    var(--background)
+  );
+  --workspace-support: color-mix(in srgb, var(--support) 9%, var(--background));
   --surface-shadow:
     0 1px 2px rgb(24 32 49 / 3%), 0 4px 14px -8px rgb(24 32 49 / 12%);
   --raised-shadow:
@@ -238,14 +253,24 @@
   .workspace-surface::before {
     background:
       radial-gradient(
-        ellipse 900px 420px at 90% 0%,
-        color-mix(in srgb, var(--canvas) 85%, transparent),
-        transparent
+        ellipse 58rem 42rem at 100% 2%,
+        var(--workspace-info),
+        transparent 76%
       ),
-      linear-gradient(170deg, var(--background), var(--canvas) 65%);
+      radial-gradient(
+        ellipse 46rem 36rem at 42% 56%,
+        var(--workspace-insight),
+        transparent 76%
+      ),
+      radial-gradient(
+        ellipse 48rem 34rem at 12% 100%,
+        var(--workspace-support),
+        transparent 74%
+      ),
+      linear-gradient(155deg, var(--background), var(--canvas) 70%);
   }
   .workspace-surface::after {
-    opacity: 0.32;
+    opacity: 0.24;
     background-image: radial-gradient(var(--border) 0.8px, transparent 0.8px);
     background-size: 24px 24px;
     mask-image: linear-gradient(black, transparent 650px);
@@ -279,10 +304,14 @@
     display: none;
   }
   .metric-strip {
-    @apply grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-x-4 gap-y-3 lg:grid-cols-4;
+    @apply grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-3 lg:grid-cols-4;
   }
   .metric-strip > div {
-    @apply flex min-w-0 flex-col gap-1 border-l-2 border-border pl-3;
+    --metric-accent: var(--border);
+    --metric-tint: transparent;
+    @apply flex min-w-0 flex-col gap-1 rounded-lg border-l-2 px-3 py-2.5;
+    border-color: color-mix(in srgb, var(--metric-accent) 40%, var(--border));
+    background: color-mix(in srgb, var(--metric-tint) 78%, transparent);
   }
   .metric-strip dt {
     @apply text-xs text-muted-foreground;
@@ -942,19 +971,37 @@
     );
   }
   .metric-strip > [data-tone="success"] {
-    border-color: color-mix(in srgb, var(--success) 40%, var(--border));
+    --metric-accent: var(--success);
+    --metric-tint: var(--success-soft);
   }
   .metric-strip > [data-tone="insight"] {
-    border-color: color-mix(in srgb, var(--insight) 40%, var(--border));
+    --metric-accent: var(--insight);
+    --metric-tint: var(--insight-soft);
   }
   .metric-strip > [data-tone="info"] {
-    border-color: color-mix(in srgb, var(--info) 40%, var(--border));
+    --metric-accent: var(--info);
+    --metric-tint: var(--info-soft);
+  }
+  .metric-strip > [data-tone="support"] {
+    --metric-accent: var(--support);
+    --metric-tint: var(--support-soft);
   }
   .metric-strip > [data-tone="warning"] {
-    border-color: color-mix(in srgb, var(--warning) 40%, var(--border));
+    --metric-accent: var(--warning);
+    --metric-tint: var(--warning-soft);
   }
   .metric-strip > [data-tone="danger"] {
-    border-color: color-mix(in srgb, var(--destructive) 40%, var(--border));
+    --metric-accent: var(--destructive);
+    --metric-tint: var(--danger-soft);
+  }
+  .metric-strip > [data-tone="insight"] dd {
+    color: var(--insight);
+  }
+  .metric-strip > [data-tone="info"] dd {
+    color: var(--info);
+  }
+  .metric-strip > [data-tone="support"] dd {
+    color: var(--support);
   }
   [data-tone="success"] dd {
     color: var(--success);
@@ -969,10 +1016,10 @@
 
 @layer components {
   .workspace-context-header {
-    @apply relative isolate overflow-hidden rounded-2xl border bg-background p-5 sm:p-6;
+    @apply relative isolate overflow-hidden rounded-2xl border border-surface-border bg-surface-panel p-5 sm:p-6;
     background-image: radial-gradient(
       ellipse at 100% 0%,
-      color-mix(in srgb, var(--canvas) 90%, transparent),
+      color-mix(in srgb, var(--support-soft) 70%, transparent),
       transparent 65%
     );
   }
@@ -989,34 +1036,67 @@
     pointer-events: none;
   }
   .workspace-task-tile {
-    @apply relative flex min-w-0 flex-col gap-3 rounded-xl border bg-background p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transform-none motion-reduce:transition-none;
+    @apply relative flex min-w-0 flex-col gap-3 rounded-xl border border-surface-border bg-surface-panel p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transform-none motion-reduce:transition-none;
   }
   .workspace-team-card {
-    @apply flex min-w-0 flex-col gap-4 rounded-xl border bg-background p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-within:border-ring/40 motion-reduce:transform-none motion-reduce:transition-none;
+    @apply flex min-w-0 flex-col gap-4 rounded-xl border border-surface-border bg-surface-panel p-5 transition-[transform,border-color,background-color] duration-200 hover:-translate-y-0.5 hover:border-ring/40 focus-within:border-ring/40 motion-reduce:transform-none motion-reduce:transition-none;
+    background-image: linear-gradient(
+      130deg,
+      color-mix(in srgb, var(--support-soft) 42%, transparent),
+      transparent 65%
+    );
   }
 }
 
-/* Content roles build on the existing white surfaces and semantic accents. */
+/* Translucent supporting layers reveal the stable workspace without blurring text. */
 @layer components {
+  [data-slot="card"] {
+    --card-accent: var(--border);
+    --card-tint: transparent;
+  }
+  [data-slot="card"][data-tone="info"] {
+    --card-accent: var(--info);
+    --card-tint: var(--info-soft);
+  }
+  [data-slot="card"][data-tone="insight"] {
+    --card-accent: var(--insight);
+    --card-tint: var(--insight-soft);
+  }
+  [data-slot="card"][data-tone="support"] {
+    --card-accent: var(--support);
+    --card-tint: var(--support-soft);
+  }
   [data-slot="card"][data-variant="metric"] {
-    background: linear-gradient(
-      180deg,
-      var(--card) 55%,
-      color-mix(in srgb, var(--canvas) 35%, var(--card))
+    background-image: linear-gradient(
+      125deg,
+      color-mix(in srgb, var(--card-tint) 35%, transparent),
+      transparent 60%
     );
   }
-  [data-slot="card"][data-variant="analysis"] > [data-slot="card-header"] {
+  [data-slot="card"][data-tone] > [data-slot="card-header"] {
     border-inline-start: 3px solid
-      color-mix(in srgb, var(--insight) 55%, var(--border));
+      color-mix(in srgb, var(--card-accent) 48%, var(--border));
+  }
+  [data-slot="card"][data-variant="analysis"] {
+    background-image: radial-gradient(
+      ellipse at 100% 0%,
+      color-mix(in srgb, var(--card-tint) 44%, transparent),
+      transparent 65%
+    );
   }
   [data-slot="card"][data-variant="supporting"] {
     background-image: linear-gradient(
-      color-mix(in srgb, var(--canvas) 28%, var(--card)),
-      color-mix(in srgb, var(--canvas) 28%, var(--card))
+      135deg,
+      color-mix(in srgb, var(--card-tint) 28%, transparent),
+      transparent 70%
     );
   }
   [data-slot="card"][data-variant="recommendation"] {
-    background: linear-gradient(125deg, var(--card) 15%, var(--info-soft));
+    background-image: linear-gradient(
+      125deg,
+      transparent 15%,
+      color-mix(in srgb, var(--info-soft) 82%, transparent)
+    );
   }
   [data-slot="card"][data-variant="recommendation"]
     > [data-slot="card-footer"] {

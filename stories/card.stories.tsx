@@ -21,7 +21,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "White surfaces use a thin border and token-based elevation. Content variants distinguish metric, recommendation, analysis and supporting roles with existing semantic tokens. Use interaction=none for data, surface for passive grouping, and lift only for interactive discovery cards. Loading and empty content are compositions, not Card props.",
+          "Near-white reading surfaces sit above translucent metric and supporting panels. Content variants distinguish metric, recommendation, analysis and supporting roles; tone adds information, analysis or collaboration context. Use interaction=none for data, surface for passive grouping, and lift only for interactive discovery cards. Loading and empty content are compositions, not Card props.",
       },
     },
   },
@@ -68,6 +68,49 @@ export const Analysis: Story = {
 };
 export const Supporting: Story = {
   args: { variant: "supporting", interaction: "none" },
+};
+export const Collaboration: Story = {
+  args: { variant: "supporting", tone: "support", interaction: "none" },
+};
+export const WorkspaceLayers: Story = {
+  render: () => (
+    <div className="workspace-surface flex min-w-0 flex-col gap-5 rounded-2xl p-5 sm:p-8">
+      <header className="flex flex-col gap-2">
+        <h2 className="text-xl font-semibold">A stable workspace</h2>
+        <p className="text-sm text-muted-foreground">
+          Quiet color remains visible between modules and through supporting
+          panels. Reading surfaces keep the strongest contrast.
+        </p>
+      </header>
+      <Card variant="metric" tone="insight" interaction="none">
+        <CardHeader>
+          <CardTitle>Current ability</CardTitle>
+          <CardDescription>Metric surface · 86% card</CardDescription>
+        </CardHeader>
+        <CardContent>Focused values belong in the first layer.</CardContent>
+      </Card>
+      <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+        <Card variant="analysis" interaction="none">
+          <CardHeader>
+            <CardTitle>Read the evidence</CardTitle>
+            <CardDescription>Reading surface · 96% card</CardDescription>
+          </CardHeader>
+          <CardContent>
+            Text and charts retain a near-white foundation.
+          </CardContent>
+        </Card>
+        <Card variant="supporting" tone="support" interaction="none">
+          <CardHeader>
+            <CardTitle>Team context</CardTitle>
+            <CardDescription>Supporting surface · 76% card</CardDescription>
+          </CardHeader>
+          <CardContent>
+            Secondary context lets the workspace show through.
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  ),
 };
 export const Loading: Story = {
   render: () => (

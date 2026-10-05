@@ -77,4 +77,29 @@ export const MixedEvidence: Story = {
     secondary: [["v.pendingCount", 0]],
   },
 };
+export const Ability: Story = {
+  args: {
+    title: "v12.abilitySummary",
+    description: "All history · synthetic aggregate evidence",
+    metrics: [
+      ["v.overallScore", 64.2],
+      ["v12.highestRating", 1520],
+      ["v12.highestMaxRating", 1680],
+      ["v.solved", 128],
+    ],
+    secondary: [["v.submissions", 246]],
+  },
+};
+export const Coach: Story = {
+  args: {
+    title: "v12.coachStats",
+    description: "Synthetic collaboration state",
+    metrics: [
+      ["v12.managedTeams", 3],
+      ["v12.activeMembers", 24],
+      ["v12.pendingApplications", 5],
+    ],
+    secondary: [],
+  },
+};
 export const Mobile: Story = { globals: mobile };

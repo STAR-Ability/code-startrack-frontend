@@ -1,6 +1,6 @@
 # UI surface hierarchy
 
-codeStartrack keeps the existing shadcn Base UI/Nova composition, white primary
+codeStartrack keeps the existing shadcn Base UI/Nova composition, near-white primary
 surfaces, dark typography, brand blue and Geist typography. Tailwind v4 resolves
 the shared tokens in `src/app/globals.css`; Storybook imports that same stylesheet.
 
@@ -9,8 +9,24 @@ the shared tokens in `src/app/globals.css`; Storybook imports that same styleshe
 The public, workspace and authentication shells own their decorative backgrounds.
 Their pseudo-elements use `position: fixed` and viewport bounds, so light, grids,
 dots and the public orbit stay visually stable while document content scrolls.
-White cards, supporting section surfaces and local illustrations remain in normal
+Reading cards, supporting section surfaces and local illustrations remain in normal
 content flow.
+
+The workspace background combines fixed pale blue, violet and teal washes over
+the neutral canvas. It remains visible between modules and through the quieter
+supporting surfaces. Shared surface tokens use the current card color, so their
+light and dark values remain consistent without page-specific color overrides:
+
+| Token                | Opacity / responsibility                                        |
+| -------------------- | --------------------------------------------------------------- |
+| `surface-reading`    | 96% card color; primary text, forms, recommendations and charts |
+| `surface-panel`      | 86% card color; focused metrics and workspace context           |
+| `surface-supporting` | 76% card color; history, sources and secondary information      |
+| `surface-border`     | 80% border color; quieter boundaries between surface layers     |
+
+These surfaces use alpha composition without backdrop blur. Keep text on a
+near-white reading layer when stronger contrast is needed. Do not apply opacity
+to entire components: labels and controls must retain their full contrast.
 
 Each shell uses `isolation: isolate`; its base paints below the negative decorative
 layer and its content paints above it. `pointer-events: none` keeps decoration out
@@ -24,14 +40,15 @@ continues to follow the shared reduced-motion rules.
 
 ## Semantic accents
 
-| Existing token family         | Meaning                                                    |
-| ----------------------------- | ---------------------------------------------------------- |
-| `info` / `info-soft`          | Recommendation context and interactive guidance            |
-| `insight` / `insight-soft`    | Ability and analysis                                       |
-| `success` / `success-soft`    | Solved problems and successful/completed status            |
-| `warning` / `warning-soft`    | Pending work and stale evidence                            |
-| `destructive` / `danger-soft` | Failure or destructive actions                             |
-| `canvas`, `muted`, `card`     | Page backdrop, supporting areas and primary white surfaces |
+| Existing token family         | Meaning                                                       |
+| ----------------------------- | ------------------------------------------------------------- |
+| `info` / `info-soft`          | Recommendation context, account data and interactive guidance |
+| `insight` / `insight-soft`    | Ability and analysis                                          |
+| `success` / `success-soft`    | Solved problems and successful/completed status               |
+| `warning` / `warning-soft`    | Pending work and stale evidence                               |
+| `destructive` / `danger-soft` | Failure or destructive actions                                |
+| `support` / `support-soft`    | Team context and training participation                       |
+| `canvas`, `muted`, `card`     | Page backdrop, supporting areas and primary white surfaces    |
 
 Choose colors by meaning, not by a card's position in a grid. Keep status text or
 labels beside the color so that users do not need color alone to understand it.
@@ -47,7 +64,13 @@ Light and dark values live in the existing token definitions.
 | `analysis`       | Ability or report conclusions and their supporting charts                   |
 | `supporting`     | Secondary context, history and lower-priority information                   |
 
-`variant` expresses content purpose. `size` controls spacing and `interaction`
+`variant` expresses content purpose. The optional `tone` adds `info`, `insight`
+or `support` context to a panel without changing its responsibilities. Analysis
+and recommendation variants choose insight and info by default. MetricPanel
+derives tone from the meaning of its title and each metric; unknown values remain
+neutral, while real numeric zero retains its semantic meaning.
+
+`size` controls spacing and `interaction`
 controls hover behavior. Use `interaction="none"` for passive data and charts;
 reserve `lift` for actionable discovery surfaces. Keep the established CardHeader,
 CardTitle, CardDescription, CardContent and CardFooter composition. Extend Panel

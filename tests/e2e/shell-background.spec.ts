@@ -174,7 +174,9 @@ async function backgroundGeometry(surface: Locator, layerCount: number) {
       layers,
       containingBlocks,
       viewport: {
-        width: document.documentElement.clientWidth,
+        // Mobile emulation can round the layout viewport up after resizing.
+        // Fixed inset layers fill that viewport, as reported by innerWidth.
+        width: window.innerWidth,
         height: window.innerHeight,
       },
     };

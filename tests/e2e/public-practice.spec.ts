@@ -193,10 +193,32 @@ test("missing recommendations remain errors while successful empty history stays
     });
   });
   await page.goto("/practice");
-  await expect(page.getByText("暂无数据", { exact: true })).toHaveCount(2);
+  const recommendation = page.getByRole("region", {
+    name: translate("zh-CN", "practice.forYou"),
+    exact: true,
+  });
   await expect(
-    page.getByRole("button", { name: "重试", exact: true }),
+    recommendation.getByText("内容暂未加载", { exact: true }),
   ).toBeVisible();
+  await expect(
+    recommendation.getByText("当前无法加载数据，请检查网络或稍后重试", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    recommendation.getByText("暂无数据", { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    recommendation.getByRole("button", { name: "重试", exact: true }),
+  ).toBeEnabled();
+  const history = page.locator('[data-slot="card"]').filter({
+    has: page.getByRole("heading", { name: "推荐历史", exact: true }),
+  });
+  await expect(history.getByText("暂无数据", { exact: true })).toBeVisible();
+  await expect(history.getByText("暂无记录", { exact: true })).toBeVisible();
+  await expect(history.getByText("内容暂未加载", { exact: true })).toHaveCount(
+    0,
+  );
   await expect(
     page.getByRole("button", { name: "生成推荐", exact: true }),
   ).toBeEnabled();
@@ -224,10 +246,33 @@ test("a missing cached record disappears and session expiry removes all private 
   await page.getByRole("button", { name: "综合推荐", exact: true }).click();
   await refreshed;
   await page.clock.runFor(200);
-  await expect(page.getByText("暂无数据", { exact: true })).toBeVisible();
+  const recommendation = page.getByRole("region", {
+    name: translate("zh-CN", "practice.forYou"),
+    exact: true,
+  });
+  await expect(
+    recommendation.getByText("内容暂未加载", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    recommendation.getByText("暂无数据", { exact: true }),
+  ).toHaveCount(0);
   await expect(page.getByRole("heading", { name: /A Small Step/ })).toHaveCount(
     0,
   );
+  const snapshot = page.getByRole("button", {
+    name: "查看生成时的画像",
+    exact: true,
+  });
+  await expect(snapshot).toHaveCount(0);
+  await page.unroute("**/recommendations/latest?mode=HYBRID");
+  await recommendation
+    .getByRole("button", { name: "重试", exact: true })
+    .click();
+  await page.clock.runFor(200);
+  await expect(
+    page.getByRole("heading", { name: /A Small Step/ }),
+  ).toBeVisible();
+  await expect(snapshot).toBeEnabled();
   await configureUpstream({ loggedOut: true });
   const expired = page.waitForResponse(
     (response) =>
@@ -241,6 +286,14 @@ test("a missing cached record disappears and session expiry removes all private 
     page.getByText("请登录查看更多数据", { exact: true }),
   ).toHaveCount(1);
   await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: /A Small Step/ })).toHaveCount(
+    0,
+  );
+  await expect(snapshot).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "查看批次", exact: true }),
+  ).toHaveCount(0);
+  await expect(recommendation).toHaveCount(0);
   await expect(page).toHaveURL("/practice");
 });
 

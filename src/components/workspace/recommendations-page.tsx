@@ -156,7 +156,7 @@ export function RecommendationsPage({
             }}
           />
           {account?.bindStatus === "ACTIVE" && (
-            <FieldGroup className="grid min-w-0 grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] items-end gap-3">
+            <FieldGroup className="min-w-0 flex-row flex-wrap items-end gap-3 [&>[data-slot=field]]:min-w-0 [&>[data-slot=field]]:flex-1 [&>[data-slot=field]]:basis-24">
               <FormInput
                 label={t("v.limit")}
                 type="number"
@@ -169,6 +169,7 @@ export function RecommendationsPage({
               />
               <Button
                 wrap
+                className="min-w-0 flex-1 basis-44"
                 disabled={
                   generate.isPending ||
                   (generate.error instanceof ApiError &&

@@ -4,6 +4,7 @@ import type {
   TeamSummaryDto,
   UserAnalysisDto,
 } from "../../src/lib/api/v012-schemas";
+import type { SubmissionDto } from "../../src/lib/api/schemas";
 import { formatTimestamp, translate } from "../../src/lib/i18n/locale";
 import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 
@@ -185,6 +186,77 @@ for (const locale of ["zh-CN", "en"] as const) {
     );
     await expect(reportTime).not.toHaveText(report.generatedAt);
     await expect(reportTime).toContainText("UTC");
+    expect((await upstreamCalls()).every((call) => call.method === "GET")).toBe(
+      true,
+    );
+  });
+
+  test(`submission instants and frozen report periods retain readable ${locale} UTC times`, async ({
+    page,
+    context,
+  }) => {
+    await context.addCookies([
+      {
+        name: "codestartrack_locale",
+        value: locale,
+        url: "http://127.0.0.1:3100",
+      },
+    ]);
+    await page.goto("/data");
+    const loadedSubmissions = page.waitForResponse((response) =>
+      /\/api\/v1\/oj-accounts\/[^/]+\/submissions$/.test(
+        new URL(response.url()).pathname,
+      ),
+    );
+    await page
+      .getByRole("main")
+      .getByRole("button", {
+        name: translate(locale, "v.submissions"),
+        exact: true,
+      })
+      .click();
+    const submissions = (
+      (await (await loadedSubmissions).json()) as { data: SubmissionDto[] }
+    ).data;
+    expect(submissions.length).toBeGreaterThan(0);
+    for (const submission of submissions) {
+      const time = page
+        .getByRole("main")
+        .locator(`time[datetime="${submission.submittedAt}"]`)
+        .first();
+      await expect(time).toHaveText(
+        formatTimestamp(submission.submittedAt, locale),
+      );
+      await expect(time).not.toHaveText(submission.submittedAt);
+      await expect(time).toContainText("UTC");
+    }
+
+    const loadedReport = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === "/api/v1/me/reports/latest",
+    );
+    await page.goto("/analysis");
+    const report = (
+      (await (await loadedReport).json()) as { data: PersonalReportDto }
+    ).data;
+    const presentation = page.locator(`[data-report-id="${report.reportId}"]`);
+    await presentation
+      .getByRole("button", {
+        name: translate(locale, "v12.reportEvidence"),
+        exact: true,
+      })
+      .click();
+    const period = presentation
+      .getByRole("region", { name: translate(locale, "v12.recentTraining") })
+      .locator("p")
+      .first();
+    await expect(period.locator("time")).toHaveCount(2);
+    for (const instant of Object.values(report.recentTrainingSnapshot.period)) {
+      const time = period.locator(`time[datetime="${instant}"]`);
+      await expect(time).toHaveText(formatTimestamp(instant, locale));
+      await expect(time).not.toHaveText(instant);
+      await expect(time).toContainText("UTC");
+    }
     expect((await upstreamCalls()).every((call) => call.method === "GET")).toBe(
       true,
     );

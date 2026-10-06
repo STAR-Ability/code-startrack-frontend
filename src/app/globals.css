@@ -1206,7 +1206,7 @@
   .recommendation-queue-heading {
     @apply flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pt-2;
   }
-  .recommendation-queue-heading h2 {
+  .recommendation-queue-heading :is(h2, h3) {
     @apply text-base font-semibold;
   }
   .recommendation-queue-heading p {

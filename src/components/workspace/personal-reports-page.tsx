@@ -118,8 +118,19 @@ export function PersonalReportView({
           aria-label={t("v12.recentTraining")}
         >
           <p className="break-words text-sm text-muted-foreground">
-            {report.recentTrainingSnapshot.period.start} —{" "}
-            {report.recentTrainingSnapshot.period.end}
+            <time dateTime={report.recentTrainingSnapshot.period.start}>
+              {formatTimestamp(
+                report.recentTrainingSnapshot.period.start,
+                locale,
+              )}
+            </time>{" "}
+            —{" "}
+            <time dateTime={report.recentTrainingSnapshot.period.end}>
+              {formatTimestamp(
+                report.recentTrainingSnapshot.period.end,
+                locale,
+              )}
+            </time>
           </p>
           <AnalysisView
             aggregate

@@ -31,7 +31,7 @@ for (const shell of shells) {
 
     for (const width of [320, 390, 768, 1280, 1440]) {
       await page.setViewportSize({ width, height: 480 });
-      await page.evaluate(() => window.scrollTo(0, 0));
+      await scrollAndSettle(page, 0);
       await expect(heading).toBeVisible();
       await noHorizontalOverflow(page);
 
@@ -53,16 +53,12 @@ for (const shell of shells) {
       // with that ancestor despite retaining its computed `position: fixed`.
       expect(before.containingBlocks).toEqual([]);
 
-      const contentBefore = await heading.boundingBox();
-      expect(contentBefore).not.toBeNull();
-      await page.evaluate(() => window.scrollTo(0, 240));
-      await expect
-        .poll(() => page.evaluate(() => window.scrollY))
-        .toBeGreaterThan(80);
-      const scrollY = await page.evaluate(() => window.scrollY);
-      const contentAfter = await heading.boundingBox();
-      expect(contentAfter).not.toBeNull();
-      expect(contentBefore!.y - contentAfter!.y).toBeCloseTo(scrollY, 0);
+      const contentBefore = await contentGeometry(heading);
+      await scrollAndSettle(page, 240);
+      const contentAfter = await contentGeometry(heading);
+      const scrollDelta = contentAfter.scrollY - contentBefore.scrollY;
+      expect(scrollDelta).toBeGreaterThan(80);
+      expect(contentBefore.y - contentAfter.y).toBeCloseTo(scrollDelta, 0);
       expect(await backgroundGeometry(surface, shell.layers)).toEqual(before);
       await noHorizontalOverflow(page);
     }
@@ -125,6 +121,25 @@ async function noHorizontalOverflow(page: Page) {
       ),
     )
     .toBe(true);
+}
+
+async function scrollAndSettle(page: Page, top: number) {
+  await page.evaluate(async (scrollTop) => {
+    await document.fonts.ready;
+    window.scrollTo({ left: 0, top: scrollTop, behavior: "instant" });
+    // Let viewport reflow and scrolling render before geometry is sampled.
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+  }, top);
+}
+
+async function contentGeometry(heading: Locator) {
+  return heading.evaluate((element) => {
+    // A separate boundingBox call can observe a different scroll frame.
+    const bounds = element.getBoundingClientRect();
+    return { y: bounds.y, scrollY: window.scrollY };
+  });
 }
 
 async function backgroundGeometry(surface: Locator, layerCount: number) {

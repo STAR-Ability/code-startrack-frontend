@@ -7,21 +7,13 @@ import {
   verdicts,
   type AnalysisWindow,
   type ProblemDto,
-  type SubmissionDto,
 } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
-import { verdictTone } from "@/lib/ui/status";
 import { trendOption } from "@/lib/charts/options";
 import { formatTimestamp } from "@/lib/i18n/locale";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field";
 import {
@@ -42,6 +34,7 @@ import { QueryFeedback, DataRegion, EmptyState, Pagination } from "./feedback";
 import { ProblemLink } from "./recommendation-card";
 import { Chart } from "./chart";
 import { useAccountTimezone } from "./account-provider";
+import { SubmissionRecords } from "./submission-records";
 
 export function DataPage() {
   const { t } = useLocale();
@@ -183,7 +176,7 @@ function Problems() {
         </form>
         <QueryFeedback query={query} resource={t("v.problems")} />
         {!query.isFetching && !query.error && query.data?.data.length === 0 && (
-          <EmptyState title={t("v.noRecords")} />
+          <EmptyState embedded title={t("v.noRecords")} />
         )}
         {query.data?.data.map((item) => (
           <div
@@ -224,15 +217,15 @@ function Problems() {
             if (!open) setProblem(null);
           }}
         >
-          <SheetContent className="overflow-y-auto sm:max-w-xl">
-            <SheetHeader>
+          <SheetContent className="problem-submissions-sheet overflow-y-auto data-[side=right]:w-[calc(100%-16px)] sm:max-w-xl">
+            <SheetHeader className="submission-sheet-header">
               <SheetTitle>
                 {problem?.title ??
                   problem?.externalProblemKey ??
                   t("v.problemSubmissions")}
               </SheetTitle>
             </SheetHeader>
-            <div className="flex flex-col gap-4 px-4 pb-6">
+            <div className="submission-sheet-body flex flex-col gap-4 pb-6">
               {problem && (
                 <>
                   <ProblemLink problem={problem} />
@@ -272,7 +265,7 @@ function Submissions({ problemId }: { problemId?: string }) {
     (id, signal) => api.submissions(id, { ...filters, page }, signal),
   );
   return (
-    <section className="flex flex-col gap-4">
+    <section className="@container/submission-controls flex min-w-0 flex-col gap-4">
       <h2 className="text-lg font-medium">{t("v.submissions")}</h2>
       {!problemId && (
         <form
@@ -300,7 +293,7 @@ function Submissions({ problemId }: { problemId?: string }) {
             setPage(1);
           })}
         >
-          <FieldGroup>
+          <FieldGroup className="submission-filter-fields grid min-w-0 items-end gap-3">
             <Field>
               <FieldLabel htmlFor="verdict-filter">{t("v.verdict")}</FieldLabel>
               <NativeSelect id="verdict-filter" {...form.register("verdict")}>
@@ -330,17 +323,17 @@ function Submissions({ problemId }: { problemId?: string }) {
               type="datetime-local"
               {...form.register("to")}
             />
-            <Button type="submit">{t("v.filter")}</Button>
+            <Button type="submit" wrap>
+              {t("v.filter")}
+            </Button>
           </FieldGroup>
         </form>
       )}
       <QueryFeedback query={query} resource={t("v.submissions")} />
       {!query.isFetching && !query.error && query.data?.data.length === 0 && (
-        <EmptyState title={t("v.noRecords")} />
+        <EmptyState embedded title={t("v.noRecords")} />
       )}
-      {query.data?.data.map((item) => (
-        <Submission key={item.submissionId} item={item} />
-      ))}
+      <SubmissionRecords items={query.data?.data ?? []} />
       <Pagination
         meta={query.data?.meta}
         page={page}
@@ -348,62 +341,6 @@ function Submissions({ problemId }: { problemId?: string }) {
         pending={query.isFetching}
       />
     </section>
-  );
-}
-function Submission({ item }: { item: SubmissionDto }) {
-  const { t, locale } = useLocale();
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>
-          <h3 className="wrap-anywhere">
-            {item.problem.title ?? item.problem.externalProblemKey}
-          </h3>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        <Badge variant={verdictTone[item.verdict]}>
-          {item.verdict === "PENDING" ? t("v.pending") : item.verdict}
-        </Badge>
-        <dl className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <dt>{t("v.language")}</dt>
-            <dd>{item.programmingLanguage ?? t("v.unavailable")}</dd>
-          </div>
-          <div>
-            <dt>{t("v.time")}</dt>
-            <dd>{item.timeMs ?? t("v.unavailable")}</dd>
-          </div>
-          <div>
-            <dt>{t("v.memory")}</dt>
-            <dd>
-              {item.memoryBytes === null
-                ? t("v.unavailable")
-                : (item.memoryBytes / 1048576).toFixed(2)}
-            </dd>
-          </div>
-          <div>
-            <dt>{t("v.lastSubmitted")}</dt>
-            <dd className="wrap-anywhere">
-              <time dateTime={item.submittedAt}>
-                {formatTimestamp(item.submittedAt, locale)}
-              </time>
-            </dd>
-          </div>
-        </dl>
-        {(item.teamName || item.memberHandles.length > 1) && (
-          <p>
-            {t("v.team")}: {item.teamName} · {item.memberHandles.join(", ")}
-          </p>
-        )}
-        <p className="text-xs break-all text-muted-foreground">
-          ID: {item.submissionId} · CF: {item.externalSubmissionId}
-        </p>
-      </CardContent>
-      <CardFooter>
-        <ProblemLink problem={item.problem} />
-      </CardFooter>
-    </Card>
   );
 }
 function Ratings() {
@@ -430,7 +367,7 @@ function Ratings() {
       <CardContent className="flex flex-col gap-4">
         <QueryFeedback query={query} resource={t("v.ratingHistory")} />
         {!query.isFetching && !query.error && query.data?.data.length === 0 && (
-          <EmptyState title={t("v.noRecords")} />
+          <EmptyState embedded title={t("v.noRecords")} />
         )}
         {chronological.length > 0 && (
           <Chart

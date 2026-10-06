@@ -111,3 +111,41 @@ export const LoadingStatistics: Story = {
   },
 };
 export const Mobile: Story = { globals: mobile };
+export const NarrowContainer: Story = {
+  render: (args) => (
+    <div className="w-full max-w-xl">
+      <AnalysisView {...args} />
+    </div>
+  ),
+};
+export const CachedError: Story = {
+  args: { unavailable: true },
+  render: (args) => (
+    <>
+      <ErrorNotice
+        error={new ApiError("NETWORK_ERROR")}
+        retry={fn()}
+        dataError
+      />
+      <AnalysisView {...args} />
+    </>
+  ),
+};
+export const LongTagLabels: Story = {
+  args: {
+    ability: false,
+    dimensions: false,
+    statistics: true,
+    analysis: {
+      ...snapshot,
+      tagStats: snapshot.tagStats.map((tag, index) => ({
+        ...tag,
+        tag:
+          index === 0
+            ? "divide and conquer with exceptionally long synthetic knowledge labels"
+            : tag.tag,
+      })),
+    },
+  },
+  globals: { locale: "en" },
+};

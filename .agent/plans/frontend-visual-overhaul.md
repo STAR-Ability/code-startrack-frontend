@@ -165,7 +165,7 @@ Permanent fixes follow dev -> protected PR -> main -> GHCR -> deploy.
 - [x] Read handoff/instructions and inspect Git/tool/architecture/release policy.
 - [x] Baseline rendered/performance evidence and current baseline receipts.
 - [x] Iteration 1 reviewed, validated, committed and pushed (`05587b4`).
-- [ ] Iteration 2 reviewed, validated, committed and pushed.
+- [x] Iteration 2 reviewed, validated, committed and pushed (`b1047e7`).
 - [ ] Iteration 3 reviewed, validated, committed and pushed.
 - [ ] Iteration 4 reviewed, validated, committed and pushed.
 - [ ] Iteration 5 reviewed, validated, committed and pushed.
@@ -221,3 +221,40 @@ Permanent fixes follow dev -> protected PR -> main -> GHCR -> deploy.
   narrow English public step markers and tablet Security email wrapping. Practice
   result composition and all remaining public capability-copy corrections remain
   the planned iteration 3/4 work.
+
+- Iteration 3 source review preserves user/account ownership, independent ALL/30D
+  windows, backend ranks and idempotent generation. Initial 80-case rendered review
+  exposed a FieldGroup utility overriding the submission grid and zero-width
+  dimension labels at narrow 200% text. Explicit grid composition and a named
+  dimension-value container resolve those issues. Final rendered and affected
+  E2E reviews verify the corrections. Actual production chunk failure/unblock/retry refetches ECharts and
+  renders the SVG while all six text scores remain unchanged.
+- Iteration 3 final profile review passes 20 route/width/locale/text-size cases:
+  all radar labels remain inside the SVG, all 120 label/score rows are contained
+  and disjoint, and the maximum vertex score error is below 0.000089. Narrow
+  enlarged-text charts retain a bounded 320px frame. Scoped chart/profile
+  Storybook checks pass 64 cases. The submission Sheet receives viewport-aware
+  width and bounded nested padding after an actual 320px/200% readability defect;
+  focused rendered verification passes all four affected locale/width cases.
+- Iteration 2 remote CI passed Storybook and all quality steps before E2E. One
+  public-menu bounding-box assertion failed by less than 0.000013 CSS pixels;
+  a documented 0.01px rounding tolerance retains the 50svh height contract.
+- Iteration 3 follow-up polish for iteration 5: keep English unavailable time
+  values on a useful line, preserve complete words in the ordinary 320px/200%
+  submission disclosure, and inspect 320px practice action density. The 390x844
+  bilingual title/action targets are met.
+- Iteration 3 initial E2E scope collected 184 cases: 173 passed, eight failed and
+  three expected mobile skips. Four failures exposed ability frames disappearing
+  on a settled initial read failure; source review found the analogous statistics
+  case. Ability and enabled statistics now retain their frames with plain
+  unavailable text and no synthetic scores, charts or successful-empty claims.
+  The other failures were two SVG/date locator ambiguities and two obsolete
+  history-Card selectors. The behavior assertions remain intact and are scoped
+  to semantic evidence and the named history region.
+- Final recovery checks pass 308 default unit tests, strict/static checks,
+  production/Storybook builds and 38 affected Profile stories. Independent
+  rendered recovery review passes 12 bilingual desktop/mobile cases and all 32
+  enabled frames through settled error, pending retry and success. The three
+  affected E2E specs pass all 42 rerun cases, verifying 181 distinct passes and
+  three expected mobile skips in the complete 184-case scope. Iteration 3 is
+  reviewed and locally validated; commit/push is the next operation.

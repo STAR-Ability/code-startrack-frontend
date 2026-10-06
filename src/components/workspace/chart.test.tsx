@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import {
   afterEach,
   beforeAll,
@@ -11,6 +11,8 @@ import {
 import type { ECharts } from "echarts";
 import { Chart } from "./chart";
 import { radarOption, trendOption } from "@/lib/charts/options";
+import { translate, type Locale } from "@/lib/i18n/locale";
+import type { CopyKey } from "@/lib/i18n/messages";
 
 const echarts = vi.hoisted(() => ({
   init: vi.fn(),
@@ -20,6 +22,13 @@ const echarts = vi.hoisted(() => ({
   dispose: vi.fn(),
 }));
 vi.mock("echarts", () => ({ init: echarts.init }));
+const preference = vi.hoisted(() => ({ locale: "en" as Locale }));
+vi.mock("@/components/layout/locale-provider", () => ({
+  useLocale: () => ({
+    t: (key: CopyKey, parameters?: Record<string, string>) =>
+      translate(preference.locale, key, parameters),
+  }),
+}));
 
 let onResize: ResizeObserverCallback;
 let onTheme: MutationCallback;
@@ -34,6 +43,7 @@ let disconnectTheme: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  preference.locale = "en";
   echarts.init.mockReturnValue(echarts);
   disconnectResize = vi.fn();
   disconnectTheme = vi.fn();
@@ -83,7 +93,10 @@ beforeEach(() => {
     },
   );
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.doMock("echarts", () => ({ init: echarts.init }));
+  vi.unstubAllGlobals();
+});
 
 async function loadChart() {
   await act(async () => {
@@ -117,6 +130,178 @@ function useRealEcharts(actual: typeof import("echarts")) {
 }
 
 describe("ECharts lifecycle", () => {
+  it("exposes local loading and initializes the latest props when the import settles", async () => {
+    const { container, rerender } = render(
+      <Chart
+        label="Initial data"
+        option={trendOption(["Monday"], [{ name: "Solved", values: [1] }])}
+      />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      translate("en", "chart.loading"),
+    );
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    const surface = container.querySelector("[data-palette]");
+    expect(surface).not.toContainElement(screen.getByRole("status"));
+    rerender(
+      <Chart
+        label="Updated data"
+        palette="teamActivity"
+        option={trendOption(["Tuesday"], [{ name: "Solved", values: [3] }])}
+      />,
+    );
+    await loadChart();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Updated data" })).toBe(surface);
+    expect(echarts.init).toHaveBeenCalledOnce();
+    expect(echarts.init).toHaveBeenCalledWith(
+      surface,
+      expect.objectContaining({ color: ["#315fd3", "#187347", "#22756f"] }),
+      { renderer: "svg" },
+    );
+    expect(echarts.setOption).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        xAxis: expect.objectContaining({ data: ["Tuesday"] }),
+        series: [expect.objectContaining({ data: [3] })],
+        aria: { enabled: true, label: { description: "Updated data" } },
+      }),
+    );
+  });
+
+  it("recovers from initialization failure without treating the chart as ready", async () => {
+    echarts.init.mockImplementationOnce(() => {
+      throw new Error("Internal initialization failure");
+    });
+    const { container, unmount } = render(
+      <Chart label="Activity" option={{ series: [] }} />,
+    );
+    const surface = container.querySelector("[data-palette]");
+    const frame = surface?.parentElement;
+    await loadChart();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      translate("en", "chart.unavailable"),
+    );
+    expect(screen.queryByText("Internal initialization failure")).toBeNull();
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(echarts.dispose).not.toHaveBeenCalled();
+    const retry = screen.getByRole("button", {
+      name: translate("en", "chart.retry"),
+    });
+    expect(surface).not.toContainElement(retry);
+    fireEvent.click(retry);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      translate("en", "chart.loading"),
+    );
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    await loadChart();
+    expect(screen.getByRole("img", { name: "Activity" })).toBe(surface);
+    expect(surface?.parentElement).toBe(frame);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(echarts.init).toHaveBeenCalledTimes(2);
+    unmount();
+    expect(echarts.dispose).toHaveBeenCalledOnce();
+  });
+
+  it("cleans up partially attached observers before retry and disposes each attempt once", async () => {
+    const observeTheme = vi.fn().mockImplementationOnce(() => {
+      throw new Error("Theme observer setup failed");
+    });
+    vi.stubGlobal(
+      "MutationObserver",
+      class {
+        constructor(callback: MutationCallback) {
+          onTheme = callback;
+        }
+        observe = observeTheme;
+        disconnect = disconnectTheme;
+      },
+    );
+    const { unmount } = render(
+      <Chart label="Activity" option={{ series: [] }} />,
+    );
+    await loadChart();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(echarts.dispose).toHaveBeenCalledOnce();
+    expect(disconnectResize).toHaveBeenCalledOnce();
+    expect(disconnectTheme).toHaveBeenCalledOnce();
+    expect(motion.removeEventListener).toHaveBeenCalledOnce();
+    fireEvent.click(
+      screen.getByRole("button", { name: translate("en", "chart.retry") }),
+    );
+    await loadChart();
+    expect(screen.getByRole("img", { name: "Activity" })).toBeInTheDocument();
+    expect(echarts.init).toHaveBeenCalledTimes(2);
+    expect(echarts.dispose).toHaveBeenCalledOnce();
+    unmount();
+    expect(echarts.dispose).toHaveBeenCalledTimes(2);
+    expect(disconnectResize).toHaveBeenCalledTimes(2);
+    expect(disconnectTheme).toHaveBeenCalledTimes(2);
+    expect(motion.removeEventListener).toHaveBeenCalledTimes(2);
+  });
+
+  it("handles actual module-import rejection and retries with the current locale, data and motion", async () => {
+    vi.doMock("echarts", () => {
+      throw new Error("Chart module unavailable");
+    });
+    const { rerender } = render(
+      <Chart label="Initial data" option={{ series: [] }} />,
+    );
+    await loadChart();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      translate("en", "chart.unavailable"),
+    );
+    expect(echarts.init).not.toHaveBeenCalled();
+    preference.locale = "zh-CN";
+    motion.matches = true;
+    rerender(
+      <Chart
+        label="更新后的数据"
+        palette="ability"
+        option={radarOption([{ name: "实现", score: 22.25 }], "当前能力")}
+      />,
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      translate("zh-CN", "chart.unavailable"),
+    );
+    vi.doMock("echarts", () => ({ init: echarts.init }));
+    fireEvent.click(
+      screen.getByRole("button", { name: translate("zh-CN", "chart.retry") }),
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      translate("zh-CN", "chart.loading"),
+    );
+    await loadChart();
+    expect(
+      screen.getByRole("img", { name: "更新后的数据" }),
+    ).toBeInTheDocument();
+    expect(echarts.init).toHaveBeenCalledOnce();
+    expect(echarts.setOption).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        animation: false,
+        series: [
+          expect.objectContaining({
+            data: [{ name: "当前能力", value: [22.25] }],
+          }),
+        ],
+        aria: { enabled: true, label: { description: "更新后的数据" } },
+      }),
+    );
+  });
+
+  it("ignores a rejected lazy import after unmount", async () => {
+    vi.doMock("echarts", () => {
+      throw new Error("Chart module unavailable");
+    });
+    const { unmount } = render(
+      <Chart label="Canceled" option={{ series: [] }} />,
+    );
+    unmount();
+    await loadChart();
+    expect(echarts.init).not.toHaveBeenCalled();
+    expect(echarts.dispose).not.toHaveBeenCalled();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("updates data, accessible labels and palette on the same SVG instance", async () => {
     const { rerender, unmount } = render(
       <Chart

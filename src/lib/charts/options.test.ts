@@ -55,7 +55,8 @@ describe("chart data presentation", () => {
       },
     ]);
     expect(option.media).toMatchObject([
-      { query: { maxWidth: 360 } },
+      { query: { maxWidth: 220 } },
+      { query: { minWidth: 221, maxWidth: 360 } },
       { query: { minWidth: 361, maxWidth: 600 } },
       { option: { radar: { radius: "58%" } } },
     ]);
@@ -87,9 +88,11 @@ describe("chart data presentation", () => {
         ),
       );
       for (const [width, radius, fontSize, labelWidth, gap] of [
-        [320, "48%", 10, 72, 6],
-        [500, "52%", 11, 86, 10],
-        [900, "58%", 11, 100, 10],
+        [176, "32%", 11, 72, 4],
+        [320, "48%", 11, 72, 6],
+        [500, "52%", 12, 86, 10],
+        [900, "58%", 12, 100, 10],
+        [176, "32%", 11, 72, 4],
       ] as const) {
         chart.resize({ width });
         const radar = chart.getOption().radar as RadarComponentOption[];
@@ -138,8 +141,16 @@ describe("chart data presentation", () => {
           { ...radarOption(dimensions, "Ability"), animation: false },
           { notMerge: true },
         );
-        for (const width of [248, 318, 500, 900, 248]) {
-          const height = width < 500 ? 288 : 320;
+        for (const [width, height] of [
+          [176, 320],
+          [248, 288],
+          [318, 288],
+          [384, 288],
+          [500, 320],
+          [900, 320],
+          [248, 288],
+          [176, 320],
+        ]) {
           chart.resize({ width, height });
           const renderedLabels = chart
             .getZr()

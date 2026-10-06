@@ -18,6 +18,15 @@ function Example(props: React.ComponentProps<typeof PracticeModePicker>) {
     />
   );
 }
+function CompactExample(
+  props: React.ComponentProps<typeof PracticeModePicker>,
+) {
+  return (
+    <div className="practice-controls">
+      <Example {...props} />
+    </div>
+  );
+}
 const meta = {
   title: "Workspace/PracticeMode",
   component: PracticeModePicker,
@@ -34,7 +43,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Single-choice training policy with persistent selection. Switching a mode only changes local presentation; generating a batch is a separate explicit action in the feature container.",
+          "Single-choice training policy with persistent selection. Switching a mode reads existing recommendations; generating a batch is a separate explicit action in the feature container. The compact presentation uses wrapping text labels while its feature container supplies the mode explanation through a secondary practice guide.",
       },
     },
   },
@@ -45,3 +54,11 @@ export const Default: Story = {};
 export const Disabled: Story = { args: { disabled: true } };
 export const Weakness: Story = { args: { mode: "WEAKNESS" } };
 export const Mobile: Story = { globals: mobile };
+export const Compact: Story = {
+  args: { compact: true },
+  render: (args) => <CompactExample {...args} />,
+};
+export const CompactMobile: Story = {
+  ...Compact,
+  globals: mobile,
+};

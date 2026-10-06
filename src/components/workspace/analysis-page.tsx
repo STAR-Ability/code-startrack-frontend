@@ -7,7 +7,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useAccountQuery } from "./use-account-query";
-import { AnalysisView } from "./analysis-view";
+import { AnalysisView, ProfileDirection } from "./analysis-view";
 import { EmptyState, QueryFeedback, DataRegion, Pagination } from "./feedback";
 import { Chart } from "./chart";
 import { trendOption } from "@/lib/charts/options";
@@ -74,24 +74,28 @@ export function AnalysisPage({
   );
   return (
     <>
-      {!profileOnly && (
-        <WindowSelector
-          value={window}
-          onChange={(value) => {
-            setWindow(value);
-            setPage(1);
-            setSnapshotId(null);
-          }}
-        />
-      )}
-      {snapshotId && (
-        <Button
-          variant="outline"
-          className="self-start"
-          onClick={() => setSnapshotId(null)}
-        >
-          {t("v.latest")}
-        </Button>
+      {(!profileOnly || snapshotId) && (
+        <div className="profile-controls">
+          {!profileOnly && (
+            <WindowSelector
+              value={window}
+              onChange={(value) => {
+                setWindow(value);
+                setPage(1);
+                setSnapshotId(null);
+              }}
+            />
+          )}
+          {snapshotId && (
+            <Button
+              variant="outline"
+              className="self-start"
+              onClick={() => setSnapshotId(null)}
+            >
+              {t("v.latest")}
+            </Button>
+          )}
+        </div>
       )}
       <DataRegion
         query={displayed}
@@ -99,6 +103,12 @@ export function AnalysisPage({
         showInitialLoading={false}
         empty={!displayed.data || displayed.data.summary.submissionCount === 0}
       >
+        {displayed.data && (
+          <ProfileDirection
+            analysis={displayed.data}
+            historical={!!snapshotId}
+          />
+        )}
         <AnalysisView
           analysis={displayed.data ?? null}
           loading={displayed.isFetching && displayed.data === undefined}
@@ -128,6 +138,7 @@ export function AnalysisPage({
                   />
                   {trend.length > 1 ? (
                     <Chart
+                      palette="ability"
                       label={t("v.trend")}
                       option={trendOption(
                         trend.map((item) => date(item.dataCutoffAt)),

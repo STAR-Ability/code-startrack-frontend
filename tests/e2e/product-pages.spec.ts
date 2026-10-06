@@ -157,7 +157,10 @@ for (const locale of ["zh-CN", "en"] as const) {
     await trigger.press("Enter");
     const dialog = page.getByRole("dialog", { name: menuName, exact: true });
     await expect(dialog).toBeVisible();
-    expect((await dialog.boundingBox())!.height).toBeLessThanOrEqual(400);
+    // Chromium's bounding box can include subpixel rounding at the 50svh limit.
+    expect((await dialog.boundingBox())!.height).toBeLessThanOrEqual(
+      400 + 0.01,
+    );
     const links = dialog
       .getByRole("navigation", { name: menuName })
       .getByRole("link");

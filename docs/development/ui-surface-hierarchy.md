@@ -136,12 +136,17 @@ scrolling pane, preserving document scroll, focus and closed group choices.
 Narrow public chrome scrolls with the page,
 and its menu uses a locally scrolling Sheet bounded to half the viewport.
 
-- Dashboard: current activity, concise ability direction and entry points to
-  deeper work. Full ability evidence belongs on profile; detailed distributions
-  belong on data/profile rather than being repeated on the overview.
-- Practice: training controls, ranked recommendation, then remaining problems,
-  source snapshot and history. Backend rank/order and completion state remain
-  unchanged. Matched dimensions describe supplied coverage, not predicted gains.
+- Dashboard: the next-practice direction and concise all-history ability share
+  the first desktop row. One 30-day activity strip and timeline follows; secondary
+  statistics and complete source lists use named disclosures. Rebuild remains
+  available before opening sources. Each region retains its independent query
+  window, supplied cutoff and recovery.
+- Practice: compact direction/count controls, explicit generation, result context
+  and ranked recommendation precede source/history detail. The signed-in guide
+  is secondary. The featured problem action comes before its longer explanation
+  on mobile; shared demo cards retain their default presentation. Backend
+  rank/order and completion state remain unchanged. Matched dimensions describe
+  supplied coverage, not predicted gains.
 - Analysis: report conclusions and actions first. Frozen report evidence and
   current aggregate evidence are separate disclosures; each retains its own DTO
   and time context. Never replace frozen numbers with a current query response.
@@ -156,6 +161,14 @@ versus solved distributions use neutral and green; ability uses insight.
 Theme-resolved tooltips, scrollable legends, SVG rendering, responsive resize and
 reduced-motion support remain centralized in the shared chart layer.
 
+Ability, supporting statistics and profile sources use named inline-size
+containers. Radar/value and distribution columns pair only when their containing
+panel has useful width, including within dialogs and beside the sidebar. The
+radar has a bounded width; its six exact text rows remain available beside or
+below it. Chart loading reserves the final height. Import/setup failures offer
+local retry outside the ECharts-managed image node, while sibling text evidence
+remains readable.
+
 Use the existing DetailsDisclosure for secondary evidence. Its panel variant
 provides a wrapping, keyboard-accessible trigger. Chart disclosures opt out of
 `keepMounted`, so collapsed evidence does not initialize invisible charts. Inline
@@ -168,9 +181,10 @@ tablet, laptop and desktop widths, with keyboard input and 200% text sizing.
 
 ## Evidence and recommendation context
 
-Missing analysis is unknown, not a zero-valued profile. Keep metric and evidence
-section structure during loading or failure, use Skeleton for pending data and
-the existing unavailable/empty feedback after it settles. Initialize a radar and
+Missing analysis is unknown, not a zero-valued profile. Keep shape-matched
+skeletons for pending reads and cached evidence during failed refreshes. An
+initial settled failure uses its owning query's recovery without also claiming
+that evidence is empty. Initialize a radar and
 dimension bars only when a real analysis DTO exists. A genuine zero-evidence
 snapshot retains its supplied zeros and explicit no-evidence explanation.
 
@@ -224,3 +238,13 @@ DataRegion keeps its children mounted during loading and errors. Use
 `showInitialLoading={false}` only when those children already own a shape-matched
 skeleton; accessible loading status remains, and cached refetches retain the small
 refresh indicator. Other initial reads keep the generic loading presentation.
+The ability section retains its title and surface when its initial read fails;
+its local unavailable message does not claim a successful empty result, invent
+zero scores or duplicate the query owner's recovery controls.
+
+Account submissions use a native table when the record container can hold six
+aligned columns. Each record keeps its problem, verdict, language, execution
+time, memory and timestamp available for comparison, with full IDs/team metadata
+in a named keyboard disclosure. Narrow containers use primary rows with complete
+details; a desktop Sheet follows its own width. Filters respond to the form
+container, and successful empty results remain distinct from loading/read failure.

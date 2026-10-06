@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, RadarIcon } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { v012 } from "@/lib/api/v012";
 import { keys } from "@/lib/query/keys";
@@ -10,16 +9,16 @@ import type { UserAnalysisDto } from "@/lib/api/v012-schemas";
 import { windows, type AnalysisWindow } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { useAccounts } from "./account-provider";
 import { useUserQuery } from "./use-user-query";
 import {
   AnalysisView,
   AnalysisStatistics,
-  type AnalysisPresentation,
+  ProfileDirection,
 } from "./analysis-view";
+export { ProfileDirection } from "./analysis-view";
 import { WindowSelector } from "./analysis-page";
 import {
   EmptyState,
@@ -31,14 +30,24 @@ import {
 import { Panel, AiJobNotice } from "./v012-shared";
 import { ApiError } from "@/lib/api/errors";
 import { isAiJobPending } from "./use-ai-job";
-export function UserSources({ analysis }: { analysis: UserAnalysisDto }) {
+export function UserSources({
+  analysis,
+  showSummary = true,
+}: {
+  analysis: UserAnalysisDto;
+  showSummary?: boolean;
+}) {
   const { t, locale } = useLocale();
   const { selectAccount } = useAccounts();
   return (
     <Panel
       title="v12.sourceAccounts"
       variant="supporting"
-      description={`${t("v12.sources")}: ${formatNumber(analysis.sourceAccountCount, locale)}`}
+      description={
+        showSummary
+          ? `${t("v12.sources")}: ${formatNumber(analysis.sourceAccountCount, locale)}`
+          : undefined
+      }
     >
       <dl className="flex min-w-0 flex-col divide-y">
         {analysis.ratingAccounts.map((account) => (
@@ -138,40 +147,6 @@ export function UserAnalysisEmpty({
     />
   );
 }
-export function ProfileDirection({
-  analysis,
-  historical = false,
-}: {
-  analysis: AnalysisPresentation;
-  historical?: boolean;
-}) {
-  const { t } = useLocale();
-  const evidence = analysis.summary.submissionCount > 0;
-  return (
-    <section className="profile-direction" data-historical={historical}>
-      <div className="profile-direction-copy">
-        <Badge variant={historical ? "secondary" : "insight"} wrap>
-          <RadarIcon aria-hidden="true" />
-          {t(historical ? "profile.historical" : "profile.latestSaved")}
-        </Badge>
-        <h2>
-          {evidence
-            ? t(historical ? "profile.historicalFocus" : "profile.nextFocus", {
-                dimension: t(`data.dimension.${analysis.weakestDimension}`),
-              })
-            : t("profile.startEvidence")}
-        </h2>
-        <p>
-          {t(historical ? "profile.historicalNote" : "profile.nextFocusNote")}
-        </p>
-      </div>
-      <Link href="/practice" className={buttonVariants({ wrap: true })}>
-        {t("profile.startPractice")}
-        <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-      </Link>
-    </section>
-  );
-}
 export function UserProfilePage() {
   const { t, locale } = useLocale();
   const [window, setWindow] = useState<AnalysisWindow>("ALL");
@@ -253,6 +228,7 @@ export function UserProfilePage() {
             dimensions
             ability
             metricTitle={snapshotId ? "metrics.snapshot" : "metrics.ability"}
+            sourceCount={displayed.data.sourceAccountCount}
           />
           <DetailsDisclosure
             title={t("profile.supportingEvidence")}
@@ -266,50 +242,57 @@ export function UserProfilePage() {
           </DetailsDisclosure>
         </>
       )}
-      <div
-        className="profile-supporting-grid"
-        data-has-sources={!!displayed.data}
-      >
-        {displayed.data && <UserSources analysis={displayed.data} />}
-        <Panel title="v12.analysisHistory" variant="supporting">
-          <QueryFeedback query={history} resource={t("v12.analysisHistory")} />
-          <ul className="flex min-w-0 flex-col divide-y">
-            {history.data?.data.map((item) => (
-              <li
-                key={item.snapshotId}
-                className="flex min-w-0 flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
-                  <time dateTime={item.createdAt}>
-                    {formatTimestamp(item.createdAt, locale)}
-                  </time>
-                  <p className="text-xs text-muted-foreground">
-                    {t("v.overallScore")}:{" "}
-                    {formatNumber(item.overallScore, locale, 2)} / 100
-                  </p>
-                </div>
-                <Button
-                  wrap
-                  variant="outline"
-                  size="sm"
-                  aria-pressed={snapshotId === item.snapshotId}
-                  onClick={() => setSnapshotId(item.snapshotId)}
-                >
-                  {t("v.snapshot")}
-                </Button>
-              </li>
-            ))}
-          </ul>
-          {history.data?.data.length === 0 && (
-            <EmptyState title={t("v.noRecords")} embedded />
+      <div className="profile-supporting-region">
+        <div
+          className="profile-supporting-grid"
+          data-has-sources={!!displayed.data}
+        >
+          {displayed.data && (
+            <UserSources analysis={displayed.data} showSummary={false} />
           )}
-          <Pagination
-            meta={history.data?.meta}
-            page={page}
-            setPage={setPage}
-            pending={history.isFetching}
-          />
-        </Panel>
+          <Panel title="v12.analysisHistory" variant="supporting">
+            <QueryFeedback
+              query={history}
+              resource={t("v12.analysisHistory")}
+            />
+            <ul className="flex min-w-0 flex-col divide-y">
+              {history.data?.data.map((item) => (
+                <li
+                  key={item.snapshotId}
+                  className="flex min-w-0 flex-wrap items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                >
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <time dateTime={item.createdAt}>
+                      {formatTimestamp(item.createdAt, locale)}
+                    </time>
+                    <p className="text-xs text-muted-foreground">
+                      {t("v.overallScore")}:{" "}
+                      {formatNumber(item.overallScore, locale, 2)} / 100
+                    </p>
+                  </div>
+                  <Button
+                    wrap
+                    variant="outline"
+                    size="sm"
+                    aria-pressed={snapshotId === item.snapshotId}
+                    onClick={() => setSnapshotId(item.snapshotId)}
+                  >
+                    {t("v.snapshot")}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            {history.data?.data.length === 0 && (
+              <EmptyState title={t("v.noRecords")} embedded />
+            )}
+            <Pagination
+              meta={history.data?.meta}
+              page={page}
+              setPage={setPage}
+              pending={history.isFetching}
+            />
+          </Panel>
+        </div>
       </div>
     </>
   );

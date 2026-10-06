@@ -384,6 +384,12 @@ test("dashboard preserves full supplied source, team and inviter names at respon
   });
   await page.goto("/dashboard");
   const main = page.getByRole("main");
+  await main
+    .getByRole("button", {
+      name: translate("zh-CN", "dashboard.sourcesDetails"),
+      exact: true,
+    })
+    .click();
   const invitations = main.locator("section").filter({
     has: page.getByRole("heading", { name: "团队邀请", exact: true }),
   });

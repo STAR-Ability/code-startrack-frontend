@@ -39,6 +39,7 @@ test("dashboard shows activity once and keeps full ability analysis reachable", 
 }) => {
   await page.goto("/dashboard");
   const main = page.getByRole("main");
+  await main.getByRole("button", { name: "查看账号来源", exact: true }).click();
   await expect(main.getByText("DemoAlpha", { exact: true })).toBeVisible();
   const nextProblem = main.getByRole("link", {
     name: "选择下一道题",

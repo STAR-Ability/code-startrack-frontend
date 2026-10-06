@@ -1,7 +1,10 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "cn";
 import type { EChartsOption, ECharts } from "echarts";
+import { useLocale } from "@/components/layout/locale-provider";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { chartTheme, type ChartPalette } from "@/lib/charts/theme";
 
 export function Chart({
@@ -15,9 +18,14 @@ export function Chart({
   palette?: ChartPalette;
   size?: "standard" | "ability";
 }) {
+  const { t } = useLocale();
   const element = useRef<HTMLDivElement>(null);
   const instance = useRef<ECharts | null>(null);
   const latest = useRef({ option, label, palette });
+  const [status, setStatus] = useState<"loading" | "ready" | "unavailable">(
+    "loading",
+  );
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     // Reset the model when media is present or removed: replaceMerge applies to
     // partial media rules and clears their omitted series/radar indicators.
@@ -49,60 +57,116 @@ export function Chart({
   }, [palette]);
   useEffect(() => {
     let disposed = false;
-    let cleanup: (() => void) | undefined;
-    void import("echarts").then((echarts) => {
-      if (disposed || !element.current) return;
-      const container = element.current;
-      const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      );
-      const current = latest.current;
-      const chart = echarts.init(
-        container,
-        chartTheme(getComputedStyle(container), current.palette),
-        { renderer: "svg" },
-      );
-      instance.current = chart;
-      chart.setOption(
-        displayOption(current.option, current.label, reducedMotion.matches),
-      );
-      const updateMotion = () =>
-        chart.setOption({ animation: !reducedMotion.matches });
-      reducedMotion.addEventListener("change", updateMotion);
-      const observer = new ResizeObserver(() => chart.resize());
-      observer.observe(container);
-      const themeObserver = new MutationObserver(() =>
-        refreshTheme(chart, container, latest.current, reducedMotion.matches),
-      );
-      themeObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ["class"],
-      });
-      cleanup = () => {
+    let chart: ECharts | undefined;
+    let reducedMotion: MediaQueryList | undefined;
+    let updateMotion: (() => void) | undefined;
+    let observer: ResizeObserver | undefined;
+    let themeObserver: MutationObserver | undefined;
+    // Setup can fail after creating an instance or attaching an observer.
+    const cleanup = () => {
+      if (reducedMotion && updateMotion)
         reducedMotion.removeEventListener("change", updateMotion);
-        observer.disconnect();
-        themeObserver.disconnect();
-        chart.dispose();
-        instance.current = null;
-      };
-    });
+      updateMotion = undefined;
+      observer?.disconnect();
+      observer = undefined;
+      themeObserver?.disconnect();
+      themeObserver = undefined;
+      if (instance.current === chart) instance.current = null;
+      chart?.dispose();
+      chart = undefined;
+    };
+    void import("echarts")
+      .then((echarts) => {
+        if (disposed || !element.current) return;
+        const container = element.current;
+        const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        reducedMotion = motion;
+        const current = latest.current;
+        const initialized = echarts.init(
+          container,
+          chartTheme(getComputedStyle(container), current.palette),
+          { renderer: "svg" },
+        );
+        chart = initialized;
+        instance.current = initialized;
+        initialized.setOption(
+          displayOption(current.option, current.label, motion.matches),
+        );
+        updateMotion = () =>
+          initialized.setOption({ animation: !motion.matches });
+        motion.addEventListener("change", updateMotion);
+        observer = new ResizeObserver(() => initialized.resize());
+        observer.observe(container);
+        themeObserver = new MutationObserver(() =>
+          refreshTheme(initialized, container, latest.current, motion.matches),
+        );
+        themeObserver.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+        setStatus("ready");
+      })
+      .catch(() => {
+        cleanup();
+        if (!disposed) setStatus("unavailable");
+      });
     return () => {
       disposed = true;
-      cleanup?.();
+      cleanup();
     };
-  }, []);
+  }, [attempt]);
   return (
     <div
-      ref={element}
-      role="img"
-      aria-label={label}
-      data-palette={palette}
+      aria-busy={status === "loading" || undefined}
+      data-chart-state={status}
       data-chart-size={size}
       className={cn(
-        "chart-surface w-full min-w-0 rounded-lg",
+        "chart-frame relative w-full min-w-0 rounded-lg",
         size === "ability" ? "h-72 sm:h-80" : "h-60",
       )}
-    />
+    >
+      <div
+        ref={element}
+        role={status === "ready" ? "img" : undefined}
+        aria-label={status === "ready" ? label : undefined}
+        aria-hidden={status !== "ready" || undefined}
+        data-palette={palette}
+        data-chart-size={size}
+        className={cn(
+          "chart-surface h-full w-full min-w-0 rounded-lg",
+          status !== "ready" && "invisible",
+        )}
+      />
+      {status !== "ready" && (
+        <div
+          role={status === "loading" ? "status" : "alert"}
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center text-sm text-muted-foreground"
+        >
+          {status === "loading" ? (
+            <>
+              <Skeleton className="h-24 w-full max-w-sm" aria-hidden="true" />
+              <p>{t("chart.loading")}</p>
+            </>
+          ) : (
+            <>
+              <p>{t("chart.unavailable")}</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                wrap
+                onClick={() => {
+                  setStatus("loading");
+                  setAttempt((value) => value + 1);
+                }}
+              >
+                {t("chart.retry")}
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

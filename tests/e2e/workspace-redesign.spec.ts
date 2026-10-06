@@ -10,6 +10,23 @@ test("zero-evidence aggregate retains source accounts and an explicit empty stat
   await expect(
     page.getByRole("main").getByText("暂无训练证据", { exact: true }).first(),
   ).toBeVisible();
+  const ability = page.locator(".dashboard-ability");
+  await expect(ability.locator(".metric-strip dd").first()).toHaveText("0");
+  await expect(ability.locator(".metric-strip dd").last()).toHaveText("2");
+  await expect(
+    page.getByRole("button", { name: "重建个人画像", exact: true }),
+  ).toBeEnabled();
+  const sources = page.getByRole("button", {
+    name: "查看账号来源",
+    exact: true,
+  });
+  await expect(sources).toHaveAttribute("aria-expanded", "false");
+  await expect(
+    page.getByRole("main").getByText("DemoAlpha", { exact: true }),
+  ).toBeHidden();
+  await sources.focus();
+  await sources.press("Enter");
+  await expect(sources).toHaveAttribute("aria-expanded", "true");
   await expect(
     page.getByRole("main").getByText("DemoAlpha", { exact: true }),
   ).toBeVisible();
@@ -32,6 +49,7 @@ test("aggregate is backend-owned and independent of selected account preference"
   );
   await page.goto("/dashboard");
   await expect(page.getByLabel("当前 Codeforces 账号")).toHaveCount(0);
+  await page.getByRole("button", { name: "查看账号来源", exact: true }).click();
   await expect(
     page.getByRole("main").getByText("DemoAlpha", { exact: true }),
   ).toBeVisible();

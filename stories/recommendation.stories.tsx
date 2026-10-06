@@ -137,3 +137,23 @@ export const Error: Story = {
   ),
 };
 export const Mobile: Story = { globals: mobile };
+export const CompactAvailableAction: Story = {
+  args: { ...AvailableAction.args, compact: true },
+};
+export const CompactMobile: Story = {
+  ...CompactAvailableAction,
+  globals: mobile,
+};
+export const CompactOrderedBatch: Story = {
+  render: () => <BatchView batch={batch} compact />,
+};
+export const ZeroMetadata: Story = {
+  args: {
+    compact: true,
+    targetRating: 0,
+    item: {
+      ...item,
+      problem: { ...item.problem, difficulty: 0, solvedCount: 0 },
+    },
+  },
+};

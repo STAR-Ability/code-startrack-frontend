@@ -11,12 +11,14 @@ import {
 
 export function DetailsDisclosure({
   title,
+  accessibleLabel,
   children,
   keepMounted = true,
   variant = "inline",
   defaultOpen = false,
 }: {
   title: string;
+  accessibleLabel?: string;
   children: React.ReactNode;
   keepMounted?: boolean;
   variant?: "inline" | "panel";
@@ -33,6 +35,7 @@ export function DetailsDisclosure({
       )}
     >
       <CollapsibleTrigger
+        aria-label={accessibleLabel}
         render={
           <Button
             type="button"

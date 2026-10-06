@@ -1274,11 +1274,14 @@
   .profile-supporting-grid {
     @apply grid min-w-0 items-start gap-5;
   }
+  [data-analysis-ability] {
+    container: ability / inline-size;
+  }
   .analysis-ability-content {
-    @apply grid min-w-0 items-center gap-5 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)];
+    @apply grid min-w-0 items-center gap-5;
   }
   .analysis-ability-chart {
-    @apply min-w-0;
+    @apply mx-auto w-full min-w-0 max-w-96;
   }
   .analysis-ability-chart .chart-surface {
     background: radial-gradient(
@@ -1288,10 +1291,11 @@
     );
   }
   .analysis-dimension-list {
+    container: dimension-values / inline-size;
     @apply flex min-w-0 flex-col gap-1;
   }
   .analysis-dimension-row {
-    @apply grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 rounded-lg px-3 py-2.5;
+    @apply grid min-w-0 grid-cols-1 items-center gap-x-3 gap-y-2 rounded-lg px-3 py-2.5;
   }
   .analysis-dimension-row[data-weakest="true"] {
     background: color-mix(in srgb, var(--insight-soft) 80%, transparent);
@@ -1303,7 +1307,8 @@
     @apply font-mono text-sm tabular-nums;
   }
   .analysis-dimension-track {
-    @apply col-span-2 h-1.5 overflow-hidden rounded-full bg-muted;
+    @apply h-1.5 overflow-hidden rounded-full bg-muted;
+    grid-column: 1 / -1;
   }
   .analysis-dimension-fill {
     @apply h-full rounded-full bg-insight;
@@ -1314,8 +1319,198 @@
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
   }
 }
-@media (min-width: 1024px) {
+@container ability (min-width: 44rem) {
+  .analysis-ability-content {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  }
+}
+@container ability (max-width: 16rem) {
+  .chart-frame[data-chart-size="ability"] {
+    height: 320px;
+  }
+}
+@container dimension-values (min-width: 14rem) {
+  .analysis-dimension-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+@container profile-support (min-width: 44rem) {
   .profile-supporting-grid[data-has-sources="true"] {
     grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  }
+}
+
+@layer components {
+  .dashboard-primary-grid {
+    @apply grid min-w-0 items-stretch gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)];
+  }
+  .dashboard-direction {
+    @apply h-full;
+  }
+  .dashboard-ability {
+    container: dashboard-ability / inline-size;
+    @apply flex min-w-0 flex-col gap-3;
+  }
+  .dashboard-ability .metric-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .dashboard-activity {
+    @apply flex min-w-0 flex-col gap-4;
+  }
+  .dashboard-secondary-metrics {
+    @apply min-w-0;
+  }
+  .dashboard-support-grid {
+    @apply grid min-w-0 items-start gap-5 xl:grid-cols-2;
+  }
+  .dashboard-support-row {
+    @apply flex min-w-0 flex-col gap-3 border-b py-4 first:pt-0 last:border-b-0 last:pb-0;
+  }
+  .dashboard-report-preview {
+    @apply text-sm leading-relaxed wrap-anywhere;
+  }
+  .analysis-statistics {
+    container: evidence / inline-size;
+    @apply flex min-w-0 flex-col gap-5;
+  }
+  .analysis-distribution-grid {
+    @apply grid min-w-0 items-start gap-4;
+  }
+  .profile-supporting-region {
+    container: profile-support / inline-size;
+  }
+  .practice-controls {
+    container: practice-controls / inline-size;
+    @apply flex min-w-0 flex-col gap-3;
+  }
+  .practice-generation {
+    @apply grid min-w-0 grid-cols-1 items-end gap-3;
+  }
+  .practice-mode-picker[data-compact="true"] {
+    @apply flex min-w-0 flex-col gap-2;
+  }
+  .practice-mode-picker[data-compact="true"] .practice-mode-choices {
+    @apply grid w-full min-w-0 grid-cols-1;
+  }
+  .practice-mode-picker[data-compact="true"] .practice-mode-label {
+    @apply whitespace-normal text-center leading-snug;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .recommendation-batch[data-compact="true"] {
+    @apply flex min-w-0 flex-col gap-3;
+  }
+  .recommendation-context[data-compact="true"] {
+    @apply flex min-w-0 flex-col items-start gap-1;
+  }
+  .recommendation-context-summary {
+    @apply flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1;
+  }
+  .recommendation-context-time {
+    @apply text-xs text-muted-foreground;
+  }
+  .recommendation-card[data-compact="true"] .recommendation-title {
+    @apply text-2xl;
+  }
+  .recommendation-card[data-compact="true"] .recommendation-content {
+    @apply gap-3;
+  }
+  .recommendation-card[data-compact="true"] .recommendation-action-panel {
+    @apply gap-3 border-0 bg-transparent p-0;
+  }
+  .recommendation-card[data-compact="true"] .recommendation-facts {
+    @apply gap-3;
+  }
+  .recommendation-card[data-compact="true"] .recommendation-facts dd {
+    @apply text-lg;
+  }
+  .recommendation-history {
+    @apply flex min-w-0 flex-col gap-4 border-t pt-5;
+  }
+  .submission-records {
+    container: submission-records / inline-size;
+    @apply min-w-0;
+  }
+  .submission-table {
+    @apply hidden w-full table-fixed text-sm;
+  }
+  .submission-table :is(th, td) {
+    @apply px-3 py-2 text-left align-top wrap-anywhere;
+  }
+  .submission-table thead th {
+    @apply text-xs font-medium text-muted-foreground;
+  }
+  .submission-table tbody th {
+    @apply font-medium text-foreground;
+  }
+  .submission-table td {
+    @apply tabular-nums;
+  }
+  .submission-table tbody {
+    @apply border-b last:border-b-0;
+  }
+  .submission-mobile-list {
+    @apply flex min-w-0 flex-col divide-y;
+  }
+  .submission-filter-fields {
+    @apply grid min-w-0 grid-cols-1 items-end gap-3;
+  }
+  .submission-filter-fields :is(input, [data-slot="field"]) {
+    @apply min-w-0;
+  }
+}
+.submission-sheet-header,
+.submission-sheet-body {
+  padding-inline: clamp(12px, 1rem, 16px);
+}
+@container submission-records (max-width: 24rem) {
+  .submission-mobile-list {
+    padding-inline: clamp(8px, 0.75rem, 12px);
+  }
+}
+@container evidence (min-width: 44rem) {
+  .analysis-distribution-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container dashboard-ability (min-width: 16rem) {
+  .dashboard-ability .metric-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container practice-controls (min-width: 16rem) {
+  .practice-mode-picker[data-compact="true"] .practice-mode-choices {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .practice-generation {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+}
+@container recommendation (min-width: 40rem) {
+  .recommendation-card[data-compact="true"] .recommendation-action-panel {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .recommendation-card[data-compact="true"] .recommendation-explanation {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+@container submission-records (min-width: 56rem) {
+  .submission-table {
+    display: table;
+  }
+  .submission-mobile-list {
+    display: none;
+  }
+}
+@container submission-controls (min-width: 32rem) {
+  .submission-filter-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container submission-controls (min-width: 56rem) {
+  .submission-filter-fields {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
   }
 }

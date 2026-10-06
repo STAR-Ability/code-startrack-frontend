@@ -9,9 +9,8 @@ import { v012 } from "@/lib/api/v012";
 import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
 import { useLocale } from "@/components/layout/locale-provider";
 import { useUserQuery } from "./use-user-query";
-import { AnalysisView } from "./analysis-view";
+import { AnalysisStatistics } from "./analysis-view";
 import { QueryFeedback, EmptyState, DataRegion } from "./feedback";
-import { Panel } from "./v012-shared";
 import {
   UserSources,
   UserAnalysisEmpty,
@@ -26,13 +25,14 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { MetricPanel } from "./metric-panel";
+import { DetailsDisclosure } from "@/components/ui/details-disclosure";
+import { MetricPanel, type Metric } from "./metric-panel";
 import type { UserAnalysisDto } from "@/lib/api/v012-schemas";
 import { Skeleton } from "@/components/ui/skeleton";
-function DashboardDirection({
+import { CompatibilityNotice } from "./compatibility-notice";
+
+export function DashboardDirection({
   analysis,
   loading,
   failed,
@@ -48,13 +48,13 @@ function DashboardDirection({
     <Card
       variant="recommendation"
       interaction="none"
-      size="lg"
+      className="dashboard-direction"
       data-dashboard-direction
     >
       <CardHeader>
         <CardDescription>{t("dashboard.nextStep")}</CardDescription>
-        <CardTitle>
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <CardTitle titleRole="section">
+          <h2 className="section-heading">
             {loading ? (
               <Skeleton className="h-8 w-48 max-w-full" />
             ) : (
@@ -63,7 +63,7 @@ function DashboardDirection({
           </h2>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex min-w-0 flex-wrap items-center justify-between gap-5">
+      <CardContent className="flex min-w-0 flex-1 flex-col items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-3">
           {ready && (
             <Badge variant="insight" wrap className="self-start">
@@ -84,14 +84,14 @@ function DashboardDirection({
           <div className="flex min-w-0 flex-wrap gap-3">
             <Link
               href={ready ? "/practice" : "/accounts"}
-              className={buttonVariants({ wrap: true, size: "lg" })}
+              className={buttonVariants({ wrap: true })}
             >
               {t(ready ? "dashboard.openPractice" : "v.accounts")}
               <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
             </Link>
             <Link
               href="/profile"
-              className={buttonVariants({ variant: "outline", wrap: true })}
+              className={buttonVariants({ variant: "link", wrap: true })}
             >
               {t("v12.openProfile")}
             </Link>
@@ -99,6 +99,143 @@ function DashboardDirection({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function DashboardSnapshotContext({ analysis }: { analysis: UserAnalysisDto }) {
+  const { t, locale } = useLocale();
+  return (
+    <span className="text-xs leading-relaxed">
+      {t(`v.window.${analysis.window}`)} · {t("v.analysisZone")}:{" "}
+      {analysis.timezone} · {t("v.cutoff")}:{" "}
+      <time dateTime={analysis.dataCutoffAt}>
+        {new Intl.DateTimeFormat(locale, {
+          dateStyle: "medium",
+          timeStyle: "short",
+          timeZone: analysis.timezone,
+        }).format(new Date(analysis.dataCutoffAt))}
+      </time>
+      {analysis.stale && (
+        <Badge variant="warning" className="ml-2">
+          {t("v.stale")}
+        </Badge>
+      )}
+    </span>
+  );
+}
+
+export function DashboardAbility({
+  analysis,
+  loading = false,
+}: {
+  analysis: UserAnalysisDto | null;
+  loading?: boolean;
+}) {
+  const { t } = useLocale();
+  if (!analysis && !loading) return null;
+  return (
+    <div className="dashboard-ability">
+      <MetricPanel
+        title="v12.abilitySummary"
+        loading={loading}
+        description={
+          analysis && <DashboardSnapshotContext analysis={analysis} />
+        }
+        metrics={[
+          ["v.overallScore", analysis?.overallScore ?? null],
+          ["v12.highestRating", analysis?.currentRating ?? null],
+          ["v12.highestMaxRating", analysis?.maxRating ?? null],
+          ["v12.sources", analysis?.sourceAccountCount ?? null],
+        ]}
+      />
+      {analysis?.stale && (
+        <Alert>
+          <AlertDescription>{t("v12.staleNote")}</AlertDescription>
+        </Alert>
+      )}
+      {analysis && !analysis.summary.submissionCount && (
+        <EmptyState title={t("v.noEvidence")} embedded />
+      )}
+    </div>
+  );
+}
+
+export function DashboardActivity({
+  analysis,
+  loading = false,
+}: {
+  analysis: UserAnalysisDto | null;
+  loading?: boolean;
+}) {
+  const { t, locale } = useLocale();
+  const summary = analysis?.summary;
+  const secondary: readonly Metric[] = [
+    ["v.unsolved", summary?.unsolvedProblemCount ?? null],
+    ["v.accepted", summary?.acceptedSubmissionCount ?? null],
+    ["v.failed", summary?.failedSubmissionCount ?? null],
+    ["v.pendingCount", summary?.pendingSubmissionCount ?? null],
+    ["profile.averageDifficulty", summary?.averageSolvedDifficulty ?? null],
+    ["profile.maxDifficulty", summary?.maxSolvedDifficulty ?? null],
+    ["v.ratedSolved", summary?.ratedSolvedCount ?? null],
+    ["v.unratedSolved", summary?.unratedSolvedCount ?? null],
+  ];
+  return (
+    <div className="dashboard-activity">
+      {analysis?.algorithmVersion && (
+        <CompatibilityNotice
+          version={analysis.algorithmVersion}
+          family="user-profile"
+        />
+      )}
+      <MetricPanel
+        title="profile.overview"
+        loading={loading}
+        description={
+          analysis && <DashboardSnapshotContext analysis={analysis} />
+        }
+        metrics={[
+          ["v.attempted", summary?.attemptedProblemCount ?? null],
+          ["v.solved", summary?.solvedCount ?? null],
+          ["v.submissions", summary?.submissionCount ?? null],
+          ["v.activeDays", summary?.activeDays ?? null],
+        ]}
+      />
+      {analysis?.stale && (
+        <Alert>
+          <AlertDescription>{t("v12.staleNote")}</AlertDescription>
+        </Alert>
+      )}
+      {analysis && !analysis.summary.submissionCount && (
+        <EmptyState title={t("v.noEvidence")} embedded />
+      )}
+      <AnalysisStatistics
+        analysis={analysis}
+        loading={loading}
+        aggregate
+        distributions={false}
+      />
+      {analysis && (
+        <DetailsDisclosure title={t("dashboard.activityDetails")}>
+          <dl className="dashboard-secondary-metrics metric-details">
+            {secondary.map(([label, value]) => (
+              <div
+                key={label}
+                data-value-type={value === null ? "unknown" : typeof value}
+              >
+                <dt>{t(label)}</dt>
+                <dd>
+                  {value === null
+                    ? t("v.unavailable")
+                    : typeof value === "number"
+                      ? formatNumber(value, locale, 2)
+                      : value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </DetailsDisclosure>
+      )}
+    </div>
   );
 }
 
@@ -135,98 +272,60 @@ export function UserDashboardPage() {
   );
   return (
     <>
-      <DashboardDirection
-        analysis={analysis.data ?? null}
-        loading={analysis.isFetching && !analysis.data}
-        failed={!!analysis.error}
-      />
+      <div className="dashboard-primary-grid">
+        <DashboardDirection
+          analysis={analysis.data ?? null}
+          loading={analysis.isFetching && !analysis.data}
+          failed={!!analysis.error}
+        />
+        <DashboardAbility
+          analysis={analysis.data ?? null}
+          loading={analysis.isFetching && !analysis.data}
+        />
+      </div>
       <QueryFeedback
         query={analysis}
         showInitialLoading={false}
         resource={t("v12.abilitySummary")}
       />
-      {analysis.data && (
-        <>
-          <MetricPanel
-            title="v12.abilitySummary"
-            description={
-              <>
-                {t("v.window.ALL")} · {t("v.cutoff")}:{" "}
-                <time dateTime={analysis.data.dataCutoffAt}>
-                  {new Intl.DateTimeFormat(locale, {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                    timeZone: analysis.data.timezone,
-                  }).format(new Date(analysis.data.dataCutoffAt))}
-                </time>
-                {analysis.data.stale && (
-                  <Badge variant="warning" className="ml-2">
-                    {t("v.stale")}
-                  </Badge>
-                )}
-              </>
-            }
-            metrics={[
-              ["v.overallScore", analysis.data.overallScore],
-              ["v12.highestRating", analysis.data.currentRating],
-              ["v12.highestMaxRating", analysis.data.maxRating],
-              ["v12.sources", analysis.data.sourceAccountCount],
-            ]}
-          />
-          {analysis.data.stale && (
-            <Alert>
-              <AlertDescription>{t("v12.staleNote")}</AlertDescription>
-            </Alert>
-          )}
-          {!analysis.data.summary.submissionCount && (
-            <EmptyState title={t("v.noEvidence")} />
-          )}
-        </>
-      )}
       <DataRegion
         query={overview}
         name={t("v12.aggregate")}
         empty={!!overview.data && overview.data.summary.submissionCount === 0}
+        showInitialLoading={false}
       >
         <p className="text-sm text-muted-foreground">
           {t("v12.aggregateNote")}
         </p>
 
         {overview.data ? (
-          <AnalysisView
-            analysis={overview.data}
-            statistics
-            aggregate
-            distributions={false}
-            ratings={false}
-          />
+          <DashboardActivity analysis={overview.data} />
+        ) : overview.isFetching ? (
+          <DashboardActivity analysis={null} loading />
         ) : (
           !overview.isFetching &&
           !overview.error &&
           overview.data === null && <UserAnalysisEmpty />
         )}
       </DataRegion>
-      {analysis.data && <UserSources analysis={analysis.data} />}
-      <UserRebuild />
-      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-        <Card variant="analysis" interaction="none" className="min-w-0">
-          <CardHeader className="gap-2">
-            <CardTitle>
-              <h2 className="flex items-center gap-2">
-                <ChartNoAxesCombinedIcon
-                  className="size-4 shrink-0 text-insight"
-                  aria-hidden="true"
-                />
-                {t("v12.reports")}
-              </h2>
-            </CardTitle>
-            <CardDescription>{t("v12.reportPreviewNote")}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex min-w-0 flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-4">
+        <h2 className="section-heading">{t("dashboard.updates")}</h2>
+        <div className="dashboard-support-grid">
+          <section className="dashboard-support-row flex min-w-0 flex-col gap-3">
+            <h3 className="flex items-center gap-2 text-base font-semibold">
+              <ChartNoAxesCombinedIcon
+                className="size-4 shrink-0 text-insight"
+                aria-hidden="true"
+              />
+              {t("v12.reports")}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {t("v12.reportPreviewNote")}
+            </p>
             <QueryFeedback query={report} resource={t("v12.reports")} />
             {report.data ? (
               <>
-                <p className="whitespace-pre-wrap wrap-anywhere leading-relaxed">
+                <p className="dashboard-report-preview whitespace-pre-wrap wrap-anywhere text-sm leading-relaxed">
                   {report.data.content.overview}
                 </p>
                 <p className="text-xs leading-relaxed text-muted-foreground">
@@ -240,119 +339,127 @@ export function UserDashboardPage() {
               !report.isFetching &&
               !report.error && <EmptyState title={t("v12.noReport")} embedded />
             )}
-          </CardContent>
-          <CardFooter>
-            <Link href="/analysis" className={buttonVariants({ wrap: true })}>
+            <Link
+              href="/analysis"
+              className={buttonVariants({
+                variant: "link",
+                wrap: true,
+                className: "self-start",
+              })}
+            >
               {t("v12.openReport")}
               <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
             </Link>
-          </CardFooter>
-        </Card>
-        <Panel
-          title="v12.collaborationUpdates"
-          variant="supporting"
-          tone="support"
-        >
-          <section className="flex min-w-0 flex-col gap-3">
-            <h3 className="text-sm font-medium">{t("v12.myTeams")}</h3>
-            <QueryFeedback query={teams} resource={t("v12.myTeams")} />
-            <ul className="flex min-w-0 flex-col divide-y">
-              {teams.data?.data.map((team) => (
-                <li
-                  key={team.teamId}
-                  className="flex min-w-0 flex-col gap-1 py-2 first:pt-0 last:pb-0"
-                >
-                  <Link
-                    href={`/teams/detail?teamId=${team.teamId}`}
-                    className="auth-text-link wrap-anywhere font-medium"
+          </section>
+          <div className="flex min-w-0 flex-col gap-4">
+            <section className="dashboard-support-row flex min-w-0 flex-col gap-3">
+              <h3 className="text-sm font-medium">{t("v12.myTeams")}</h3>
+              <QueryFeedback query={teams} resource={t("v12.myTeams")} />
+              <ul className="flex min-w-0 flex-col divide-y">
+                {teams.data?.data.map((team) => (
+                  <li
+                    key={team.teamId}
+                    className="flex min-w-0 flex-col gap-1 py-2 first:pt-0 last:pb-0"
                   >
-                    {team.name}
-                  </Link>
-                  <p className="text-xs text-muted-foreground">
-                    {t("v12.members")}: {formatNumber(team.memberCount, locale)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            {teams.data?.data.length === 0 && (
-              <EmptyState title={t("v12.noTeams")} embedded />
-            )}
-            <Link
-              href="/teams"
-              className={buttonVariants({
-                variant: "link",
-                size: "sm",
-                wrap: true,
-                className: "self-start",
-              })}
-            >
-              {t("v12.openTeams")}
-              <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-            </Link>
-          </section>
-          <Separator />
-          <section className="flex min-w-0 flex-col gap-3">
-            <h3 className="text-sm font-medium">{t("v12.invitations")}</h3>
-            <QueryFeedback
-              query={invitations}
-              resource={t("v12.invitations")}
-            />
-            <ul className="flex min-w-0 flex-col divide-y">
-              {invitations.data?.data.map((invite) => (
-                <li
-                  key={invite.invitationId}
-                  className="flex min-w-0 flex-col gap-1 py-2 first:pt-0 last:pb-0"
-                >
-                  <p className="wrap-anywhere font-medium">
-                    {invite.team.name}
-                  </p>
-                  <p className="wrap-anywhere text-xs text-muted-foreground">
-                    {t("v12.invitedBy")}:{" "}
-                    {invite.inviter.displayName ?? invite.inviter.username}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            {invitations.data?.data.length === 0 && (
-              <EmptyState title={t("v12.noInvitations")} embedded />
-            )}
-            <Link
-              href="/teams?tab=invitations"
-              className={buttonVariants({
-                variant: "link",
-                size: "sm",
-                wrap: true,
-                className: "self-start",
-              })}
-            >
-              {t("v12.openInvitations")}
-              <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-            </Link>
-          </section>
-          <Separator />
-          <section className="flex min-w-0 flex-col gap-3">
-            <h3 className="text-sm font-medium">{t("v12.notifications")}</h3>
-            <QueryFeedback query={unread} resource={t("v12.unread")} />
-            <p className="text-xs text-muted-foreground">
-              {t("v12.unread")}:{" "}
-              <span className="font-medium tabular-nums text-foreground">
-                {unread.data ? formatNumber(unread.data.count, locale) : "—"}
-              </span>
-            </p>
-            <Link
-              href="/notifications"
-              className={buttonVariants({
-                variant: "link",
-                size: "sm",
-                wrap: true,
-                className: "self-start",
-              })}
-            >
-              {t("v12.openNotifications")}
-              <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
-            </Link>
-          </section>
-        </Panel>
+                    <Link
+                      href={`/teams/detail?teamId=${team.teamId}`}
+                      className="auth-text-link wrap-anywhere font-medium"
+                    >
+                      {team.name}
+                    </Link>
+                    <p className="text-xs text-muted-foreground">
+                      {t("v12.members")}:{" "}
+                      {formatNumber(team.memberCount, locale)}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              {teams.data?.data.length === 0 && (
+                <EmptyState title={t("v12.noTeams")} embedded />
+              )}
+              <Link
+                href="/teams"
+                className={buttonVariants({
+                  variant: "link",
+                  size: "sm",
+                  wrap: true,
+                  className: "self-start",
+                })}
+              >
+                {t("v12.openTeams")}
+                <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+              </Link>
+            </section>
+            <section className="dashboard-support-row flex min-w-0 flex-col gap-3">
+              <h3 className="text-sm font-medium">{t("v12.invitations")}</h3>
+              <QueryFeedback
+                query={invitations}
+                resource={t("v12.invitations")}
+              />
+              <ul className="flex min-w-0 flex-col divide-y">
+                {invitations.data?.data.map((invite) => (
+                  <li
+                    key={invite.invitationId}
+                    className="flex min-w-0 flex-col gap-1 py-2 first:pt-0 last:pb-0"
+                  >
+                    <p className="wrap-anywhere font-medium">
+                      {invite.team.name}
+                    </p>
+                    <p className="wrap-anywhere text-xs text-muted-foreground">
+                      {t("v12.invitedBy")}:{" "}
+                      {invite.inviter.displayName ?? invite.inviter.username}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              {invitations.data?.data.length === 0 && (
+                <EmptyState title={t("v12.noInvitations")} embedded />
+              )}
+              <Link
+                href="/teams?tab=invitations"
+                className={buttonVariants({
+                  variant: "link",
+                  size: "sm",
+                  wrap: true,
+                  className: "self-start",
+                })}
+              >
+                {t("v12.openInvitations")}
+                <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+              </Link>
+            </section>
+            <section className="dashboard-support-row flex min-w-0 flex-col gap-3">
+              <h3 className="text-sm font-medium">{t("v12.notifications")}</h3>
+              <QueryFeedback query={unread} resource={t("v12.unread")} />
+              <p className="text-xs text-muted-foreground">
+                {t("v12.unread")}:{" "}
+                <span className="font-medium tabular-nums text-foreground">
+                  {unread.data ? formatNumber(unread.data.count, locale) : "—"}
+                </span>
+              </p>
+              <Link
+                href="/notifications"
+                className={buttonVariants({
+                  variant: "link",
+                  size: "sm",
+                  wrap: true,
+                  className: "self-start",
+                })}
+              >
+                {t("v12.openNotifications")}
+                <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+              </Link>
+            </section>
+          </div>
+        </div>
+      </div>
+      <div className="flex min-w-0 flex-col gap-3 border-t pt-4">
+        <UserRebuild secondary />
+        {analysis.data && (
+          <DetailsDisclosure title={t("dashboard.sourcesDetails")}>
+            <UserSources analysis={analysis.data} />
+          </DetailsDisclosure>
+        )}
       </div>
     </>
   );

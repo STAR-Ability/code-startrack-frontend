@@ -11,13 +11,7 @@ import { useLocale } from "@/components/layout/locale-provider";
 import { formatTimestamp } from "@/lib/i18n/locale";
 import { useAccounts } from "./account-provider";
 import { useAccountQuery } from "./use-account-query";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PracticeModePicker } from "./practice-mode-picker";
@@ -56,6 +50,8 @@ export function RecommendationsPage({
   const [snapshotId, setSnapshotId] = useState<string | null>(null);
   const [allModes, setAllModes] = useState(false);
   const allModesId = useId();
+  const controlsId = useId();
+  const historyId = useId();
   const attempt = useRef<{
     mode: RecommendationMode;
     limit: number;
@@ -132,111 +128,116 @@ export function RecommendationsPage({
   const displayed = batchId ? batch : latest;
   return (
     <>
-      <Card
-        interaction="none"
-        variant="supporting"
-        className="@container/practice-controls"
-      >
-        <CardHeader>
-          <CardTitle>
-            <h2>{t("practice.controls")}</h2>
-          </CardTitle>
-          <CardDescription>{t("v.recommendationNote")}</CardDescription>
-        </CardHeader>
-        <CardContent className="grid min-w-0 items-start gap-4 @3xl/practice-controls:grid-cols-[minmax(0,1fr)_22rem]">
-          <PracticeModePicker
-            mode={mode}
-            disabled={generate.isPending}
-            onChange={(value) => {
-              setMode(value);
-              setPage(1);
-              setBatchId(null);
-              attempt.current = null;
-              generate.reset();
-            }}
-          />
-          {account?.bindStatus === "ACTIVE" && (
-            <FieldGroup className="min-w-0 flex-row flex-wrap items-end gap-3 [&>[data-slot=field]]:min-w-0 [&>[data-slot=field]]:flex-1 [&>[data-slot=field]]:basis-24">
-              <FormInput
-                label={t("v.limit")}
-                type="number"
-                min={1}
-                max={50}
-                step={1}
-                disabled={generate.isPending}
-                value={limit}
-                onChange={(event) => setLimit(event.target.value)}
-              />
-              <Button
-                wrap
-                className="min-w-0 flex-1 basis-44"
-                disabled={
-                  generate.isPending ||
-                  (generate.error instanceof ApiError &&
-                    generate.error.status === 403) ||
-                  !!remaining ||
-                  !Number.isInteger(Number(limit)) ||
-                  Number(limit) < 1 ||
-                  Number(limit) > 50
-                }
-                onClick={run}
-              >
-                {generate.isPending && (
-                  <Spinner data-icon="inline-start" aria-hidden="true" />
-                )}
-                {t(generate.isPending ? "v.generating" : "v.generate")}
-              </Button>
-            </FieldGroup>
-          )}
-        </CardContent>
-      </Card>
+      <section className="practice-controls" aria-labelledby={controlsId}>
+        <h2 id={controlsId} className="sr-only">
+          {t("practice.controls")}
+        </h2>
+        <PracticeModePicker
+          compact
+          mode={mode}
+          disabled={generate.isPending}
+          onChange={(value) => {
+            setMode(value);
+            setPage(1);
+            setBatchId(null);
+            attempt.current = null;
+            generate.reset();
+          }}
+        />
+        {account?.bindStatus === "ACTIVE" && (
+          <FieldGroup className="practice-generation grid w-full max-w-md min-w-0 items-end gap-3 [&>[data-slot=field]]:min-w-0">
+            <FormInput
+              label={t("practice.countLabel")}
+              type="number"
+              min={1}
+              max={50}
+              step={1}
+              disabled={generate.isPending}
+              value={limit}
+              onChange={(event) => setLimit(event.target.value)}
+            />
+            <Button
+              wrap
+              className="min-w-0"
+              disabled={
+                generate.isPending ||
+                (generate.error instanceof ApiError &&
+                  generate.error.status === 403) ||
+                !!remaining ||
+                !Number.isInteger(Number(limit)) ||
+                Number(limit) < 1 ||
+                Number(limit) > 50
+              }
+              onClick={run}
+            >
+              {generate.isPending && (
+                <Spinner data-icon="inline-start" aria-hidden="true" />
+              )}
+              {t(generate.isPending ? "v.generating" : "v.generate")}
+            </Button>
+          </FieldGroup>
+        )}
+        <DetailsDisclosure title={t("practice.guideTitle")}>
+          <p className="font-medium text-foreground">
+            {t("practice.introTitle")}
+          </p>
+          <p>{t("practice.introDescription")}</p>
+          <p>{t("v.recommendationNote")}</p>
+          <p aria-live="polite">{t(`practice.mode.${mode}`)}</p>
+        </DetailsDisclosure>
+      </section>
       <ErrorNotice
         error={generate.error}
         retry={run}
         pending={generate.isPending || account?.bindStatus !== "ACTIVE"}
       />
-      {batchId && (
-        <div className="recommendation-selection">
-          <Badge variant="secondary" wrap>
-            {t("recommendation.historicalBatch")}
-          </Badge>
+      <div className="recommendation-batch" data-compact="true">
+        {batchId && (
+          <div className="recommendation-selection">
+            <Badge variant="secondary" wrap>
+              {t("recommendation.historicalBatch")}
+            </Badge>
+            <Button
+              wrap
+              variant="outline"
+              className="self-start"
+              onClick={() => setBatchId(null)}
+            >
+              {t("v.latest")}
+            </Button>
+          </div>
+        )}
+        <DataRegion
+          query={displayed}
+          name={t("practice.forYou")}
+          empty={!displayed.data?.recommendations.length}
+        >
+          {(displayed.data ||
+            (!displayed.error && displayed.data === null)) && (
+            <BatchView batch={displayed.data ?? null} compact />
+          )}
+        </DataRegion>
+        {displayed.data && (
           <Button
             wrap
             variant="outline"
             className="self-start"
-            onClick={() => setBatchId(null)}
+            onClick={() => setSnapshotId(displayed.data!.analysisSnapshotId)}
           >
-            {t("v.latest")}
+            {t("v.snapshotLink")}
           </Button>
-        </div>
-      )}
-      <DataRegion
-        query={displayed}
-        name={t("practice.forYou")}
-        empty={!displayed.data?.recommendations.length}
-      >
-        {(displayed.data || (!displayed.error && displayed.data === null)) && (
-          <BatchView batch={displayed.data ?? null} />
         )}
-      </DataRegion>
-      {displayed.data && (
-        <Button
-          wrap
-          variant="outline"
-          className="self-start"
-          onClick={() => setSnapshotId(displayed.data!.analysisSnapshotId)}
-        >
-          {t("v.snapshotLink")}
-        </Button>
-      )}
-      <Card variant="supporting" interaction="none">
-        <CardHeader>
-          <CardTitle>
-            <h2>{t("v.recommendationHistory")}</h2>
-          </CardTitle>
-          <CardDescription>{t("practice.historyDescription")}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+      </div>
+      <section className="recommendation-history" aria-labelledby={historyId}>
+        <header className="flex flex-col gap-1">
+          <h2 id={historyId} className="section-heading">
+            {t("v.recommendationHistory")}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {t("practice.historyDescription")}
+          </p>
+        </header>
+        <div className="flex min-w-0 flex-col gap-4">
           <Field orientation="horizontal">
             <FieldLabel
               htmlFor={allModesId}
@@ -297,8 +298,8 @@ export function RecommendationsPage({
             setPage={setPage}
             pending={history.isFetching}
           />
-        </CardContent>
-      </Card>
+        </div>
+      </section>
       <Dialog
         open={!!snapshotId}
         onOpenChange={(open) => {

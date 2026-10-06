@@ -211,8 +211,9 @@ test("missing recommendations remain errors while successful empty history stays
   await expect(
     recommendation.getByRole("button", { name: "重试", exact: true }),
   ).toBeEnabled();
-  const history = page.locator('[data-slot="card"]').filter({
-    has: page.getByRole("heading", { name: "推荐历史", exact: true }),
+  const history = page.getByRole("region", {
+    name: translate("zh-CN", "v.recommendationHistory"),
+    exact: true,
   });
   await expect(history.getByText("暂无数据", { exact: true })).toBeVisible();
   await expect(history.getByText("暂无记录", { exact: true })).toBeVisible();

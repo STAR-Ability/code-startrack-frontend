@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+import { ArrowRightIcon, RadarIcon } from "lucide-react";
 import type { AnalysisDto } from "@/lib/api/schemas";
 import type { CopyKey } from "@/lib/i18n/messages";
 import { activitySeries } from "@/lib/charts/data";
@@ -17,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "./feedback";
@@ -44,6 +47,41 @@ export type AnalysisPresentation = Pick<
 > &
   Partial<Pick<AnalysisDto, "algorithmVersion">>;
 
+export function ProfileDirection({
+  analysis,
+  historical = false,
+}: {
+  analysis: AnalysisPresentation;
+  historical?: boolean;
+}) {
+  const { t } = useLocale();
+  const evidence = analysis.summary.submissionCount > 0;
+  return (
+    <section className="profile-direction" data-historical={historical}>
+      <div className="profile-direction-copy">
+        <Badge variant={historical ? "secondary" : "insight"} wrap>
+          <RadarIcon aria-hidden="true" />
+          {t(historical ? "profile.historical" : "profile.latestSaved")}
+        </Badge>
+        <h2>
+          {evidence
+            ? t(historical ? "profile.historicalFocus" : "profile.nextFocus", {
+                dimension: t(`data.dimension.${analysis.weakestDimension}`),
+              })
+            : t("profile.startEvidence")}
+        </h2>
+        <p>
+          {t(historical ? "profile.historicalNote" : "profile.nextFocusNote")}
+        </p>
+      </div>
+      <Link href="/practice" className={buttonVariants({ wrap: true })}>
+        {t("profile.startPractice")}
+        <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+      </Link>
+    </section>
+  );
+}
+
 export function AnalysisView({
   analysis,
   dimensions = false,
@@ -58,6 +96,7 @@ export function AnalysisView({
   ratings = true,
   distributions = true,
   emptyState,
+  sourceCount,
 }: {
   analysis: AnalysisPresentation | null;
   aggregate?: boolean;
@@ -72,6 +111,7 @@ export function AnalysisView({
   ability?: boolean;
   trend?: React.ReactNode;
   emptyState?: React.ReactNode;
+  sourceCount?: number;
 }) {
   const { t, locale } = useLocale();
   const accountTimezone = useAccountTimezone();
@@ -169,6 +209,11 @@ export function AnalysisView({
             </>
           )}
         </p>
+        {sourceCount !== undefined && (
+          <p>
+            {t("v12.sources")}: {number(sourceCount)}
+          </p>
+        )}
         {analysis?.stale && <Badge variant="warning">{t("v.stale")}</Badge>}
       </div>
       {analysis?.stale && (
@@ -178,10 +223,8 @@ export function AnalysisView({
           </AlertDescription>
         </Alert>
       )}
-      {!analysis && !loading && !dimensions && (
-        <EmptyState
-          title={t(unavailable ? "practice.noData" : "v.noAnalysis")}
-        />
+      {!analysis && !loading && !unavailable && !dimensions && (
+        <EmptyState title={t("v.noAnalysis")} />
       )}
       {analysis && !analysis.summary.submissionCount && (
         <EmptyState title={t("v.noEvidence")} />
@@ -205,15 +248,14 @@ export function AnalysisView({
                     ))}
                   </div>
                 </>
+              ) : unavailable ? (
+                <p className="col-span-full min-w-0 text-sm text-muted-foreground">
+                  {t("ui.unavailableTitle")}
+                </p>
               ) : (
-                <div className="min-w-0 lg:col-span-2">
+                <div className="col-span-full min-w-0">
                   {emptyState ?? (
-                    <EmptyState
-                      embedded
-                      title={t(
-                        unavailable ? "practice.noData" : "v.noAnalysis",
-                      )}
-                    />
+                    <EmptyState embedded title={t("v.noAnalysis")} />
                   )}
                 </div>
               )
@@ -238,12 +280,13 @@ export function AnalysisView({
                     <div
                       key={item.code}
                       className="analysis-dimension-row"
+                      data-dimension-code={item.code}
                       data-weakest={item.code === analysis.weakestDimension}
                     >
                       <dt>
                         {t(`data.dimension.${item.code}`)}
                         {item.code === analysis?.weakestDimension && (
-                          <Badge variant="outline" wrap className="ml-2">
+                          <Badge variant="outline" wrap>
                             {t("v.weakest")}
                           </Badge>
                         )}
@@ -272,6 +315,7 @@ export function AnalysisView({
           analysis={analysis}
           aggregate={aggregate}
           loading={loading}
+          unavailable={unavailable}
           activity={activity}
           distributions={distributions}
         />
@@ -284,12 +328,14 @@ export function AnalysisStatistics({
   analysis,
   aggregate = false,
   loading = false,
+  unavailable = false,
   activity = true,
   distributions = true,
 }: {
   analysis: AnalysisPresentation | null;
   aggregate?: boolean;
   loading?: boolean;
+  unavailable?: boolean;
   activity?: boolean;
   distributions?: boolean;
 }) {
@@ -300,7 +346,7 @@ export function AnalysisStatistics({
   const tags = analysis?.tagStats ?? [];
   const difficulty = analysis?.difficultyStats ?? [];
   return (
-    <>
+    <div className="analysis-statistics">
       {activity && (
         <Card variant="analysis" interaction="none">
           <CardHeader>
@@ -315,6 +361,10 @@ export function AnalysisStatistics({
           <CardContent>
             {loading && !analysis ? (
               <Skeleton className="h-64 w-full" />
+            ) : unavailable && !analysis ? (
+              <p className="text-sm text-muted-foreground">
+                {t("ui.unavailableTitle")}
+              </p>
             ) : daily.length ? (
               <>
                 <Chart
@@ -371,7 +421,7 @@ export function AnalysisStatistics({
         </Card>
       )}
       {distributions && (
-        <div className="grid min-w-0 gap-4 lg:grid-cols-2">
+        <div className="analysis-distribution-grid">
           <Card variant="analysis" interaction="none">
             <CardHeader>
               <CardTitle>
@@ -385,6 +435,10 @@ export function AnalysisStatistics({
             <CardContent>
               {loading && !analysis ? (
                 <Skeleton className="h-64 w-full" />
+              ) : unavailable && !analysis ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("ui.unavailableTitle")}
+                </p>
               ) : tags.length ? (
                 <>
                   <Chart
@@ -410,8 +464,10 @@ export function AnalysisStatistics({
                           key={item.tag}
                           className="flex flex-wrap justify-between gap-2"
                         >
-                          <dt>{item.tag}</dt>
-                          <dd>
+                          <dt className="min-w-0 basis-40 wrap-anywhere">
+                            {item.tag}
+                          </dt>
+                          <dd className="min-w-0 wrap-anywhere">
                             {t("v.solved")}: {number(item.solvedCount)} /{" "}
                             {t("v.attempted")}:{" "}
                             {number(item.attemptedProblemCount)} ·{" "}
@@ -436,6 +492,10 @@ export function AnalysisStatistics({
             <CardContent>
               {loading && !analysis ? (
                 <Skeleton className="h-64 w-full" />
+              ) : unavailable && !analysis ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("ui.unavailableTitle")}
+                </p>
               ) : difficulty.length ? (
                 <>
                   <Chart
@@ -478,6 +538,6 @@ export function AnalysisStatistics({
           </Card>
         </div>
       )}
-    </>
+    </div>
   );
 }

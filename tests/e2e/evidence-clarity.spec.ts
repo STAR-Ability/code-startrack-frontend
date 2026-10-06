@@ -88,7 +88,7 @@ for (const locale of ["zh-CN", "en"] as const) {
     await page.keyboard.press("Enter");
     await expect(disclosure).toHaveAttribute("aria-expanded", "false");
     await expect(
-      activity.getByText(data.activityStats[0].date, { exact: true }),
+      activity.locator(`dl time[datetime="${data.activityStats[0].date}"]`),
     ).not.toBeVisible();
   });
 }

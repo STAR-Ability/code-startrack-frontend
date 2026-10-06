@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { Chart } from "@/components/workspace/chart";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import {
   EmptyState,
   LoadingState,
@@ -134,3 +135,10 @@ export const Error: Story = {
 };
 export const Mobile: Story = { globals: mobile };
 export const Dark: Story = { globals: { theme: "dark" } };
+export const LazyDisclosure: Story = {
+  render: (args) => (
+    <DetailsDisclosure title="Show training timeline" keepMounted={false}>
+      <Chart {...args} />
+    </DetailsDisclosure>
+  ),
+};

@@ -34,7 +34,7 @@ export function chartTheme(styles: CSSStyleDeclaration, palette: ChartPalette) {
     backgroundColor: "transparent",
     textStyle: { color: foreground, fontFamily: styles.fontFamily },
     legend: {
-      textStyle: { color: token("--foreground"), fontSize: 11 },
+      textStyle: { color: token("--foreground"), fontSize: 12 },
       pageTextStyle: { color: foreground },
       pageIconColor: token("--info"),
       pageIconInactiveColor: border,
@@ -49,7 +49,7 @@ export function chartTheme(styles: CSSStyleDeclaration, palette: ChartPalette) {
       borderWidth: 1,
       padding: [10, 12],
       borderRadius: 8,
-      textStyle: { color: token("--popover-foreground"), fontSize: 12 },
+      textStyle: { color: token("--popover-foreground"), fontSize: 13 },
     },
     axisPointer: {
       lineStyle: { color: border, type: "dashed" },

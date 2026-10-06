@@ -16,6 +16,7 @@ export function trendOption(
       itemHeight: 8,
       itemGap: 16,
       icon: "roundRect",
+      textStyle: { fontSize: 12 },
     },
     grid: {
       left: 12,
@@ -31,14 +32,14 @@ export function trendOption(
       data: labels,
       axisTick: { show: false },
       axisLine: { show: false },
-      axisLabel: { hideOverlap: true, fontSize: 11, margin: 14 },
+      axisLabel: { hideOverlap: true, fontSize: 12, margin: 14 },
     },
     yAxis: {
       type: "value",
       min: 0,
       splitNumber: 3,
       ...(score ? { max: 100 } : { minInterval: 1 }),
-      axisLabel: { fontSize: 11, margin: 10 },
+      axisLabel: { fontSize: 12, margin: 10 },
       splitLine: { lineStyle: { type: "dashed" } },
     },
     series: series.map((item, index) => ({
@@ -65,7 +66,7 @@ export function distributionOption(
     data: labels,
     axisTick: { show: false },
     axisLine: { show: false },
-    axisLabel: { hideOverlap: true, fontSize: 11, margin: 12 },
+    axisLabel: { hideOverlap: true, fontSize: 12, margin: 12 },
   };
   const values = {
     type: "value" as const,
@@ -73,7 +74,7 @@ export function distributionOption(
     min: 0,
     splitNumber: 3,
     splitLine: { lineStyle: { type: "dashed" as const } },
-    axisLabel: { fontSize: 11 },
+    axisLabel: { fontSize: 12 },
   };
   return {
     tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
@@ -84,6 +85,7 @@ export function distributionOption(
       itemHeight: 8,
       itemGap: 16,
       icon: "roundRect",
+      textStyle: { fontSize: 12 },
     },
     grid: {
       left: 12,
@@ -139,10 +141,21 @@ export function radarOption(
     axisNameGap: 10,
     axisName: {
       formatter: (name?: string) => name ?? "",
-      fontSize: 11,
-      lineHeight: 16,
+      fontSize: 12,
+      lineHeight: 17,
       width: 100,
       overflow: "break" as const,
+    },
+  };
+  const compactLayout = {
+    radius: "48%",
+    axisNameGap: 6,
+    axisName: {
+      fontSize: 11,
+      lineHeight: 15,
+      width: 72,
+      // Radar axis names override width/overflow; wrap words explicitly.
+      formatter: (name?: string) => name?.replace(/\s+/g, "\n") ?? "",
     },
   };
   return {
@@ -174,20 +187,18 @@ export function radarOption(
       : [],
     media: [
       {
-        query: { maxWidth: 360 },
+        query: { maxWidth: 220 },
         option: {
           radar: {
-            radius: "48%",
-            axisNameGap: 6,
-            axisName: {
-              fontSize: 10,
-              lineHeight: 13,
-              width: 72,
-              // Radar axis names override width/overflow; wrap words explicitly.
-              formatter: (name?: string) => name?.replace(/\s+/g, "\n") ?? "",
-            },
+            ...compactLayout,
+            radius: "32%",
+            axisNameGap: 4,
           },
         },
+      },
+      {
+        query: { minWidth: 221, maxWidth: 360 },
+        option: { radar: compactLayout },
       },
       {
         query: { minWidth: 361, maxWidth: 600 },

@@ -28,6 +28,13 @@ for (const [route, resource, headings] of [
         .getByText("当前无法加载数据，请检查网络或稍后重试", { exact: true })
         .first(),
     ).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: headings[0], exact: true }),
+    ).toHaveAttribute("aria-busy", "false");
+    for (const name of headings)
+      await expect(
+        page.getByRole("heading", { name, exact: true }),
+      ).toBeVisible();
     const overview = page.locator('[data-slot="card"]').filter({
       has: page.getByRole("heading", {
         name: headings[0],

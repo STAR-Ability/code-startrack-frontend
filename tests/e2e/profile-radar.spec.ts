@@ -244,3 +244,127 @@ test("delayed profile data plots exact six scores after window, locale and viewp
     releaseRecent();
   }
 });
+
+test("zoomed narrow profiles keep every dimension label and exact score separate", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const locale of ["zh-CN", "en"] as const) {
+    for (const width of [320, 390]) {
+      await test.step(`${locale} at ${width}px and 200% text`, async () => {
+        await page.setViewportSize({ width, height: 844 });
+        await page.context().addCookies([
+          {
+            name: "codestartrack_locale",
+            value: locale,
+            url: "http://127.0.0.1:3100",
+          },
+        ]);
+        const response = page.waitForResponse((candidate) => {
+          const url = new URL(candidate.url());
+          return (
+            url.pathname === "/api/v1/me/analysis/latest" &&
+            url.searchParams.get("window") === "ALL"
+          );
+        });
+        await page.goto("/profile");
+        const supplied = (await (await response).json()) as {
+          data: UserAnalysisDto;
+        };
+        await expect(page.locator("html")).toHaveAttribute("lang", locale);
+        await page.addStyleTag({
+          content: "html { font-size: 200% !important; }",
+        });
+        await expectProfileRadar(page, supplied.data, locale);
+
+        const ability = page.locator("[data-analysis-ability]");
+        const radar = ability.getByRole("img", {
+          name: translate(locale, "v.dimensions"),
+          exact: true,
+        });
+        await expect
+          .poll(() =>
+            radar.evaluate((element) =>
+              Math.abs(
+                element.getBoundingClientRect().width -
+                  element.querySelector("svg")!.getBoundingClientRect().width,
+              ),
+            ),
+          )
+          .toBeLessThan(1);
+        const chartBounds = await radar.locator("svg").evaluate((svg) => {
+          const bounds = svg.getBoundingClientRect();
+          return [...svg.querySelectorAll("text")].map((text) => {
+            const label = text.getBoundingClientRect();
+            return {
+              text: text.textContent,
+              width: label.width,
+              left: label.left - bounds.left,
+              right: bounds.right - label.right,
+              top: label.top - bounds.top,
+              bottom: bounds.bottom - label.bottom,
+            };
+          });
+        });
+        for (const label of chartBounds) {
+          expect(label.width).toBeGreaterThan(0);
+          for (const edge of [
+            label.left,
+            label.right,
+            label.top,
+            label.bottom,
+          ]) {
+            expect(
+              edge,
+              `${label.text} remains inside the radar`,
+            ).toBeGreaterThanOrEqual(-1);
+          }
+        }
+        for (const dimension of supplied.data.dimensions) {
+          const label = translate(locale, `data.dimension.${dimension.code}`);
+          const term = ability.locator("dt").filter({ hasText: label });
+          const definition = term.locator("..").locator("dd");
+          await expect(term).toBeVisible();
+          await expect(definition).toHaveText(
+            `${new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(dimension.score)} / 100`,
+          );
+          await definition.scrollIntoViewIfNeeded();
+          await expect(definition).toBeInViewport();
+          const layout = await term.evaluate((element) => {
+            const row = element.parentElement!;
+            const value = row.querySelector("dd")!;
+            const box = (node: Element) => {
+              const bounds = node.getBoundingClientRect();
+              return {
+                x: bounds.x,
+                y: bounds.y,
+                width: bounds.width,
+                right: bounds.right,
+                bottom: bounds.bottom,
+              };
+            };
+            return { row: box(row), label: box(element), score: box(value) };
+          });
+          expect(
+            layout.label.width,
+            `${label} has usable width`,
+          ).toBeGreaterThan(1);
+          expect(layout.score.width).toBeGreaterThan(1);
+          for (const content of [layout.label, layout.score]) {
+            expect(content.x).toBeGreaterThanOrEqual(layout.row.x - 1);
+            expect(content.right).toBeLessThanOrEqual(layout.row.right + 1);
+            expect(content.y).toBeGreaterThanOrEqual(layout.row.y - 1);
+            expect(content.bottom).toBeLessThanOrEqual(layout.row.bottom + 1);
+          }
+          expect(
+            layout.label.right <= layout.score.x + 1 ||
+              layout.score.right <= layout.label.x + 1 ||
+              layout.label.bottom <= layout.score.y + 1 ||
+              layout.score.bottom <= layout.label.y + 1,
+            `${label} and its score must not overlap`,
+          ).toBe(true);
+        }
+      });
+    }
+  }
+});

@@ -57,9 +57,11 @@ export function ProblemLink({
 export function BatchView({
   batch,
   firstOnly = false,
+  compact = false,
 }: {
   batch: RecommendationBatchDto | null;
   firstOnly?: boolean;
+  compact?: boolean;
 }) {
   const { t, locale } = useLocale();
   if (!batch)
@@ -92,20 +94,44 @@ export function BatchView({
           </AlertDescription>
         </Alert>
       )}
-      <div className="recommendation-context">
-        <Badge variant="info" wrap>
-          {t(`v.mode.${batch.mode}`)}
-        </Badge>
-        <p>
-          {t("recommendation.generatedAt")}:{" "}
-          <time dateTime={batch.generatedAt}>
-            {formatTimestamp(batch.generatedAt, locale)}
-          </time>
-        </p>
-        <p>
-          {t("v.candidateCount")}: {batch.candidateCount} · {t("v.resultCount")}
-          : {batch.resultCount}
-        </p>
+      <div className="recommendation-context" data-compact={compact}>
+        {compact ? (
+          <>
+            <div className="recommendation-context-summary">
+              <Badge variant="info" wrap>
+                {t(`v.mode.${batch.mode}`)}
+              </Badge>
+              <p>
+                {t("v.candidateCount")}: {batch.candidateCount} ·{" "}
+                {t("v.resultCount")}: {batch.resultCount}
+              </p>
+            </div>
+            <p className="recommendation-context-time">
+              <span className="sr-only">
+                {t("recommendation.generatedAt")}:{" "}
+              </span>
+              <time dateTime={batch.generatedAt}>
+                {formatTimestamp(batch.generatedAt, locale)}
+              </time>
+            </p>
+          </>
+        ) : (
+          <>
+            <Badge variant="info" wrap>
+              {t(`v.mode.${batch.mode}`)}
+            </Badge>
+            <p>
+              {t("recommendation.generatedAt")}:{" "}
+              <time dateTime={batch.generatedAt}>
+                {formatTimestamp(batch.generatedAt, locale)}
+              </time>
+            </p>
+            <p>
+              {t("v.candidateCount")}: {batch.candidateCount} ·{" "}
+              {t("v.resultCount")}: {batch.resultCount}
+            </p>
+          </>
+        )}
         {!batch.recommendations.some((item) => item.rank === 1) && (
           <p>
             {t("v.targetRating")}: {batch.targetRating}
@@ -129,7 +155,11 @@ export function BatchView({
               <p>{t("recommendation.orderNote")}</p>
             </div>
           )}
-          <RecommendationCard item={item} targetRating={batch.targetRating} />
+          <RecommendationCard
+            item={item}
+            targetRating={batch.targetRating}
+            compact={compact}
+          />
         </Fragment>
       ))}
     </>
@@ -139,20 +169,49 @@ export function BatchView({
 export function RecommendationCard({
   item,
   targetRating,
+  compact = false,
 }: {
   item: RecommendationBatchDto["recommendations"][number];
   targetRating?: number;
+  compact?: boolean;
 }) {
   const { t } = useLocale();
   const featured = item.rank === 1;
   const linked = !!safeProblemUrl(item.problem.url);
+  const actionPanel = featured ? (
+    <div className="recommendation-action-panel">
+      <dl className="recommendation-facts">
+        <div>
+          <dt>{t("recommendation.difficulty")}</dt>
+          <dd>{item.problem.difficulty ?? t("v.unrated")}</dd>
+        </div>
+        {targetRating !== undefined && (
+          <div>
+            <dt>{t("v.targetRating")}</dt>
+            <dd>{targetRating}</dd>
+          </div>
+        )}
+      </dl>
+      <ProblemLink problem={item.problem} primary />
+      <p className="recommendation-action-note">
+        {t(
+          item.solvedSinceGeneration
+            ? "recommendation.completedNote"
+            : linked
+              ? "recommendation.nextActionNote"
+              : "recommendation.unavailableActionNote",
+        )}
+      </p>
+    </div>
+  ) : null;
   return (
     <Card
       variant={featured ? "recommendation" : "supporting"}
-      size={featured ? "lg" : "sm"}
+      size={featured ? (compact ? "default" : "lg") : "sm"}
       interaction="none"
       className="recommendation-card feedback-enter @container/recommendation"
       data-recommendation-rank={item.rank}
+      data-compact={compact}
     >
       <CardHeader>
         {(featured || item.solvedSinceGeneration) && (
@@ -202,7 +261,8 @@ export function RecommendationCard({
             featured && "recommendation-content-featured",
           )}
         >
-          <div className="flex min-w-0 flex-col gap-4">
+          {compact && actionPanel}
+          <div className="recommendation-explanation flex min-w-0 flex-col gap-4">
             <div className="recommendation-reason">
               {featured && (
                 <h3>
@@ -239,32 +299,7 @@ export function RecommendationCard({
               )}
             </div>
           </div>
-          {featured && (
-            <div className="recommendation-action-panel">
-              <dl className="recommendation-facts">
-                <div>
-                  <dt>{t("recommendation.difficulty")}</dt>
-                  <dd>{item.problem.difficulty ?? t("v.unrated")}</dd>
-                </div>
-                {targetRating !== undefined && (
-                  <div>
-                    <dt>{t("v.targetRating")}</dt>
-                    <dd>{targetRating}</dd>
-                  </div>
-                )}
-              </dl>
-              <ProblemLink problem={item.problem} primary />
-              <p className="recommendation-action-note">
-                {t(
-                  item.solvedSinceGeneration
-                    ? "recommendation.completedNote"
-                    : linked
-                      ? "recommendation.nextActionNote"
-                      : "recommendation.unavailableActionNote",
-                )}
-              </p>
-            </div>
-          )}
+          {!compact && actionPanel}
         </div>
       </CardContent>
       <CardFooter

@@ -1,17 +1,20 @@
 # codeStartrack frontend production deployment
 
 This guide records the inspected `startrack-prod` architecture and established
-publication/rollback method. The [V0.13.1 release acceptance Issue](https://github.com/STAR-Ability/code-startrack-frontend/issues/23)
-records current verification, merged revision, immutable image and deployment
-results as those gates complete. The [V0.12.1 production receipt](v0.12.1-production-release.md)
-records the retained rollback baseline. The V0.12.0 evidence below is historical.
+publication/rollback method. The [V0.13.3 release and authenticated production
+acceptance Issue #29](https://github.com/STAR-Ability/code-startrack-frontend/issues/29)
+is the canonical current release tracker. It records verification, accepted main
+revision, immutable image and deployment results as the remaining gates complete.
+Consult Issue #29 for the latest gate status and final receipts.
 
-The V0.13.1 image passed publication and internal runtime checks, but final
-locale-switch inspection found an empty radar chart. [Release acceptance correction
-#25](https://github.com/STAR-Ability/code-startrack-frontend/issues/25) tracks the
-targeted fix and corrective frontend V0.13.2 image. Backend V0.13.1 compatibility
-remains the integration target. Keep the original image tags immutable and consult
-Issue #23 for the final accepted revision, digest and rollout receipt.
+The historical [V0.13.1 release acceptance Issue #23](https://github.com/STAR-Ability/code-startrack-frontend/issues/23)
+and [V0.13.2 radar correction Issue #25](https://github.com/STAR-Ability/code-startrack-frontend/issues/25)
+record the previous releases and the correction discovered during locale-switch
+inspection. Keep their original image tags immutable. The
+[V0.12.1 production receipt](v0.12.1-production-release.md) records an older
+retained rollback baseline. Architecture, versioned examples and V0.12.0 evidence
+below retain their historical inspection context; inspect the current deployment
+before selecting a release or rollback reference.
 
 ## Architecture and host inspected before V0.12.1
 

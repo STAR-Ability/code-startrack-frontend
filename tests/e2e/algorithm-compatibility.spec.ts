@@ -242,7 +242,7 @@ test("future team recommendation metadata preserves audience and supplied proble
   for (const item of data.recommendations) {
     await expect(
       batch.getByRole("heading", {
-        name: `${item.rank}. ${item.problem.title ?? item.problem.externalProblemKey}`,
+        name: `#${item.rank} ${item.problem.title ?? item.problem.externalProblemKey}`,
         exact: true,
       }),
     ).toBeVisible();

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useId } from "react";
+import { Fragment, useState, useId } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { v012 } from "@/lib/api/v012";
 import { ApiError } from "@/lib/api/errors";
@@ -19,6 +19,15 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { ChoiceSelect } from "@/components/ui/choice-select";
 import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Panel, AiJobNotice, useTeamQuery } from "./v012-shared";
@@ -36,7 +45,11 @@ import { ProblemLink } from "./recommendation-card";
 import { isAiJobPending } from "./use-ai-job";
 import { CompatibilityNotice } from "./compatibility-notice";
 export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const number = (value: number) =>
+    new Intl.NumberFormat(locale, {
+      maximumSignificantDigits: 21,
+    }).format(value);
   const dimensions = [...analysis.dimensions].sort(
     (a, b) => a.displayOrder - b.displayOrder,
   );
@@ -52,7 +65,7 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
         metrics={[
           [
             "v12.included",
-            `${analysis.includedMemberCount} / ${analysis.memberCount}`,
+            `${number(analysis.includedMemberCount)} / ${number(analysis.memberCount)}`,
           ],
           ["v12.excluded", analysis.excludedMemberCount],
           ["v12.trainingMembers", analysis.trainingMemberCount],
@@ -100,16 +113,20 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
                   key={dimension.code}
                   className="flex flex-wrap justify-between gap-2"
                 >
-                  <dt>
+                  <dt className="flex flex-wrap items-center gap-2">
                     {t(`data.dimension.${dimension.code}`)}
                     {dimension.code === analysis.weakestDimension && (
-                      <Badge variant="outline" className="ml-2">
-                        {t("v.weakest")}
-                      </Badge>
+                      <Badge variant="outline">{t("v.weakest")}</Badge>
                     )}
                   </dt>
-                  <dd>
-                    {dimension.score} / 100 · {dimension.memberSampleCount}
+                  <dd className="flex flex-col gap-1 sm:items-end">
+                    <span className="font-mono tabular-nums">
+                      {number(dimension.score)} / {number(100)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t("v12.dimensionSamples")}:{" "}
+                      {number(dimension.memberSampleCount)}
+                    </span>
                   </dd>
                 </div>
               ))}
@@ -216,34 +233,126 @@ export function TeamBatchView({
           title={t("v12.candidateShortage")}
           description={t("v.noCandidates")}
         />
-      )}{" "}
-      {batch.recommendations.map((item) => {
+      )}
+      {batch.recommendations.map((item, index) => {
+        const primary = index === 0;
+        if (primary)
+          return (
+            <Card
+              key={item.rank}
+              variant="recommendation"
+              size="lg"
+              interaction="none"
+              className="recommendation-card @container/recommendation"
+              data-recommendation-rank={item.rank}
+            >
+              <CardHeader>
+                <div className="mb-2 flex flex-wrap gap-2">
+                  <Badge variant="info" wrap>
+                    {t("v12.primaryRecommendation")}
+                  </Badge>
+                </div>
+                <CardTitle>
+                  <h3 className="recommendation-heading recommendation-title">
+                    <span className="recommendation-rank">
+                      #{number(item.rank)}
+                    </span>
+                    <span className="min-w-0 wrap-anywhere">
+                      {item.problem.title ?? item.problem.externalProblemKey}
+                    </span>
+                  </h3>
+                </CardTitle>
+                <CardDescription>
+                  <span className="wrap-anywhere">
+                    {item.problem.externalProblemKey}
+                  </span>
+                  {" · Codeforces"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="recommendation-content recommendation-content-featured">
+                  <div className="flex min-w-0 flex-col gap-4">
+                    <div className="recommendation-reason">
+                      <h4 className="text-xs font-medium text-info">
+                        {t("recommendation.reason")}
+                      </h4>
+                      <p className="wrap-anywhere">{item.reason}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {item.problem.tags.map((tag) => (
+                        <Badge key={tag} wrap variant="secondary">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="recommendation-action-panel">
+                    <dl className="recommendation-facts grid-cols-1 @sm/recommendation:grid-cols-2">
+                      <div>
+                        <dt>{t("v12.problemDifficulty")}</dt>
+                        <dd>
+                          {item.problem.difficulty === null
+                            ? t("v.unrated")
+                            : number(item.problem.difficulty)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{t("v12.recommendationScore")}</dt>
+                        <dd className="wrap-anywhere">{number(item.score)}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex-wrap gap-3">
+                <ProblemLink problem={item.problem} primary />
+              </CardFooter>
+            </Card>
+          );
         return (
-          <article
-            key={item.rank}
-            className="flex flex-col gap-2 border-b py-3 last:border-0"
-          >
-            <h3 className="break-words font-medium">
-              {item.rank}.{" "}
-              {item.problem.title ?? item.problem.externalProblemKey}
-            </h3>
-            <p>
-              {t("v12.problemDifficulty")}:{" "}
-              {item.problem.difficulty === null
-                ? t("v.unrated")
-                : number(item.problem.difficulty)}{" "}
-              · {t("v12.recommendationScore")}: {number(item.score)}
-            </p>
-            <p className="break-words">{item.reason}</p>
-            <div className="flex flex-wrap gap-2">
-              {item.problem.tags.map((tag) => (
-                <Badge key={tag} wrap variant="secondary">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-            <ProblemLink problem={item.problem} />
-          </article>
+          <Fragment key={item.rank}>
+            {index === 1 && (
+              <div className="recommendation-queue-heading">
+                <h3>{t("recommendation.moreOptions")}</h3>
+                <p>{t("recommendation.orderNote")}</p>
+              </div>
+            )}
+            <article
+              className="flex min-w-0 flex-col gap-2 py-3"
+              data-recommendation-rank={item.rank}
+            >
+              <h4 className="recommendation-heading font-medium">
+                <span className="recommendation-rank">
+                  #{number(item.rank)}
+                </span>
+                <span className="min-w-0 wrap-anywhere">
+                  {item.problem.title ?? item.problem.externalProblemKey}
+                </span>
+              </h4>
+              <p className="text-xs wrap-anywhere text-muted-foreground">
+                {item.problem.externalProblemKey} · Codeforces
+              </p>
+              <p>
+                {t("v12.problemDifficulty")}:{" "}
+                {item.problem.difficulty === null
+                  ? t("v.unrated")
+                  : number(item.problem.difficulty)}{" "}
+                · {t("v12.recommendationScore")}: {number(item.score)}
+              </p>
+              <p className="wrap-anywhere">{item.reason}</p>
+              <div className="flex flex-wrap gap-2">
+                {item.problem.tags.map((tag) => (
+                  <Badge key={tag} wrap variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+              <div className="flex flex-wrap">
+                <ProblemLink problem={item.problem} />
+              </div>
+            </article>
+            {index < batch.recommendations.length - 1 && <Separator />}
+          </Fragment>
         );
       })}
     </div>

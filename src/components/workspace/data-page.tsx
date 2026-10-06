@@ -350,7 +350,7 @@ function Submissions({ problemId }: { problemId?: string }) {
   );
 }
 function Submission({ item }: { item: SubmissionDto }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   return (
     <Card>
       <CardHeader>
@@ -383,7 +383,11 @@ function Submission({ item }: { item: SubmissionDto }) {
           </div>
           <div>
             <dt>{t("v.lastSubmitted")}</dt>
-            <dd className="break-all">{item.submittedAt}</dd>
+            <dd className="wrap-anywhere">
+              <time dateTime={item.submittedAt}>
+                {formatTimestamp(item.submittedAt, locale)}
+              </time>
+            </dd>
           </div>
         </dl>
         {(item.teamName || item.memberHandles.length > 1) && (

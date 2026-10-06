@@ -1,5 +1,5 @@
 "use client";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +34,7 @@ export function TeamMembers({ team }: { team: TeamDetailDto }) {
     v012.members(team.teamId, { page }, signal),
   );
   const [remove, setRemove] = useState<TeamMemberDto | null>(null);
+  const cancelRemoveRef = useRef<HTMLButtonElement>(null);
   const mutation = useCollaborationMutation(
     "membership",
     (member: TeamMemberDto) =>
@@ -131,7 +132,7 @@ export function TeamMembers({ team }: { team: TeamDetailDto }) {
           if (!open && !mutation.isPending) setRemove(null);
         }}
       >
-        <DialogContent>
+        <DialogContent initialFocus={cancelRemoveRef}>
           <DialogHeader>
             <DialogTitle>{t("v12.confirmRemove")}</DialogTitle>
             <DialogDescription>
@@ -146,7 +147,10 @@ export function TeamMembers({ team }: { team: TeamDetailDto }) {
           >
             {t("v12.remove")}
           </Button>
-          <AlertDialogCancel disabled={mutation.isPending}>
+          <AlertDialogCancel
+            ref={cancelRemoveRef}
+            disabled={mutation.isPending}
+          >
             {t("v12.cancel")}
           </AlertDialogCancel>
           <ErrorNotice error={mutation.error} />
@@ -315,7 +319,7 @@ export function TeamSettings({ team }: { team: TeamDetailDto }) {
     <>
       {team.status !== "DISSOLVED" && (
         <>
-          <TeamForm key={team.updatedAt} team={team} />
+          <TeamForm key={team.teamId} team={team} />
           <Panel title="v12.dangerZone" description={t("v12.dangerNote")}>
             <div className="flex flex-wrap gap-3">
               {(active

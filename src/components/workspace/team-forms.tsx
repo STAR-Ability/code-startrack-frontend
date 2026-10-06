@@ -1,10 +1,15 @@
 "use client";
-import { useId } from "react";
+import { useEffect, useId } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { v012, type TeamInput } from "@/lib/api/v012";
+import { ApiError } from "@/lib/api/errors";
+import { keys } from "@/lib/query/keys";
+import { isCurrentUser } from "@/lib/query/session";
+import { compareInstants } from "@/lib/time";
 import type { TeamDetailDto } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
@@ -13,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ErrorNotice } from "./feedback";
 import { Panel, useCollaborationMutation } from "./v012-shared";
+import { useWorkspaceSession } from "./account-provider";
 const formSchema = z.object({
   name: z.string().trim().min(1),
   description: z.string(),
@@ -20,6 +26,8 @@ const formSchema = z.object({
 });
 export function TeamForm({ team }: { team?: TeamDetailDto }) {
   const { t } = useLocale();
+  const { data: user } = useWorkspaceSession();
+  const client = useQueryClient();
   const id = useId();
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
@@ -30,15 +38,44 @@ export function TeamForm({ team }: { team?: TeamDetailDto }) {
       avatarUrl: team?.avatarUrl ?? "",
     },
   });
+  const { reset } = form;
+  useEffect(() => {
+    reset({
+      name: team?.name ?? "",
+      description: team?.description ?? "",
+      avatarUrl: team?.avatarUrl ?? "",
+    });
+  }, [reset, team?.updatedAt, team?.name, team?.description, team?.avatarUrl]);
   const mutation = useCollaborationMutation(
     team ? "team" : "create",
-    (input: TeamInput) =>
-      team ? v012.updateTeam(team.teamId, input) : v012.createTeam(input),
+    async (input: TeamInput) => {
+      const result = team
+        ? await v012.updateTeam(team.teamId, input)
+        : await v012.createTeam(input);
+      if (team && user && isCurrentUser(client, user.publicId)) {
+        const key = keys.team(user.publicId, team.teamId, "detail");
+        const current = client.getQueryState<TeamDetailDto>(key);
+        const denied =
+          current?.error instanceof ApiError &&
+          [401, 403, 404].includes(current.error.status);
+        const newer =
+          !!current?.data &&
+          compareInstants(current.data.updatedAt, result.updatedAt) > 0;
+        // Seed before invalidation so its read can replace this response, while
+        // keeping confirmed settings when that read is temporarily unavailable.
+        if (!denied && !newer) client.setQueryData(key, result);
+      }
+      return result;
+    },
     team?.teamId,
     (result) => {
       if (!team) router.push(`/teams/detail?teamId=${result.teamId}`);
     },
   );
+  const saved =
+    mutation.isSuccess &&
+    (!team ||
+      (mutation.data.updatedAt === team.updatedAt && !form.formState.isDirty));
   return (
     <Panel title={team ? "v12.editTeam" : "v12.createTeam"}>
       <form
@@ -86,7 +123,7 @@ export function TeamForm({ team }: { team?: TeamDetailDto }) {
         </Button>
       </form>
       <ErrorNotice error={mutation.error} />
-      {mutation.isSuccess && <p role="status">{t("v12.saved")}</p>}
+      {saved && <p role="status">{t("v12.saved")}</p>}
     </Panel>
   );
 }

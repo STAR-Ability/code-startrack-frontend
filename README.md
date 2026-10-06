@@ -1,6 +1,6 @@
 # codeStartrack Frontend
 
-**码练星轨 (codeStartrack) V0.13.1** renders evolving backend algorithm versions with strong structural validation and refines profiles, recommendations, dashboards, charts and collaboration workspaces. It retains multi-account data, frozen reports, coach tools, privacy and notifications. It uses Next.js App Router, Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
+**码练星轨 (codeStartrack) V0.13.3** renders evolving backend algorithm versions with strong structural validation and refines profiles, recommendations, dashboards, charts and collaboration workspaces. It preserves confirmed settings after failed refreshes and uses keyboard-safe team confirmations. It retains multi-account data, frozen reports, coach tools, privacy and notifications. It uses Next.js App Router, Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
 
 The public landing page and `/demo` use local illustrations and synthetic fixtures. Workspace shells, including `/practice`, are browsable without login. Personal data and actions require a backend Session and the `STUDENT` role; visitors see login prompts within those panels. Empty responses preserve card/list structure; failed reads show safe placeholders, a visible error and retry without blocking navigation:
 
@@ -106,7 +106,7 @@ pnpm test:container
 
 E2E uses the production export, a local HTTP proxy on `127.0.0.1:3100` and a synthetic V0.11/V0.12 backend on `127.0.0.1:3210`. It never uses `.env.local` to choose an upstream. Desktop/mobile tests cover locale, keyboard and narrow layouts, authentication, bigint IDs, delayed account switching, unbinding, readonly history, analysis windows, nullable data, recommendation idempotency and task states. They also cover frozen reports, application/invitation transitions, team lifecycle/ownership, privacy withdrawal, coach redemption and audience isolation. Browser network guards reject external requests and old API paths. Container checks require a running Docker daemon.
 
-The [workspace execution plan](.agent/plans/v0.12-workspace-redesign.md) and [delivery report](docs/development/v0.12-workspace-delivery.md) record implementation and validation. Live paths/schemas and unauthenticated responses were verified separately with Mock disabled. Authenticated real flows still require designated test credentials; see the [integration guide](docs/development/v0.12-integration.md) for precise results and contract discrepancies.
+The [workspace execution plan](.agent/plans/v0.12-workspace-redesign.md) and [delivery report](docs/development/v0.12-workspace-delivery.md) record earlier implementation and validation. The [current integration audit](docs/development/v0.13-integration.md) distinguishes authenticated real-data verification from synthetic mutation coverage. The [independent acceptance plan](.agent/plans/v0.13.3-production-acceptance.md) describes the release work. The [canonical release tracker](https://github.com/STAR-Ability/code-startrack-frontend/issues/29) records publication, exact-image and authenticated post-deployment evidence as the respective gates complete; consult that Issue for current status.
 
 ## Production deployment
 

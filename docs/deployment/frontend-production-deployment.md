@@ -6,6 +6,13 @@ records current verification, merged revision, immutable image and deployment
 results as those gates complete. The [V0.12.1 production receipt](v0.12.1-production-release.md)
 records the retained rollback baseline. The V0.12.0 evidence below is historical.
 
+The V0.13.1 image passed publication and internal runtime checks, but final
+locale-switch inspection found an empty radar chart. [Release acceptance correction
+#25](https://github.com/STAR-Ability/code-startrack-frontend/issues/25) tracks the
+targeted fix and corrective frontend V0.13.2 image. Backend V0.13.1 compatibility
+remains the integration target. Keep the original image tags immutable and consult
+Issue #23 for the final accepted revision, digest and rollout receipt.
+
 ## Architecture and host inspected before V0.12.1
 
 ```text

@@ -303,4 +303,76 @@ describe("ECharts lifecycle", () => {
       actual.restore();
     }
   });
+
+  it("keeps actual radar data and SVG marks through repeated locale updates and responsive resizing", async () => {
+    const actual = await useRealEcharts();
+    const labels = {
+      zh: ["实现", "算法", "数据结构", "动态规划", "图论", "数学"],
+      en: [
+        "Implementation",
+        "Algorithms",
+        "Data structures",
+        "Dynamic programming",
+        "Graphs",
+        "Math",
+      ],
+    };
+    const scores = [20, 30, 40, 50, 60, 70];
+    const option = (locale: keyof typeof labels, values = scores) =>
+      radarOption(
+        labels[locale].map((name, index) => ({ name, score: values[index] })),
+        locale === "zh" ? "能力画像" : "Ability profile",
+      );
+    motion.matches = true;
+    const { rerender, unmount } = render(
+      <Chart label="能力画像" palette="ability" option={option("zh")} />,
+    );
+    try {
+      await loadChart();
+      const chart = actual.current();
+      for (const [index, update] of [
+        { width: 318, locale: "en", radius: "48%" },
+        { width: 760, locale: "zh", radius: "58%" },
+        { width: 600, locale: "en", radius: "52%" },
+        { width: 318, locale: "zh", radius: "48%" },
+      ].entries()) {
+        const locale = update.locale as keyof typeof labels;
+        const values = scores.map((score) => score + index + 1);
+        chart.resize({ width: update.width });
+        rerender(
+          <Chart
+            label={locale === "zh" ? "能力画像" : "Ability profile"}
+            palette="ability"
+            option={option(locale, values)}
+          />,
+        );
+        expect(chart.getOption()).toMatchObject({
+          animation: false,
+          radar: [
+            {
+              radius: update.radius,
+              indicator: labels[locale].map((name) => ({ name, max: 100 })),
+            },
+          ],
+          series: [{ type: "radar", data: [{ value: values }] }],
+        });
+        const svg = chart.renderToSVGString();
+        expect(svg.match(/<path\b/g)?.length ?? 0).toBeGreaterThan(6);
+        expect(svg.match(/<text\b/g)?.length ?? 0).toBeGreaterThanOrEqual(6);
+        expect(svg).toContain(labels[locale][5]);
+
+        onTheme([], {} as MutationObserver);
+        expect(chart.getOption()).toMatchObject({
+          animation: false,
+          radar: [{ radius: update.radius }],
+          series: [{ type: "radar", data: [{ value: values }] }],
+        });
+      }
+      expect(echarts.init).toHaveBeenCalledOnce();
+      expect(chart.isDisposed()).toBeFalsy();
+    } finally {
+      unmount();
+      actual.restore();
+    }
+  });
 });

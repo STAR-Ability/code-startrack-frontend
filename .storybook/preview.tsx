@@ -112,8 +112,18 @@ const preview: Preview = {
         },
         compact: {
           name: "Compact · 320px",
-          styles: { width: "320px", height: "720px" },
+          styles: { width: "320px", height: "800px" },
           type: "mobile",
+        },
+        tablet: {
+          name: "Tablet · 768px",
+          styles: { width: "768px", height: "1024px" },
+          type: "tablet",
+        },
+        laptop: {
+          name: "Laptop · 1280px",
+          styles: { width: "1280px", height: "800px" },
+          type: "desktop",
         },
         desktop: {
           name: "Desktop · 1440px",

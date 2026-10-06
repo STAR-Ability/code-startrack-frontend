@@ -153,7 +153,7 @@ test("switching accounts dismisses old refresh feedback and never announces old 
   ).toHaveCount(0);
 });
 
-test("controls provide hover, press, focus and tooltips while reduced motion removes movement", async ({
+test("controls provide local hover, press, focus and tooltip feedback without moving passive surfaces", async ({
   page,
   isMobile,
 }) => {
@@ -192,17 +192,33 @@ test("controls provide hover, press, focus and tooltips while reduced motion rem
       .poll(() =>
         card.evaluate((element) => getComputedStyle(element).boxShadow),
       )
-      .not.toBe(restingShadow);
+      .toBe(restingShadow);
+    const restingColor = await submit.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    );
     await submit.hover();
+    await expect
+      .poll(() =>
+        submit.evaluate((element) => getComputedStyle(element).backgroundColor),
+      )
+      .not.toBe(restingColor);
+    const hoverColor = await submit.evaluate(
+      (element) => getComputedStyle(element).backgroundColor,
+    );
     await expect
       .poll(() =>
         submit.evaluate((element) => getComputedStyle(element).translate),
       )
-      .toBe("0px -2px");
+      .toBe("none");
     await page.mouse.down();
     await expect
       .poll(() => submit.evaluate((element) => getComputedStyle(element).scale))
-      .toBe("0.97");
+      .toBe("none");
+    await expect
+      .poll(() =>
+        submit.evaluate((element) => getComputedStyle(element).backgroundColor),
+      )
+      .not.toBe(hoverColor);
     await page.mouse.up();
   }
   await page.emulateMedia({ reducedMotion: "reduce" });

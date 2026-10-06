@@ -1,5 +1,13 @@
 import { act, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import type { ECharts } from "echarts";
 import { Chart } from "./chart";
 import { radarOption, trendOption } from "@/lib/charts/options";
@@ -83,8 +91,7 @@ async function loadChart() {
   });
 }
 
-async function useRealEcharts() {
-  const actual = await vi.importActual<typeof import("echarts")>("echarts");
+function useRealEcharts(actual: typeof import("echarts")) {
   const canvas = vi
     .spyOn(HTMLCanvasElement.prototype, "getContext")
     .mockReturnValue({
@@ -211,9 +218,17 @@ describe("ECharts lifecycle", () => {
     expect(echarts.init).not.toHaveBeenCalled();
     expect(echarts.dispose).not.toHaveBeenCalled();
   });
+});
+
+describe("Actual ECharts lifecycle", () => {
+  let actualEcharts: typeof import("echarts");
+  beforeAll(async () => {
+    // Keep the one-time integration dependency load out of lifecycle timeouts.
+    actualEcharts = await vi.importActual<typeof import("echarts")>("echarts");
+  });
 
   it("preserves refreshed data, accessible labels and current reduced motion through actual ECharts theme changes", async () => {
-    const actual = await useRealEcharts();
+    const actual = useRealEcharts(actualEcharts);
     const { rerender, unmount } = render(
       <Chart
         label="Initial score"
@@ -267,7 +282,7 @@ describe("ECharts lifecycle", () => {
   });
 
   it("does not resurrect old radar media after a chart-type change followed by an actual ECharts theme change", async () => {
-    const actual = await useRealEcharts();
+    const actual = useRealEcharts(actualEcharts);
     const { rerender, unmount } = render(
       <Chart
         label="Initial ability"
@@ -305,7 +320,7 @@ describe("ECharts lifecycle", () => {
   });
 
   it("keeps actual radar data and SVG marks through repeated locale updates and responsive resizing", async () => {
-    const actual = await useRealEcharts();
+    const actual = useRealEcharts(actualEcharts);
     const labels = {
       zh: ["实现", "算法", "数据结构", "动态规划", "图论", "数学"],
       en: [

@@ -4,6 +4,32 @@ codeStartrack keeps the existing shadcn Base UI/Nova composition, near-white pri
 surfaces, dark typography, brand blue and Geist typography. Tailwind v4 resolves
 the shared tokens in `src/app/globals.css`; Storybook imports that same stylesheet.
 
+## Typography, reading measures and control density
+
+Body and heading stacks share Geist, PingFang SC, Microsoft YaHei and Noto Sans
+CJK fallbacks. Body line height is 1.6; Chinese headings and eyebrows retain
+ordinary character spacing. The shared `page-title`, `section-heading`,
+`meta-label` and `headline-number` classes express hierarchy independently from
+panel padding. Numeric headlines use tabular figures.
+
+Use the shared reading measures instead of introducing route-local widths:
+`max-w-workspace` (80rem), `max-w-reading` (48rem), `max-w-form` (42rem) and
+`max-w-auth` (28rem). Their application to page families belongs to the shell and
+feature composition. Public section intervals use 48/64/80px across widths.
+
+Control density tokens are `--control-dense` (2rem), `--control-standard` (2.5rem)
+and `--control-comfortable` (3rem). Controls can grow for wrapped translated
+labels; density must not clip content at increased text sizes.
+Icon-only controls use the matching `--control-icon-*` physical 32/40/48px
+targets so enlarged text does not consume the entry space of adjoining fields.
+The Brand mark also retains its standard physical 40px size while its name scales.
+
+Shared motion roles are 100ms press, 150ms control state, 180ms overlay,
+220ms panel and 240ms sidebar, using `--motion-ease` for spatial continuity.
+Ordinary controls change color and boundaries without generic lift or scaling.
+Decorative public/auth/practice movement is static; local feedback can use a
+short opacity transition. Reduced motion keeps state visible without movement.
+
 ## Viewport background and scrolling content
 
 The public, workspace and authentication shells own their decorative backgrounds.
@@ -70,10 +96,15 @@ and recommendation variants choose insight and info by default. MetricPanel
 derives tone from the meaning of its title and each metric; unknown values remain
 neutral, while real numeric zero retains its semantic meaning.
 
-`size` controls spacing and `interaction`
-controls hover behavior. Use `interaction="none"` for passive data and charts;
+`size` controls spacing; CardTitle's `titleRole` chooses default, section or
+supporting typography independently of that spacing. Panel and MetricPanel use
+the section role for their h2. `interaction` controls hover behavior and defaults
+to `none`. Passive forms, data and charts remain stationary;
 reserve `lift` for actionable discovery surfaces. Keep the established CardHeader,
-CardTitle, CardDescription, CardContent and CardFooter composition. Extend Panel
+CardTitle, CardDescription, CardContent and CardFooter composition. Use a single
+semantic cue for evidence/recommendation surfaces rather than stacked gradients,
+colored edges, tinted cells and colored numbers. Metric rows keep neutral values
+and one semantic accent line. Extend Panel
 through its Card props instead of creating a separate general-purpose card.
 
 ## Page responsibilities

@@ -49,7 +49,7 @@ export function Panel({
       className="min-w-0 wrap-anywhere"
     >
       <CardHeader>
-        <CardTitle>
+        <CardTitle titleRole="section">
           <h2>{t(title)}</h2>
         </CardTitle>
         {description && <CardDescription>{description}</CardDescription>}

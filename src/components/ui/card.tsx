@@ -4,7 +4,7 @@ import { cn } from "cn";
 function Card({
   className,
   size = "default",
-  interaction = "surface",
+  interaction = "none",
   variant = "default",
   tone,
   ...props
@@ -30,9 +30,9 @@ function Card({
       }
       className={cn(
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-surface-reading py-(--card-spacing) text-sm text-card-foreground ring-1 ring-surface-border data-[variant=metric]:bg-surface-panel data-[variant=recommendation]:ring-info/20 data-[variant=supporting]:bg-surface-supporting data-[variant=supporting]:shadow-none [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
-        "shadow-surface transition-[box-shadow,translate,transform,background-color,outline-color] duration-200 ease-out data-[interaction=surface]:hover:shadow-raised data-[interaction=surface]:hover:ring-foreground/20 data-[interaction=lift]:hover:shadow-raised data-[interaction=lift]:hover:ring-foreground/20 motion-safe:data-[interaction=lift]:hover:-translate-y-1 focus-within:ring-ring/50 focus-within:shadow-md motion-reduce:transition-none",
+        "shadow-surface transition-[box-shadow,translate,background-color] duration-(--motion-panel) ease-(--motion-ease) data-[interaction=surface]:hover:shadow-raised data-[interaction=surface]:hover:ring-foreground/20 data-[interaction=surface]:focus-within:ring-ring/50 data-[interaction=lift]:hover:shadow-raised data-[interaction=lift]:hover:ring-foreground/20 data-[interaction=lift]:focus-within:ring-ring/50 motion-safe:data-[interaction=lift]:hover:-translate-y-0.5 motion-reduce:transition-none",
         size === "lg" &&
-          "rounded-2xl [--card-spacing:--spacing(6)] sm:[--card-spacing:--spacing(8)]",
+          "rounded-2xl [--card-spacing:--spacing(4)] sm:[--card-spacing:--spacing(8)]",
         className,
       )}
       {...props}
@@ -45,7 +45,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[minmax(0,1fr)_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing)",
         className,
       )}
       {...props}
@@ -53,12 +53,19 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+function CardTitle({
+  className,
+  titleRole = "default",
+  ...props
+}: React.ComponentProps<"div"> & {
+  titleRole?: "default" | "section" | "supporting";
+}) {
   return (
     <div
       data-slot="card-title"
+      data-title-role={titleRole}
       className={cn(
-        "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
+        "min-w-0 font-heading text-base leading-snug font-semibold wrap-anywhere data-[title-role=section]:text-xl data-[title-role=supporting]:text-sm",
         className,
       )}
       {...props}

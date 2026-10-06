@@ -1,5 +1,4 @@
 "use client";
-import { useRef } from "react";
 import {
   ArrowUpRightIcon,
   CheckCheckIcon,
@@ -29,33 +28,9 @@ import { previewProfile, previewProblems } from "@/lib/demo/preview";
 
 export function ProductPreview() {
   const { t } = useLocale();
-  const preview = useRef<HTMLDivElement>(null);
   const problem = previewProblems[2];
   return (
-    <div
-      id="product-preview"
-      className="product-preview scroll-mt-36"
-      ref={preview}
-      onPointerMove={(event) => {
-        if (
-          event.pointerType !== "mouse" ||
-          window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        )
-          return;
-        const rect = event.currentTarget.getBoundingClientRect();
-        const x = (event.clientX - rect.left) / rect.width;
-        const y = (event.clientY - rect.top) / rect.height;
-        const style = event.currentTarget.style;
-        style.setProperty("--tilt-x", `${(0.5 - y) * 10}deg`);
-        style.setProperty("--tilt-y", `${(x - 0.5) * 10}deg`);
-        style.setProperty("--spot-x", `${x * 100}%`);
-        style.setProperty("--spot-y", `${y * 100}%`);
-      }}
-      onPointerLeave={() => {
-        preview.current?.style.removeProperty("--tilt-x");
-        preview.current?.style.removeProperty("--tilt-y");
-      }}
-    >
+    <div id="product-preview" className="product-preview scroll-mt-36">
       <div className="preview-grid" aria-hidden="true" />
       <svg
         className="preview-orbit"

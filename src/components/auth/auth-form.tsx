@@ -91,7 +91,7 @@ export function Captcha({
     (query.error instanceof ApiError && query.error.status === 403);
   return (
     <FieldGroup className="gap-3">
-      <Field>
+      <Field className="@container/captcha">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <FieldLabel htmlFor={id}>{t("v.captcha")}</FieldLabel>
           <Button
@@ -111,7 +111,7 @@ export function Captcha({
             {t("ui.refreshCaptchaShort")}
           </Button>
         </div>
-        <div className="grid grid-cols-[minmax(0,1fr)_116px] items-center gap-3">
+        <div className="grid grid-cols-[minmax(0,1fr)] items-center gap-3 @[16rem]/captcha:grid-cols-[minmax(0,1fr)_116px]">
           <Input
             id={id}
             required={required}
@@ -132,7 +132,7 @@ export function Captcha({
             }}
           />
           <div
-            className="captcha-frame relative flex h-12 items-center justify-center overflow-hidden rounded-lg border bg-muted"
+            className="captcha-frame relative flex h-12 w-[116px] items-center justify-center overflow-hidden rounded-lg border bg-muted @[16rem]/captcha:w-full"
             aria-busy={query.isFetching}
           >
             {query.isFetching ? (
@@ -247,6 +247,7 @@ export function EmailVerification({
       <Button
         type="button"
         variant="outline"
+        wrap
         disabled={
           send.isPending ||
           !!remaining ||
@@ -509,6 +510,7 @@ export function AuthForm({ kind }: { kind: "login" | "register" | "reset" }) {
               <Button
                 size="xl"
                 className="auth-submit w-full"
+                wrap
                 type="submit"
                 aria-busy={mutation.isPending}
                 disabled={

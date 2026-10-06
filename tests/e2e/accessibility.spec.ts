@@ -4,6 +4,68 @@ import type { TeamMemberDto } from "../../src/lib/api/v012-schemas";
 import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 test.beforeEach(() => configureUpstream());
 for (const locale of ["zh-CN", "en"]) {
+  test(`${locale}: enlarged auth fields retain usable entry space and password actions`, async ({
+    page,
+    context,
+  }) => {
+    await context.addCookies([
+      {
+        name: "codestartrack_locale",
+        value: locale,
+        url: "http://127.0.0.1:3100",
+      },
+    ]);
+    await page.setViewportSize({ width: 320, height: 800 });
+    for (const route of ["/login", "/register", "/reset-password"]) {
+      await page.goto(route);
+      await page.evaluate(() => {
+        document.documentElement.style.fontSize = "200%";
+      });
+      const challenge = page.locator(".captcha-frame").locator("..");
+      const captcha = challenge.locator("input");
+      await expect(captcha).toBeEnabled();
+      const password = page.locator('input[type="password"]');
+      for (const input of [captcha, password]) {
+        await expect
+          .poll(() =>
+            input.evaluate((element) => {
+              const style = getComputedStyle(element);
+              return (
+                element.clientWidth -
+                parseFloat(style.paddingLeft) -
+                parseFloat(style.paddingRight)
+              );
+            }),
+          )
+          .toBeGreaterThanOrEqual(80);
+      }
+      await password.fill("synthetic-password");
+      await page
+        .getByRole("button", {
+          name: locale === "en" ? "Show password" : "显示密码",
+          exact: true,
+        })
+        .click();
+      await expect(
+        page.locator('input[autocomplete$="password"]'),
+      ).toHaveAttribute("type", "text");
+      await expect(page.locator('input[autocomplete$="password"]')).toHaveValue(
+        "synthetic-password",
+      );
+      await expect(page.locator("button[type=submit]")).toBeVisible();
+      expect(
+        await page
+          .locator("button[type=submit]")
+          .evaluate((element) => element.scrollWidth <= element.clientWidth),
+      ).toBe(true);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+    }
+  });
+
   test(`${locale}: keyboard entry, workspace and forms fit narrow screens and text zoom`, async ({
     page,
     context,

@@ -170,7 +170,7 @@ test("native hover, reduced motion and disabled actions", async ({
       .poll(() =>
         card.evaluate((element) => getComputedStyle(element).translate),
       )
-      .toBe("0px -4px");
+      .toBe("0px -2px");
   }
   await page.emulateMedia({ reducedMotion: "reduce" });
   await card.hover();

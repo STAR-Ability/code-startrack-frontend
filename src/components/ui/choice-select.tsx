@@ -2,6 +2,7 @@
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -13,6 +14,7 @@ export function ChoiceSelect({
   onValueChange,
   options,
   disabled,
+  density = "standard",
   name,
   onBlur,
   "aria-invalid": invalid,
@@ -22,6 +24,7 @@ export function ChoiceSelect({
   onValueChange: (value: string) => void;
   options: readonly { value: string; label: string }[];
   disabled?: boolean;
+  density?: "dense" | "standard" | "comfortable";
   name?: string;
   onBlur?: () => void;
   "aria-invalid"?: boolean;
@@ -40,16 +43,19 @@ export function ChoiceSelect({
         id={id}
         onBlur={onBlur}
         aria-invalid={invalid}
-        className="w-full min-w-0 h-auto min-h-9"
+        density={density}
+        className="w-full min-w-0"
       >
         <SelectValue />
       </SelectTrigger>
       <SelectContent alignItemWithTrigger={false}>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
   );

@@ -13,8 +13,8 @@ export function Brand({ compact = false }: { compact?: boolean }) {
       className="brand-link flex min-w-0 items-center gap-3 rounded-lg"
       aria-label={t("nav.home")}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        <OrbitIcon className="size-6" aria-hidden="true" />
+      <span className="flex size-(--control-icon-standard) shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+        <OrbitIcon className="size-[60%]" aria-hidden="true" />
       </span>
       {!compact && (
         <span className="flex min-w-0 flex-col gap-0.5">

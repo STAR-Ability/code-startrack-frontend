@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
 import {
   ArrowRightIcon,
   ArrowUpRightIcon,
@@ -10,14 +9,12 @@ import {
   RouteIcon,
   CodeXmlIcon,
   OrbitIcon,
-  PauseIcon,
-  PlayIcon,
   CheckIcon,
 } from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
 import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ProductPreview } from "./product-preview";
@@ -27,24 +24,6 @@ import { cn } from "@/lib/utils";
 
 export function LandingPage() {
   const { t } = useLocale();
-  const main = useRef<HTMLElement>(null);
-  const [paused, setPaused] = useState(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.setAttribute("data-revealed", "true");
-            observer.unobserve(entry.target);
-          }
-        }),
-      { threshold: 0.1 },
-    );
-    main.current
-      ?.querySelectorAll(".landing-section")
-      .forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
   const flow = [
     ["data", DatabaseIcon],
     ["unify", LayersIcon],
@@ -55,12 +34,7 @@ export function LandingPage() {
   return (
     <>
       <AppHeader />
-      <main
-        id="main-content"
-        tabIndex={-1}
-        ref={main}
-        className="brand-surface"
-      >
+      <main id="main-content" tabIndex={-1} className="brand-surface">
         <section className="brand-hero mx-auto grid max-w-7xl items-center gap-12 px-5 pt-14 pb-20 sm:px-8 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24 lg:pb-28">
           <div className="flex min-w-0 flex-col items-start gap-7">
             <Badge variant="outline" wrap>
@@ -118,25 +92,13 @@ export function LandingPage() {
                 Codeforces
               </span>
             </p>
-            <div className="marquee-window min-w-0 flex-1" data-paused={paused}>
+            <div className="marquee-window min-w-0 flex-1">
               <div className="marquee-track">
                 <span>{t("landing.unified")}</span>
                 <OrbitIcon className="size-4 shrink-0" aria-hidden="true" />
                 <span>{t("landing.futureSources")}</span>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t(paused ? "motion.play" : "motion.pause")}
-              onClick={() => setPaused(!paused)}
-            >
-              {paused ? (
-                <PlayIcon aria-hidden="true" />
-              ) : (
-                <PauseIcon aria-hidden="true" />
-              )}
-            </Button>
           </div>
         </div>
         <section className="landing-section" aria-labelledby="flow-title">

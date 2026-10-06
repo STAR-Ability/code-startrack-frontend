@@ -15,7 +15,6 @@ import { useLocale } from "@/components/layout/locale-provider";
 import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ProductPreview } from "./product-preview";
 import { Journey } from "./journey";
@@ -35,7 +34,7 @@ export function LandingPage() {
     <>
       <AppHeader />
       <main id="main-content" tabIndex={-1} className="brand-surface">
-        <section className="brand-hero mx-auto grid max-w-7xl items-center gap-12 px-5 pt-14 pb-20 sm:px-8 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24 lg:pb-28">
+        <section className="public-page-hero brand-hero mx-auto grid max-w-workspace items-center gap-12 px-5 pt-14 pb-20 sm:px-8 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24 lg:pb-28">
           <div className="flex min-w-0 flex-col items-start gap-7">
             <Badge variant="outline" wrap>
               <span className="size-1.5 shrink-0 rounded-full bg-link" />
@@ -50,7 +49,7 @@ export function LandingPage() {
             <p className="max-w-lg text-base leading-loose text-muted-foreground">
               {t("landing.description")}
             </p>
-            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <div className="flex w-full max-w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
               <Link
                 href="/practice"
                 prefetch={false}
@@ -85,19 +84,17 @@ export function LandingPage() {
           <ProductPreview />
         </section>
         <div className="border-y bg-muted/50">
-          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-5 py-5 sm:px-8">
+          <div className="mx-auto flex max-w-workspace flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-8">
             <p className="text-xs text-muted-foreground">
               {t("landing.currentSource")}{" "}
               <span className="ml-2 font-medium text-foreground">
                 Codeforces
               </span>
             </p>
-            <div className="marquee-window min-w-0 flex-1">
-              <div className="marquee-track">
-                <span>{t("landing.unified")}</span>
-                <OrbitIcon className="size-4 shrink-0" aria-hidden="true" />
-                <span>{t("landing.futureSources")}</span>
-              </div>
+            <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+              <span>{t("landing.unified")}</span>
+              <OrbitIcon className="size-4 shrink-0" aria-hidden="true" />
+              <span>{t("landing.futureSources")}</span>
             </div>
           </div>
         </div>
@@ -109,28 +106,29 @@ export function LandingPage() {
           <p className="section-description mt-4">
             {t("landing.flowDescription")}
           </p>
-          <div className="flow-grid mt-12">
+          <ol className="public-process mt-10">
             {flow.map(([key, Icon], index) => (
-              <Card key={key} interaction="lift" className="flow-card">
-                <CardHeader>
-                  <div className="mb-5 flex items-center justify-between gap-2">
-                    <Icon className="size-5" aria-hidden="true" />
-                    <span className="font-mono text-xs text-muted-foreground">
-                      0{index + 1}
+              <li key={key} className="public-step">
+                <span className="public-marker" aria-hidden="true">
+                  0{index + 1}
+                </span>
+                <div className="public-body">
+                  <h3 className="flex min-w-0 items-start gap-3 text-base font-semibold">
+                    <Icon
+                      className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <span className="min-w-0 wrap-anywhere">
+                      {t(`flow.${key}`)}
                     </span>
-                  </div>
-                  <CardTitle>
-                    <h3>{t(`flow.${key}`)}</h3>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
                     {t(`flow.${key}Note`)}
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </section>
         <div className="section-wash border-y">
           <section
@@ -163,7 +161,7 @@ export function LandingPage() {
           <p className="section-description mx-auto mt-4">
             {t("landing.ctaNote")}
           </p>
-          <div className="mx-auto mt-8 flex max-w-lg flex-col justify-center gap-3 sm:flex-row">
+          <div className="mx-auto mt-8 flex max-w-lg flex-col justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link
               href="/demo"
               prefetch={false}
@@ -192,9 +190,9 @@ export function LandingPage() {
           </div>
         </section>
       </main>
-      <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 border-t px-5 py-6 text-xs text-muted-foreground sm:px-8">
+      <footer className="mx-auto flex w-full max-w-workspace flex-wrap items-center justify-between gap-3 border-t px-5 py-6 text-xs text-muted-foreground sm:px-8">
         <p>{t("landing.footer")}</p>
-        <p>V0.11 · {t("demo.label")}</p>
+        <p>{t("demo.label")}</p>
       </footer>
     </>
   );

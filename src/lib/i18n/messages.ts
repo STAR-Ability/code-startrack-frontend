@@ -29,10 +29,10 @@ export const zhCN = {
   "landing.title": "你的每一道代码，",
   "landing.titleEnd": "都留下成长轨迹。",
   "landing.description":
-    "连接你的 Codeforces 账号，查看训练数据、六维能力与个性化推荐。让每一个账号的练习，连成清晰的成长轨迹。",
+    "连接 Codeforces 账号，汇总你的训练证据、六维画像与个人报告，再按账号寻找下一道练习。",
   "landing.preview": "查看产品演示",
   "landing.sample": "交互示意 · 非真实学习者数据",
-  "landing.trust": "多 CF 账号 · 独立画像 · 下一题推荐",
+  "landing.trust": "多 CF 账号 · 个人画像 · 账号级推荐",
   "landing.previewProfile": "练习，正在积累。",
   "landing.previewReason": "从基础到进阶，为下一次思考留一点空间。",
   "landing.next": "下一道，值得一试",
@@ -42,10 +42,12 @@ export const zhCN = {
   "landing.flowDescription": "一个学习者，一条持续生长的训练轨迹。",
   "flow.data": "训练数据",
   "flow.dataNote": "从 Codeforces 开始，保留练习的每一份积累。",
-  "flow.unify": "账号数据",
-  "flow.unifyNote": "后端整理公开记录，每个绑定账号独立保存与分析。",
+  "flow.unify": "汇总训练证据",
+  "flow.unifyNote":
+    "个人训练汇总整理已绑定账号的记录，具体提交与 Rating 保留账号来源。",
   "flow.profile": "训练画像",
-  "flow.profileNote": "用通过题数、难度与近期提交看见训练状态。",
+  "flow.profileNote":
+    "结合整体训练证据与六个能力维度，观察近期训练和长期积累。",
   "flow.recommend": "题目推荐",
   "flow.recommendNote": "按难度匹配、弱项训练或综合模式生成推荐。",
   "flow.practice": "继续训练",
@@ -72,10 +74,11 @@ export const zhCN = {
   "landing.day": "第 {day} 天",
   "landing.today": "下一步",
   "landing.stackTitle": "留一点挑战给明天。",
-  "landing.stackNote": "推荐体验示意。登录后可以生成、切换模式并查看推荐历史。",
+  "landing.stackNote":
+    "推荐体验示意。学生登录、绑定账号并同步数据后，可按训练模式生成账号级推荐、查看历史。",
   "landing.currentSource": "当前数据源",
-  "landing.futureSources": "更多连接器 · 未来开放",
-  "landing.unified": "按账号独立分析",
+  "landing.futureSources": "更多数据源 · 未来方向",
+  "landing.unified": "个人汇总与账号来源",
   "landing.ctaTitle": "下一道题，不再只是随机开始。",
   "landing.ctaNote": "从一份训练画像开始，找到属于自己的练习节奏。",
   "landing.viewProfile": "查看个人画像",
@@ -164,7 +167,7 @@ export const zhCN = {
   "metadata.homeTitle": "码练星轨 | 编程训练",
   "metadata.dashboardTitle": "训练画像与推荐 | 码练星轨",
   "metadata.description":
-    "连接多个 Codeforces 账号，按账号查看训练数据、六维能力、个人分析与题目推荐。",
+    "连接 Codeforces 账号，汇总个人训练证据、六维画像和分析报告，并按账号查看提交记录与题目推荐。",
 } as const;
 
 export type CopyKey = keyof typeof zhCN;
@@ -196,11 +199,11 @@ export const en = {
   "landing.title": "Every line of code,",
   "landing.titleEnd": "a step in your story.",
   "landing.description":
-    "Connect your Codeforces accounts to explore practice data, six-dimensional profiles and recommendations. Follow each account’s own progress.",
+    "Connect your Codeforces accounts to see your combined practice evidence, six-dimensional profile and personal reports, then find your next problem for each account.",
   "landing.preview": "Explore the preview",
   "landing.sample": "Interactive preview · illustrative data",
   "landing.trust":
-    "Multiple CF accounts · Separate profiles · Your next problem",
+    "Multiple CF accounts · Personal profile · Account recommendations",
   "landing.previewProfile": "Practice adds up.",
   "landing.previewReason":
     "A little room for the next challenge, from fundamentals to new ideas.",
@@ -211,12 +214,12 @@ export const en = {
   "landing.flowDescription": "One learner. One evolving practice journey.",
   "flow.data": "Practice data",
   "flow.dataNote": "Starting with Codeforces and the practice you already do.",
-  "flow.unify": "Account data",
+  "flow.unify": "Combined evidence",
   "flow.unifyNote":
-    "The backend organizes public records independently for each account binding.",
+    "Your personal training summary brings together bound-account records while preserving submission and rating sources.",
   "flow.profile": "Your profile",
   "flow.profileNote":
-    "Solved problems, difficulty and recent submission counts.",
+    "Read your practice evidence alongside six ability dimensions, with recent activity and long-term context.",
   "flow.recommend": "A recommendation",
   "flow.recommendNote":
     "Generate recommendations by level, weakness or hybrid mode.",
@@ -248,10 +251,10 @@ export const en = {
   "landing.today": "Up next",
   "landing.stackTitle": "Leave a little challenge for tomorrow.",
   "landing.stackNote":
-    "An illustrative recommendation preview. Log in to generate, switch modes and browse history.",
+    "An illustrative preview. Students can sign in, bind an account and sync its data to generate account recommendations by mode and review history.",
   "landing.currentSource": "Current data source",
-  "landing.futureSources": "More connectors · coming later",
-  "landing.unified": "Independent analysis per account",
+  "landing.futureSources": "More data sources · future direction",
+  "landing.unified": "Personal summary, visible sources",
   "landing.ctaTitle": "Give your next problem a direction.",
   "landing.ctaNote":
     "Start with your training profile. Find your own practice rhythm.",
@@ -352,5 +355,5 @@ export const en = {
   "metadata.dashboardTitle":
     "Training profile and recommendation | codeStartrack",
   "metadata.description":
-    "Connect multiple Codeforces accounts to explore practice data, six-dimensional profiles, analysis and recommendations.",
+    "Connect Codeforces accounts to explore your combined training evidence, six-dimensional profile and reports, with account-specific submissions and recommendations.",
 } satisfies Record<CopyKey, string>;

@@ -166,8 +166,8 @@ Permanent fixes follow dev -> protected PR -> main -> GHCR -> deploy.
 - [x] Baseline rendered/performance evidence and current baseline receipts.
 - [x] Iteration 1 reviewed, validated, committed and pushed (`05587b4`).
 - [x] Iteration 2 reviewed, validated, committed and pushed (`b1047e7`).
-- [ ] Iteration 3 reviewed, validated, committed and pushed.
-- [ ] Iteration 4 reviewed, validated, committed and pushed.
+- [x] Iteration 3 reviewed, validated, committed and pushed (`354ab0a`).
+- [x] Iteration 4 reviewed, validated, committed and pushed.
 - [ ] Iteration 5 reviewed, validated, committed and pushed.
 - [ ] Final dev validation and protected release PR/merge.
 - [ ] GHCR exact image publication and frontend-only production deployment.
@@ -257,4 +257,40 @@ Permanent fixes follow dev -> protected PR -> main -> GHCR -> deploy.
   enabled frames through settled error, pending retry and success. The three
   affected E2E specs pass all 42 rerun cases, verifying 181 distinct passes and
   three expected mobile skips in the complete 184-case scope. Iteration 3 is
-  reviewed and locally validated; commit/push is the next operation.
+  reviewed, locally validated and published to `origin/dev` as `354ab0a`.
+
+- Iteration 4 source review preserves supported/future capability boundaries,
+  raw auth inputs and session/reauthentication, lazy account reads, sync guards,
+  privacy revisions and independently withdrawn member domains. The full unit
+  run passes 335 tests; the initial Storybook run passes all 506 cases. Independent
+  initial rendered review collected 324 samples, followed by 340 final samples
+  across both locales, five widths and both text sizes. It exposed genuine
+  account-Card alignment, narrow notification badge/gutter, public marker and
+  team-container issues; these are corrected. The final matrix also exposed one
+  English 768px/200% landing CTA overflow; wrapping is implemented and verified
+  in the fresh public follow-up.
+- Iteration 5 convergence includes auth story/form columns at enlarged desktop
+  text, team supplied time/history context and shared ability composition,
+  field-specific filter recovery, stronger identifying hover borders, ordinary
+  submission complete-word readability and fail-closed publication evidence.
+  These are scoped presentation/verification improvements; no API is added.
+
+- Iteration 4 final candidate rebuild/static checks pass. The 138 affected
+  Storybook cases pass, followed by all 20 final public stories. The first public
+  rerun had two plain timeout failures during a recorded local interruption;
+  their traces are retained separately and the unchanged default-timeout rerun
+  passes all 20. Fresh public verification passes 24 bilingual cases, including
+  the corrected CTA row and About availability badges, without nondecorative
+  document/child overflow. Final repository lint, format and type checks pass.
+- Iteration 4 E2E initially collected 200 cases: 179 passed, 20 failed and one
+  expected mobile desktop-sidebar-collapse case was skipped. All original traces
+  and source snapshots are retained. Five test-only corrections preserve the
+  behavior contracts: a local 90-second cumulative keyboard-matrix budget,
+  fixture-valid final login with the original raw-short-password DTO check,
+  runtime HTML versus SVG geometry with explicit radar/visible-label containment,
+  same-line adjacent ordinal fragments and the documented notification reader.
+  The complete five affected specs pass all 52 rerun cases, establishing 199
+  distinct passes and one expected skip. Stable keyboard matrices take 36.7 to
+  45.6 seconds; a separately traced initial host/runner interruption is retained.
+  No production source change was required by these E2E failures. Receipts live
+  under `test-results/redesign/iteration-4/`.

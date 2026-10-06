@@ -129,20 +129,20 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
         }).format(new Date(value))
       : t("v.never");
   return (
-    <Card size="sm" interaction="none">
+    <Card size="sm" interaction="none" className="sync-panel">
       <CardHeader>
         <CardTitle>
           <h2>{t("v.syncStatus")}</h2>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex min-w-0 flex-col gap-3">
         <QueryFeedback query={status} resource={t("v.syncStatus")} />
         {jobId && <QueryFeedback query={job} showLoading={false} notify />}
-        {
-          <dl className="grid gap-3 text-sm sm:grid-cols-2">
-            <div>
+        <div className="sync-summary">
+          <dl className="grid min-w-0 gap-3 text-sm">
+            <div className="min-w-0">
               <dt className="text-muted-foreground">{t("v.lastSync")}</dt>
-              <dd>
+              <dd className="wrap-anywhere">
                 {format(
                   !missingStatus && status.data
                     ? status.data.lastSyncedAt
@@ -152,9 +152,9 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
                 )}
               </dd>
             </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-muted-foreground">{t("v.nextSync")}</dt>
-              <dd>
+              <dd className="wrap-anywhere">
                 {format(
                   !missingStatus && status.data
                     ? status.data.nextSyncAt
@@ -165,26 +165,54 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
               </dd>
             </div>
           </dl>
-        }
+          {account.bindStatus !== "UNBOUND" && (
+            <div className="sync-actions">
+              <Button
+                wrap
+                disabled={pending}
+                onClick={() => action.mutate("sync")}
+              >
+                {action.isPending ? (
+                  <Spinner data-icon="inline-start" aria-hidden="true" />
+                ) : (
+                  <RefreshCwIcon data-icon="inline-start" aria-hidden="true" />
+                )}
+                {t("v.sync")}
+              </Button>
+              <Button
+                wrap
+                variant="outline"
+                disabled={pending || account.bindStatus !== "ACTIVE"}
+                onClick={() => action.mutate("rebuild")}
+              >
+                {action.isPending && (
+                  <Spinner data-icon="inline-start" aria-hidden="true" />
+                )}
+                {t("v.rebuild")}
+              </Button>
+            </div>
+          )}
+        </div>
+        <ErrorNotice error={action.error} />
         {latestJob ? (
-          <div className="flex flex-col gap-3" aria-live="polite">
-            <div className="flex flex-wrap gap-2">
-              <Badge variant={jobTone[latestJob.status]}>
+          <div className="sync-job" aria-live="polite">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <Badge variant={jobTone[latestJob.status]} wrap>
                 {t(`v.job.${latestJob.status}`)}
               </Badge>
               {latestJob.stage && (
-                <Badge variant="outline">
+                <Badge variant="outline" wrap>
                   {t(`v.stage.${latestJob.stage}`)}
                 </Badge>
               )}
+              {jobIsActive(latestJob) && (
+                <p className="flex min-w-0 items-center gap-2 text-sm">
+                  <Spinner aria-hidden="true" />
+                  {t("v.syncing")}
+                </p>
+              )}
             </div>
-            {jobIsActive(latestJob) && (
-              <p className="flex items-center gap-2">
-                <Spinner aria-hidden="true" />
-                {t("v.syncing")}
-              </p>
-            )}
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground tabular-nums">
               {t("v.jobCounts", {
                 fetched: String(latestJob.itemsFetched),
                 inserted: String(latestJob.itemsInserted),
@@ -211,34 +239,6 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
         ) : !status.isPending && !status.error && !missingJob ? (
           <p>{t("v.noJob")}</p>
         ) : null}
-        {account.bindStatus !== "UNBOUND" && (
-          <div className="flex flex-wrap gap-2">
-            <Button
-              wrap
-              disabled={pending}
-              onClick={() => action.mutate("sync")}
-            >
-              {action.isPending ? (
-                <Spinner data-icon="inline-start" aria-hidden="true" />
-              ) : (
-                <RefreshCwIcon data-icon="inline-start" aria-hidden="true" />
-              )}
-              {t("v.sync")}
-            </Button>
-            <Button
-              wrap
-              variant="outline"
-              disabled={pending || account.bindStatus !== "ACTIVE"}
-              onClick={() => action.mutate("rebuild")}
-            >
-              {action.isPending && (
-                <Spinner data-icon="inline-start" aria-hidden="true" />
-              )}
-              {t("v.rebuild")}
-            </Button>
-          </div>
-        )}
-        <ErrorNotice error={action.error} />
       </CardContent>
     </Card>
   );

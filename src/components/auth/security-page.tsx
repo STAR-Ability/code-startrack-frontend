@@ -44,17 +44,11 @@ export function SecurityPage() {
   );
   useSlowRequest(logout.isPending);
   return (
-    <>
+    <div className="security-overview flex w-full max-w-2xl flex-col gap-5 self-center">
       <IdentityCard />
-      <Link href="/privacy" className="underline">
-        {t("v12.privacy")}
-      </Link>
-      <Link href="/security/coach" className="underline">
-        {t("v12.redeem")}
-      </Link>
       <Card size="sm" interaction="none">
         <CardHeader>
-          <CardTitle>
+          <CardTitle titleRole="section">
             <h2>{t("security.operations")}</h2>
           </CardTitle>
           <CardDescription>{t("v.reauthNote")}</CardDescription>
@@ -109,7 +103,7 @@ export function SecurityPage() {
       </Card>
       <Card size="sm" interaction="none">
         <CardHeader>
-          <CardTitle>
+          <CardTitle titleRole="section">
             <h2>{t("security.sessions")}</h2>
           </CardTitle>
         </CardHeader>
@@ -133,6 +127,25 @@ export function SecurityPage() {
           <ErrorNotice error={logout.error} />
         </CardContent>
       </Card>
-    </>
+      <nav
+        className="security-secondary-actions flex flex-wrap items-center gap-2"
+        aria-label={t("security.operations")}
+      >
+        <Link
+          href="/privacy"
+          className={buttonVariants({ variant: "ghost", wrap: true })}
+        >
+          {t("v12.privacy")}
+          <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+        </Link>
+        <Link
+          href="/security/coach"
+          className={buttonVariants({ variant: "ghost", wrap: true })}
+        >
+          {t("v12.redeem")}
+          <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+        </Link>
+      </nav>
+    </div>
   );
 }

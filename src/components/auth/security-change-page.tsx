@@ -121,35 +121,48 @@ export function SecurityChangePage({ kind }: { kind: "password" | "email" }) {
         <ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
         {t("security.back")}
       </Link>
-      <Alert>
-        <ShieldCheckIcon aria-hidden="true" />
-        <AlertTitle>{t("security.identity")}</AlertTitle>
-        <AlertDescription>
-          <p className="wrap-anywhere">
-            {t("security.identityNote", { email: user.email })}
-          </p>
-          <Badge variant="outline">
+      <section
+        className="security-task-context flex min-w-0 flex-col gap-3"
+        aria-label={t("security.identity")}
+      >
+        <div className="security-task-identity grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-2 px-1">
+          <ShieldCheckIcon
+            className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
+            <p className="font-medium">{t("security.identity")}</p>
+            <p className="wrap-anywhere text-muted-foreground">
+              {t("security.identityNote", { email: user.email })}
+            </p>
+          </div>
+          <Badge
+            variant="outline"
+            className="col-start-2 w-fit max-w-full"
+            wrap
+          >
             {t(
               user.emailVerified ? "security.verified" : "security.unverified",
             )}
           </Badge>
-        </AlertDescription>
-      </Alert>
-      <Alert>
-        <ShieldCheckIcon aria-hidden="true" />
-        <AlertTitle>{t("security.riskTitle")}</AlertTitle>
-        <AlertDescription>{t("security.riskNote")}</AlertDescription>
-      </Alert>
+        </div>
+        <Alert>
+          <ShieldCheckIcon aria-hidden="true" />
+          <AlertTitle>{t("security.riskTitle")}</AlertTitle>
+          <AlertDescription>{t("security.riskNote")}</AlertDescription>
+        </Alert>
+      </section>
       {kind === "password" ? (
         <Card size="sm" interaction="none">
           <CardHeader>
-            <CardTitle>
+            <CardTitle titleRole="section">
               <h2>{t("v.changePassword")}</h2>
             </CardTitle>
             <CardDescription>{t("security.passwordAdvice")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form
+              aria-busy={changePassword.isPending}
               onSubmit={passwordForm.handleSubmit((values) =>
                 changePassword.mutate({
                   currentPassword: values.currentPassword,
@@ -200,13 +213,14 @@ export function SecurityChangePage({ kind }: { kind: "password" | "email" }) {
       ) : (
         <Card size="sm" interaction="none">
           <CardHeader>
-            <CardTitle>
+            <CardTitle titleRole="section">
               <h2>{t("v.changeEmail")}</h2>
             </CardTitle>
             <CardDescription>{t("security.emailAdvice")}</CardDescription>
           </CardHeader>
           <CardContent>
             <form
+              aria-busy={changeEmail.isPending}
               onSubmit={emailForm.handleSubmit((values) =>
                 changeEmail.mutate(values),
               )}
@@ -219,9 +233,14 @@ export function SecurityChangePage({ kind }: { kind: "password" | "email" }) {
                   required
                   {...emailForm.register("password")}
                 />
-                <p className="wrap-anywhere">
-                  {t("v.oldEmail")}: {user.email}
-                </p>
+                <dl className="security-email-context min-w-0 text-sm">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <dt className="text-xs text-muted-foreground">
+                      {t("v.oldEmail")}
+                    </dt>
+                    <dd className="wrap-anywhere">{user.email}</dd>
+                  </div>
+                </dl>
                 <EmailVerification
                   email={user.email}
                   purpose="EMAIL_CHANGE_OLD"
@@ -264,6 +283,7 @@ export function SecurityChangePage({ kind }: { kind: "password" | "email" }) {
                   {...emailForm.register("newEmailCode")}
                 />
                 <Button
+                  wrap
                   type="submit"
                   disabled={
                     pending ||

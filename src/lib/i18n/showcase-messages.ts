@@ -4,9 +4,10 @@ export const showcaseZh = {
   "showcase.back": "回到首页",
   "showcase.label": "编程练习，有迹可循",
   "showcase.note": "本页为产品展示，示例数据不代表真实账号或分析结果。",
-  "showcase.available": "当前支持",
+  "showcase.available": "已支持的能力",
   "showcase.planned": "未来方向",
-  "showcase.service": "当前分析与推荐能力尚不可用；这里仅展示训练思路。",
+  "showcase.service":
+    "学生登录并绑定、同步 Codeforces 账号后，可使用训练画像、个人报告和账号级推荐；结果取决于可用训练数据。这里展示合成示例。",
   "showcase.features.label": "产品能力",
   "showcase.features.title": "从一次提交，走向下一次进步。",
   "showcase.features.description":
@@ -22,7 +23,7 @@ export const showcaseZh = {
     "围绕难度匹配、薄弱训练和综合模式查看推荐。题目保留来源，回到原平台完成练习。",
   "showcase.features.boundary": "一个空间，各自清晰。",
   "showcase.features.boundaryNote":
-    "账号可以汇总展示，画像和推荐仍按账号独立计算。我们不把不同账号的分数拼成一个虚假的能力值。",
+    "个人画像与报告汇总已绑定账号的训练证据；具体账号的提交、Rating 与题目推荐保留各自来源。",
   "showcase.features.input": "公开训练记录",
   "showcase.features.context": "带时间的训练快照",
   "showcase.features.output": "可解释的练习选择",
@@ -36,13 +37,13 @@ export const showcaseZh = {
     "通过数、尝试数、活跃天数回答不同问题。结合时间窗口阅读，才能看清练习节奏。",
   "showcase.profile.evidence": "保留证据边界",
   "showcase.profile.evidenceNote":
-    "没有数据就显示暂无数据；过期快照会明确标记。画像不会用示例数据填补真实请求失败。",
-  "showcase.profile.account": "保持账号独立",
+    "尚未生成、请求失败与过期快照会分别说明；历史报告保留生成时的证据，示例不会代替真实请求结果。",
+  "showcase.profile.account": "看清个人汇总与账号来源",
   "showcase.profile.accountNote":
-    "支持多个同平台账号。切换账号时，画像、难度与推荐随数据来源一起切换。",
+    "个人画像汇总多个绑定账号的训练证据；平台账号页面保留单账号画像、数据与推荐。",
   "showcase.profile.window": "观察不同时间窗口",
   "showcase.profile.windowNote":
-    "比较 7 天、30 天与全部记录，了解近期变化与长期积累。",
+    "个人画像展示长期能力与近期训练；账号数据支持 7 天、30 天、近一年和全部历史窗口。",
   "showcase.profile.dimensions": "六个维度，是观察角度。",
   "showcase.profile.dimensionNote":
     "能力维度来自分析快照。它们提供线索，不等同于普适能力认证。",
@@ -59,7 +60,7 @@ export const showcaseZh = {
     "难度、算法标签与推荐依据放在同一张卡片中。你可以决定这是否适合今天的练习。",
   "showcase.recommendations.source": "保留原始来源",
   "showcase.recommendations.sourceNote":
-    "通过原题链接进入 Codeforces。编写、运行和提交代码仍在来源平台完成。",
+    "原题链接可用时进入 Codeforces。链接缺失时会明确说明；编写、运行与提交代码在来源平台完成。",
   "showcase.recommendations.history": "保留选择的上下文",
   "showcase.recommendations.historyNote":
     "每批推荐关联分析快照，保留生成时间与模式，便于回看当时的训练状态。",
@@ -84,9 +85,9 @@ export const showcaseZh = {
     "先做好 Codeforces 的训练体验。更多数据源和渐进式 Agent 辅助，是后续探索方向。",
   "showcase.about.now": "现在与接下来",
   "showcase.about.nowNote":
-    "界面能做什么，服务已支持什么，未来想做什么，分别说明。",
+    "当前支持训练数据、画像、报告与推荐。Agent 辅助和更多数据源仍是未来方向。",
   "showcase.about.accounts": "多账号管理、训练数据与记录浏览",
-  "showcase.about.analysis": "画像与推荐界面 · 分析能力尚不可用",
+  "showcase.about.analysis": "个人训练画像、分析报告与账号级推荐",
   "showcase.about.agent": "渐进式 Agent 辅助与更多数据源",
   "showcase.about.open": "从一次练习开始。",
 } as const;
@@ -98,10 +99,10 @@ export const showcaseEn = {
   "showcase.label": "Make practice visible",
   "showcase.note":
     "Product illustration. Sample data does not represent a real account or analysis result.",
-  "showcase.available": "Available today",
+  "showcase.available": "Supported capabilities",
   "showcase.planned": "Future direction",
   "showcase.service":
-    "Analysis and recommendations are currently unavailable. This page illustrates the training approach.",
+    "Students can sign in, bind Codeforces accounts and sync their data to use training profiles, personal reports and account recommendations. Results depend on available evidence; this page uses synthetic examples.",
   "showcase.features.label": "Capabilities",
   "showcase.features.title": "From one submission to your next step.",
   "showcase.features.description":
@@ -117,7 +118,7 @@ export const showcaseEn = {
     "Explore level matching, weakness training and a hybrid mode. Every problem keeps its source so you can practice on the original platform.",
   "showcase.features.boundary": "One space. Clear boundaries.",
   "showcase.features.boundaryNote":
-    "Accounts can appear in a shared overview, while profiles and recommendations stay independent. Different scores are never combined into an invented ability score.",
+    "Personal profiles and reports summarize evidence from bound accounts. Submissions, ratings and problem recommendations retain each account’s source.",
   "showcase.features.input": "Public practice records",
   "showcase.features.context": "Dated training snapshots",
   "showcase.features.output": "Explainable practice choices",
@@ -131,13 +132,13 @@ export const showcaseEn = {
     "Solved problems, attempts and active days answer different questions. Read them within a time window to understand your rhythm.",
   "showcase.profile.evidence": "Keep evidence visible",
   "showcase.profile.evidenceNote":
-    "Missing data stays empty, and older snapshots are marked stale. Samples never replace failed personal data requests.",
-  "showcase.profile.account": "Keep accounts independent",
+    "Missing profiles, failed requests and stale snapshots have distinct states. Historical reports retain their original evidence; samples never replace real request results.",
+  "showcase.profile.account": "Understand the summary and its sources",
   "showcase.profile.accountNote":
-    "Connect several accounts from the same platform. Profiles, difficulty and recommendations change with the selected account.",
+    "Your personal profile combines evidence from bound accounts. Platform account pages retain each account’s profile, data and recommendations.",
   "showcase.profile.window": "Change your perspective",
   "showcase.profile.windowNote":
-    "Explore 7 days, 30 days or all records to compare recent practice with longer-term work.",
+    "Personal profiles pair long-term ability with recent training. Account data supports 7-day, 30-day, 365-day and all-history windows.",
   "showcase.profile.dimensions": "Six dimensions. Different perspectives.",
   "showcase.profile.dimensionNote":
     "Dimensions come from an analysis snapshot. They offer clues, not a universal certification of ability.",
@@ -154,7 +155,7 @@ export const showcaseEn = {
     "Difficulty, topic tags and the recommendation reason live together. You decide whether the problem fits today's practice.",
   "showcase.recommendations.source": "Keep the original source",
   "showcase.recommendations.sourceNote":
-    "Follow the original link to Codeforces. Writing, running and submitting code still happen on the source platform.",
+    "Open Codeforces when the source link is available. Missing links are clearly marked; writing, running and submitting code take place on the source platform.",
   "showcase.recommendations.history": "Keep the context",
   "showcase.recommendations.historyNote":
     "Each batch links to an analysis snapshot and retains its time and mode, so you can revisit the practice context.",
@@ -179,10 +180,10 @@ export const showcaseEn = {
     "Make the Codeforces experience useful first. More sources and progressive Agent assistance are directions for future exploration.",
   "showcase.about.now": "Today and tomorrow",
   "showcase.about.nowNote":
-    "Distinguish the interface, deployed services and future intentions.",
+    "Training data, profiles, reports and recommendations are supported. Agent assistance and more data sources remain future directions.",
   "showcase.about.accounts": "Multiple accounts, practice data and history",
   "showcase.about.analysis":
-    "Profile and recommendation UI · analysis currently unavailable",
+    "Personal training profiles, reports and account recommendations",
   "showcase.about.agent": "Progressive Agent assistance and more data sources",
   "showcase.about.open": "Start with one practice session.",
 } satisfies Record<keyof typeof showcaseZh, string>;

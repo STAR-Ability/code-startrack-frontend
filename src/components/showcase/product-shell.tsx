@@ -30,7 +30,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
             </div>
             <Link
               href="/practice"
-              className={buttonVariants({ size: "xl", wrap: true })}
+              className={buttonVariants({ size: "lg", wrap: true })}
             >
               {t("nav.start")}
               <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />

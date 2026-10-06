@@ -14,9 +14,16 @@ import {
   type PrivacySettingsDto,
 } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
-import { Field, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { ChoiceSelect } from "@/components/ui/choice-select";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Panel, useCollaborationMutation } from "./v012-shared";
 import { useUserQuery } from "./use-user-query";
 import { ErrorNotice, QueryFeedback } from "./feedback";
@@ -92,54 +99,83 @@ export function PrivacyForm({ settings }: { settings: PrivacySettingsDto }) {
     <Panel
       title="v12.privacyControls"
       description={t("v12.privacyNote")}
-      className="@container/privacy"
+      className="privacy-panel @container/privacy"
     >
       <form
-        className="grid gap-5 @min-[28rem]/privacy:grid-cols-2"
+        className="privacy-form flex min-w-0 flex-col gap-4"
+        aria-busy={mutation.isPending || undefined}
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
       >
-        {(
-          [
-            "basicTraining",
-            "abilityProfile",
-            "detailedSubmissions",
-            "analysisReport",
-          ] as const
-        ).map((key) => (
-          <Field key={key} className="rounded-xl border bg-muted/30 p-4">
-            <FieldLabel htmlFor={`${id}-${key}`}>{t(`v12.${key}`)}</FieldLabel>
-            <Controller
-              name={key}
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <ChoiceSelect
-                  id={`${id}-${key}`}
-                  value={field.value}
-                  name={field.name}
-                  onBlur={field.onBlur}
-                  onValueChange={field.onChange}
-                  aria-invalid={!!fieldState.error}
-                  disabled={mutation.blocked}
-                  options={privacyScopes.map((value) => ({
-                    value,
-                    label: t(`v12.scope.${value}`),
-                  }))}
-                />
-              )}
-            />
-          </Field>
-        ))}
-        <Button
-          wrap
-          className="self-start"
-          type="submit"
-          disabled={mutation.blocked || !form.formState.isDirty}
-        >
-          {t("v12.save")}
-        </Button>
+        <FieldGroup className="privacy-scope-list gap-0">
+          {(
+            [
+              "basicTraining",
+              "abilityProfile",
+              "detailedSubmissions",
+              "analysisReport",
+            ] as const
+          ).map((key) => (
+            <Field
+              key={key}
+              className="privacy-scope-row grid min-w-0"
+              data-disabled={mutation.blocked || undefined}
+              data-invalid={!!form.formState.errors[key] || undefined}
+            >
+              <FieldContent className="privacy-scope-copy min-w-0">
+                <FieldLabel htmlFor={`${id}-${key}`}>
+                  {t(`v12.${key}`)}
+                </FieldLabel>
+                <FieldDescription id={`${id}-${key}-description`}>
+                  {t(`privacy.${key}Description`)}
+                </FieldDescription>
+              </FieldContent>
+              <Controller
+                name={key}
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <ChoiceSelect
+                    id={`${id}-${key}`}
+                    value={field.value}
+                    name={field.name}
+                    onBlur={field.onBlur}
+                    onValueChange={field.onChange}
+                    aria-invalid={!!fieldState.error}
+                    aria-describedby={`${id}-${key}-description`}
+                    disabled={mutation.blocked}
+                    options={privacyScopes.map((value) => ({
+                      value,
+                      label: t(`v12.scope.${value}`),
+                    }))}
+                  />
+                )}
+              />
+            </Field>
+          ))}
+        </FieldGroup>
+        <div className="privacy-save-row flex flex-wrap items-center gap-3">
+          <Button
+            wrap
+            type="submit"
+            disabled={mutation.blocked || !form.formState.isDirty}
+          >
+            {mutation.isPending && (
+              <Spinner data-icon="inline-start" aria-hidden="true" />
+            )}
+            {t("v12.save")}
+          </Button>
+          {mutation.isPending && (
+            <p role="status" className="text-sm text-muted-foreground">
+              {t("privacy.saving")}
+            </p>
+          )}
+          {saved && (
+            <p role="status" className="text-sm text-muted-foreground">
+              {t("v12.saved")}
+            </p>
+          )}
+        </div>
       </form>
       <ErrorNotice error={mutation.error} />
-      {saved && <p role="status">{t("v12.saved")}</p>}
     </Panel>
   );
 }

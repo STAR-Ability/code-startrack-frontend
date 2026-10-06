@@ -18,6 +18,7 @@ export function ChoiceSelect({
   name,
   onBlur,
   "aria-invalid": invalid,
+  "aria-describedby": describedBy,
 }: {
   id: string;
   value: string;
@@ -28,6 +29,7 @@ export function ChoiceSelect({
   name?: string;
   onBlur?: () => void;
   "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
 }) {
   return (
     <Select
@@ -43,6 +45,7 @@ export function ChoiceSelect({
         id={id}
         onBlur={onBlur}
         aria-invalid={invalid}
+        aria-describedby={describedBy}
         density={density}
         className="w-full min-w-0"
       >

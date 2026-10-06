@@ -17,9 +17,16 @@ test("null analysis, zero evidence and stale results are distinct", async ({
 test("account-mismatched response is discarded", async ({ page }) => {
   await configureUpstream({ mismatch: true });
   await page.goto("/accounts/profile");
-  await expect(page.getByText("内容暂未加载", { exact: true })).toBeVisible();
+  const feedback = page
+    .getByRole("region", { name: "能力摘要", exact: true })
+    .getByRole("alert");
+  await expect(
+    feedback.getByText("内容暂未加载", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("ACCOUNT_MISMATCH")).not.toBeVisible();
-  await page.getByText("查看问题详情", { exact: true }).click();
+  await feedback
+    .getByRole("button", { name: "查看问题详情", exact: true })
+    .click();
   await expect(page.getByText("ACCOUNT_MISMATCH")).toBeVisible();
   await expect(page.getByRole("heading", { name: "能力摘要" })).toBeVisible();
   await expect(

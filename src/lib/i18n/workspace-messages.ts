@@ -1,4 +1,17 @@
 export const workspaceZh = {
+  "ui.accountRequired": "请输入用户名或邮箱。",
+  "accounts.binding.ACTIVE": "已绑定",
+  "accounts.binding.INVALID": "绑定无效",
+  "accounts.binding.UNBOUND": "已解绑 · 历史",
+  "privacy.basicTrainingDescription": "训练概况、Rating 和练习统计。",
+  "privacy.abilityProfileDescription": "已保存画像的综合分数和六个能力维度。",
+  "privacy.detailedSubmissionsDescription": "具体题目的提交记录与判定结果。",
+  "privacy.analysisReportDescription": "已保存的个人训练分析报告。",
+  "privacy.saving": "正在保存共享设置…",
+  "notifications.updatingReadState": "正在更新已读状态…",
+  "v12.viewedMember": "正在查看的成员",
+  "v12.memberDomainContext": "{domain} · 独立共享权限",
+  "v12.sourceAccount": "来源账号",
   "v.submissionDetails": "提交详情",
   "v.submissionDetailsFor": "提交详情：{problem} · 提交 {id}",
   "practice.guideTitle": "训练说明",
@@ -373,6 +386,22 @@ export const workspaceZh = {
   "v.invalidExpired": "验证码已过期，请重新获取。",
 } as const;
 export const workspaceEn = {
+  "ui.accountRequired": "Enter your username or email.",
+  "accounts.binding.ACTIVE": "Connected",
+  "accounts.binding.INVALID": "Invalid binding",
+  "accounts.binding.UNBOUND": "Unbound · history",
+  "privacy.basicTrainingDescription":
+    "Training summary, ratings and practice statistics.",
+  "privacy.abilityProfileDescription":
+    "Overall score and the six dimensions of your saved profile.",
+  "privacy.detailedSubmissionsDescription":
+    "Individual problem attempts and recorded submission results.",
+  "privacy.analysisReportDescription": "Your saved personal training reports.",
+  "privacy.saving": "Saving sharing settings…",
+  "notifications.updatingReadState": "Updating read status…",
+  "v12.viewedMember": "Viewed member",
+  "v12.memberDomainContext": "{domain} · independent sharing permission",
+  "v12.sourceAccount": "Source account",
   "v.submissionDetails": "Submission details",
   "v.submissionDetailsFor": "Submission details for {problem}, submission {id}",
   "practice.guideTitle": "Practice guide",

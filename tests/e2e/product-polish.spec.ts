@@ -42,8 +42,25 @@ for (const state of ["missing", "failed"] as const) {
     );
     await page.setViewportSize({ width: 320, height: 900 });
     await page.goto(`/teams/detail?teamId=${teamId}`);
-    const tasks = page.locator(".workspace-task-tile");
+    const tasks = page
+      .getByRole("region", {
+        name: translate("en", "v12.overview"),
+        exact: true,
+      })
+      .getByRole("link");
     await expect(tasks).toHaveCount(4);
+    for (const [label, tab] of [
+      ["v12.members", "members"],
+      ["v12.pendingApplications", "applications"],
+      ["v12.pendingInvitations", "invitations"],
+      ["v12.teamAnalysis", "analysis"],
+    ] as const) {
+      await expect(
+        tasks.filter({
+          has: page.getByText(translate("en", label), { exact: true }),
+        }),
+      ).toHaveAttribute("href", `/teams/detail?teamId=${teamId}&tab=${tab}`);
+    }
     const analysis = tasks.filter({
       has: page.getByText(translate("en", "v12.teamAnalysis"), { exact: true }),
     });

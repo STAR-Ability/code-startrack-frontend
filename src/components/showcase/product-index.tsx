@@ -8,14 +8,6 @@ import {
   OrbitIcon,
 } from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 
 import { productLinks } from "@/lib/ui/product-navigation";
@@ -23,63 +15,41 @@ const icons = [LayersIcon, FingerprintIcon, RouteIcon, OrbitIcon];
 export function ProductIndex() {
   const { t } = useLocale();
   return (
-    <div className="product-index mt-12">
+    <div className="public-capabilities mt-10">
       {productLinks.map(([href, key], index) => {
         const Icon = icons[index];
         return (
-          <Card
-            key={key}
-            size="lg"
-            interaction="lift"
-            className={`product-index-${key}`}
-          >
-            <CardHeader>
-              <div className="mb-5 flex items-center justify-between">
+          <article key={key} className="public-capability-item">
+            <span className="public-marker" aria-hidden="true">
+              0{index + 1}
+            </span>
+            <div className="public-body">
+              <h3 className="flex min-w-0 items-start gap-3 section-heading">
                 <Icon
-                  className="size-6 text-muted-foreground"
+                  className="mt-1 size-5 shrink-0 text-muted-foreground"
                   aria-hidden="true"
                 />
-                <span className="font-mono text-xs text-muted-foreground">
-                  0{index + 1}
+                <span className="min-w-0 wrap-anywhere">
+                  {t(`showcase.${key}.label`)}
                 </span>
-              </div>
-              <CardTitle>
-                <h3>{t(`showcase.${key}.label`)}</h3>
-              </CardTitle>
-              <CardDescription>
+              </h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
                 {t(`showcase.${key}.description`)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="mt-auto">
-              <div className={`index-art index-art-${key}`} aria-hidden="true">
-                {key === "features" ? (
-                  <>
-                    <span>01</span>
-                    <span>02</span>
-                    <span>03</span>
-                  </>
-                ) : key === "profile" ? (
-                  <FingerprintIcon className="size-12 text-insight" />
-                ) : key === "recommendations" ? (
-                  <>
-                    <span className="font-mono text-3xl text-info">N + 1</span>
-                    <RouteIcon className="size-8" />
-                  </>
-                ) : (
-                  <OrbitIcon className="size-16" />
-                )}
-              </div>
-            </CardContent>
-            <CardFooter>
+              </p>
               <Link
                 href={href}
-                className={buttonVariants({ variant: "link", wrap: true })}
+                prefetch={false}
+                className={buttonVariants({
+                  variant: "link",
+                  wrap: true,
+                  className: "self-start",
+                })}
               >
                 {t("showcase.explore")} · {t(`showcase.${key}.label`)}
                 <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />
               </Link>
-            </CardFooter>
-          </Card>
+            </div>
+          </article>
         );
       })}
     </div>

@@ -90,8 +90,13 @@ export function AccountsPage() {
   const list = history ? (historyQuery.data ?? []) : accounts;
   const listQuery = history ? historyQuery : query;
   return (
-    <>
-      <Card size="sm" interaction="none" variant="supporting" tone="info">
+    <div className="accounts-workspace">
+      <Card
+        size="sm"
+        interaction="none"
+        variant="supporting"
+        className="accounts-bind-form"
+      >
         <CardHeader>
           <CardTitle>
             <h2>{t("v.bind")}</h2>
@@ -99,8 +104,11 @@ export function AccountsPage() {
           <CardDescription>{t("v.bindingNote")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={form.handleSubmit((values) => bind.mutate(values))}>
-            <FieldGroup className="sm:flex-row sm:items-end">
+          <form
+            className="@container/account-binding"
+            onSubmit={form.handleSubmit((values) => bind.mutate(values))}
+          >
+            <FieldGroup className="min-w-0 @min-[28rem]/account-binding:flex-row @min-[28rem]/account-binding:items-end">
               <FormInput
                 label={t("v.handle")}
                 required
@@ -119,8 +127,8 @@ export function AccountsPage() {
                 )}
                 {t("v.bind")}
               </Button>
-              <ErrorNotice error={bind.error} />
             </FieldGroup>
+            <ErrorNotice error={bind.error} />
           </form>
         </CardContent>
       </Card>
@@ -140,12 +148,12 @@ export function AccountsPage() {
         listQuery.data !== undefined &&
         !listQuery.isFetching &&
         !listQuery.error && <EmptyState title={t("v.noAccount")} />}
-      <div className="grid min-w-0 items-start gap-5 lg:grid-cols-2">
+      <div className="accounts-list">
         {list.map((account) => (
           <AccountCard key={account.accountId} account={account} />
         ))}
       </div>
-    </>
+    </div>
   );
 }
 function AccountCard({ account }: { account: OjAccountDto }) {
@@ -202,27 +210,37 @@ function AccountCard({ account }: { account: OjAccountDto }) {
       tone={selectedAccountId === account.accountId ? "info" : undefined}
       interaction="none"
       data-selected={selectedAccountId === account.accountId}
+      data-binding={account.bindStatus}
     >
       <CardHeader>
-        <div className="mb-2 flex min-w-0 flex-wrap items-center gap-2">
-          <Badge variant={accountTone[account.bindStatus]} wrap>
-            {account.bindStatus}
-          </Badge>
-          {selectedAccountId === account.accountId && (
-            <Badge variant="info" wrap>
-              {t("accounts.currentSelection")}
+        <div className="account-identity">
+          <div className="min-w-0">
+            <CardTitle>
+              <h2 className="wrap-anywhere">{account.username}</h2>
+            </CardTitle>
+            <CardDescription>
+              <span className="mt-1 flex min-w-0 flex-wrap items-center gap-2">
+                <CodeXmlIcon className="size-3.5 shrink-0" aria-hidden="true" />
+                Codeforces · {t("v.accountId")}: {account.accountId}
+              </span>
+            </CardDescription>
+          </div>
+          <div className="flex min-w-0 flex-wrap items-start gap-2">
+            <Badge variant={accountTone[account.bindStatus]} wrap>
+              {t(`accounts.binding.${account.bindStatus}`)}
             </Badge>
-          )}
+            {selectedAccountId === account.accountId && (
+              <Badge variant="info" wrap>
+                {t("accounts.currentSelection")}
+              </Badge>
+            )}
+            {account.lastSyncStatus && (
+              <Badge variant={jobTone[account.lastSyncStatus]} wrap>
+                {t(`v.job.${account.lastSyncStatus}`)}
+              </Badge>
+            )}
+          </div>
         </div>
-        <CardTitle>
-          <h2 className="wrap-anywhere">{account.username}</h2>
-        </CardTitle>
-        <CardDescription>
-          <span className="flex min-w-0 flex-wrap items-center gap-2">
-            <CodeXmlIcon className="size-3.5 shrink-0" aria-hidden="true" />
-            Codeforces · {t("v.accountId")}: {account.accountId}
-          </span>
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <dl className="account-summary">
@@ -243,15 +261,10 @@ function AccountCard({ account }: { account: OjAccountDto }) {
             </dd>
           </div>
         </dl>
-        {account.lastSyncStatus && (
-          <Badge variant={jobTone[account.lastSyncStatus]} wrap>
-            {t(`v.job.${account.lastSyncStatus}`)}
-          </Badge>
-        )}
         <ErrorNotice error={sync.error ?? unbind.error} />
         <AccountDetails accountId={account.accountId} />
       </CardContent>
-      <CardFooter className="flex flex-wrap gap-2">
+      <CardFooter className="account-actions">
         <Link
           href="/data"
           className={buttonVariants({ variant: "outline", wrap: true })}

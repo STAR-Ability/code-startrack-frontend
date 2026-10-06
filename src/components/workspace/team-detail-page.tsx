@@ -114,31 +114,36 @@ function TeamDetailContent({
         )}
       {team && (
         <>
-          <header className="workspace-context-header flex flex-wrap items-start gap-4">
-            <Avatar size="lg" className="size-14">
+          <header className="team-context-header flex min-w-0 flex-wrap items-start gap-3">
+            <Avatar>
               {team.avatarUrl && <AvatarImage src={team.avatarUrl} alt="" />}
               <AvatarFallback>{team.name.slice(0, 2)}</AvatarFallback>
             </Avatar>
-            <div className="min-w-0 flex-1 basis-48">
+            <div className="team-context-copy min-w-0 flex-1 basis-48">
               <div className="flex flex-wrap items-center gap-3">
-                <h2 className="break-words text-2xl font-semibold tracking-tight">
+                <h2 className="wrap-anywhere text-xl font-semibold tracking-tight">
                   {team.name}
                 </h2>
                 <Status value={team.status} />
               </div>
               {team.description && (
-                <p className="mt-2 max-w-2xl whitespace-pre-wrap break-words text-sm text-muted-foreground">
+                <p className="mt-2 max-w-2xl whitespace-pre-wrap wrap-anywhere text-sm text-muted-foreground">
                   {team.description}
                 </p>
               )}
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                <span>
-                  {t("v12.members")}: {team.memberCount}
-                </span>
-                <span>
-                  {t("v12.owner")}:{" "}
-                  {team.owner.displayName ?? team.owner.username}
-                </span>
+              <div className="team-context-meta mt-2 flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                <dl className="flex min-w-0 flex-wrap gap-x-4 gap-y-2">
+                  <div className="flex min-w-0 flex-wrap items-baseline gap-1">
+                    <dt>{t("v12.members")}:</dt>
+                    <dd className="tabular-nums">{team.memberCount}</dd>
+                  </div>
+                  <div className="flex min-w-0 flex-wrap items-baseline gap-1">
+                    <dt>{t("v12.owner")}:</dt>
+                    <dd className="wrap-anywhere">
+                      {team.owner.displayName ?? team.owner.username}
+                    </dd>
+                  </div>
+                </dl>
                 {team.myMembershipRole && (
                   <Badge variant="outline">
                     {t(
@@ -150,24 +155,31 @@ function TeamDetailContent({
                 )}
               </div>
             </div>
-            {team.canManage && (
-              <Link
-                href={teamSectionHref(teamId, "applications")}
-                className={buttonVariants({ variant: "outline", wrap: true })}
-              >
-                {t("v12.pendingApplications")}
-              </Link>
-            )}
-            {team.canLeave && (
-              <Button
-                wrap
-                variant="outline"
-                disabled={mutation.blocked}
-                onClick={() => setConfirm(true)}
-              >
-                {t("v12.leave")}
-              </Button>
-            )}
+            <div className="team-context-actions flex min-w-0 flex-wrap gap-2">
+              {team.canManage && (
+                <Link
+                  href={teamSectionHref(teamId, "applications")}
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                    wrap: true,
+                  })}
+                >
+                  {t("v12.pendingApplications")}
+                </Link>
+              )}
+              {team.canLeave && (
+                <Button
+                  wrap
+                  variant="outline"
+                  size="sm"
+                  disabled={mutation.blocked}
+                  onClick={() => setConfirm(true)}
+                >
+                  {t("v12.leave")}
+                </Button>
+              )}
+            </div>
           </header>
           {team.status !== "ACTIVE" && (
             <Alert>
@@ -178,7 +190,7 @@ function TeamDetailContent({
           )}
           <nav
             aria-label={t("v12.teamNavigation")}
-            className="team-section-navigation z-10 md:sticky md:top-0 flex min-w-0 flex-wrap gap-1 rounded-xl border border-surface-border bg-surface-reading p-1"
+            className="team-section-navigation flex min-w-0 flex-wrap gap-1"
           >
             {sections.filter(visible).map((section) => (
               <Link
@@ -328,29 +340,26 @@ export function TeamOverview({ team }: { team: TeamDetailDto }) {
   ];
   return (
     <>
-      <section
-        aria-label={t("v12.overview")}
-        className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"
-      >
+      <section aria-label={t("v12.overview")} className="team-task-rail">
         {tasks.map(({ tab, label, value, Icon }) => (
           <Link
             key={tab}
             href={teamSectionHref(team.teamId, tab)}
-            className="workspace-task-tile group"
+            className="team-task-link group"
           >
             <Icon
               aria-hidden="true"
-              className="row-span-2 size-5 text-muted-foreground"
+              className="size-4 shrink-0 text-muted-foreground"
             />
-            <span className="min-w-0 text-sm wrap-anywhere text-muted-foreground">
+            <span className="team-task-label min-w-0 text-sm wrap-anywhere text-muted-foreground">
               {t(label)}
             </span>
-            <strong className="col-start-2 row-start-2 min-w-0 text-xl font-semibold wrap-anywhere tabular-nums">
+            <strong className="team-task-value min-w-0 text-sm font-semibold wrap-anywhere tabular-nums">
               {value}
             </strong>
             <ArrowRightIcon
               aria-hidden="true"
-              className="col-start-3 row-span-2 row-start-1 size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 sm:absolute sm:right-4 sm:top-4 motion-reduce:transition-none"
+              className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 motion-reduce:transition-none"
             />
           </Link>
         ))}
@@ -362,13 +371,13 @@ export function TeamOverview({ team }: { team: TeamDetailDto }) {
         </>
       )}
       <QueryFeedback query={analysis} />
-      <section className="rounded-xl border bg-muted/40 p-5">
+      <section className="team-availability flex min-w-0 flex-col gap-3">
         <h3 className="font-semibold">{t("v12.dataAvailability")}</h3>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           {t("v12.dataAvailabilityNote")}
         </p>
         {analysis.data && (
-          <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+          <dl className="grid min-w-0 gap-3 sm:grid-cols-3">
             {(
               [
                 ["v12.included", analysis.data.includedMemberCount],
@@ -386,13 +395,13 @@ export function TeamOverview({ team }: { team: TeamDetailDto }) {
           </dl>
         )}
         {!analysis.isFetching && !analysis.error && !analysis.data && (
-          <p className="mt-3 text-sm">{t("v12.noTeamAnalysis")}</p>
+          <p className="text-sm">{t("v12.noTeamAnalysis")}</p>
         )}
         {analysis.data && analysis.data.includedMemberCount === 0 && (
-          <p className="mt-3 text-sm">{t("v12.noAbilitySharing")}</p>
+          <p className="text-sm">{t("v12.noAbilitySharing")}</p>
         )}
         {analysis.data && analysis.data.levelMemberCount === 0 && (
-          <p className="mt-3 text-sm">{t("v12.noLevel")}</p>
+          <p className="text-sm">{t("v12.noLevel")}</p>
         )}
       </section>
     </>

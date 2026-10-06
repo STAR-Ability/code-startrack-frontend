@@ -70,6 +70,7 @@ for (const locale of ["zh-CN", "en"]) {
     page,
     context,
   }, info) => {
+    test.setTimeout(90_000);
     await context.addCookies([
       {
         name: "codestartrack_locale",
@@ -210,6 +211,16 @@ for (const locale of ["zh-CN", "en"]) {
 }
 async function narrow(page: Page) {
   await page.setViewportSize({ width: 320, height: 800 });
+  const pathname = new URL(page.url()).pathname;
+  const workspaceRoute = [
+    "/dashboard",
+    "/data",
+    "/analysis",
+    "/profile",
+    "/practice",
+    "/accounts",
+    "/security",
+  ].find((route) => pathname === route || pathname.startsWith(`${route}/`));
   for (const scale of ["100%", "200%"]) {
     await page.evaluate((value) => {
       document.documentElement.style.fontSize = value;
@@ -219,17 +230,55 @@ async function narrow(page: Page) {
         page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       )
       .toBe(true);
-    const active = page.locator('.mobile-navigation [aria-current="page"]');
-    if (await active.count()) {
+    if (workspaceRoute) {
+      const trigger = page.locator(
+        '.workspace-surface > header [data-slot="sidebar-trigger"]',
+      );
+      await expect(trigger).toHaveCount(1);
+      await expect(trigger).toHaveAttribute(
+        "aria-controls",
+        "workspace-sidebar",
+      );
+      await trigger.press("Enter");
+      const dialog = page.getByRole("dialog").filter({
+        has: page.locator('[data-slot="sidebar-content"]'),
+      });
+      await expect(dialog).toHaveCount(1);
+      await expect(dialog).toBeVisible();
+      const nav = dialog.getByRole("navigation");
+      await expect(nav).toHaveCount(1);
+      const active = nav.locator('a[aria-current="page"]');
+      await expect(active).toHaveCount(1);
+      await expect(active).toHaveAttribute("href", workspaceRoute);
+      await expect(active).toBeVisible();
       await expect
         .poll(() =>
           active.evaluate((element) => {
             const item = element.getBoundingClientRect();
-            const frame = element.closest("nav")!.getBoundingClientRect();
-            return item.left >= frame.left - 1 && item.right <= frame.right + 1;
+            const nav = element.closest("nav")!.getBoundingClientRect();
+            const pane = element.closest<HTMLElement>(
+              '[data-slot="sidebar-content"]',
+            )!;
+            const frame = pane.getBoundingClientRect();
+            const top = frame.top + pane.clientTop;
+            return (
+              item.left >= nav.left - 1 &&
+              item.right <= nav.right + 1 &&
+              item.left >= frame.left - 1 &&
+              item.right <= frame.right + 1 &&
+              item.top >= top - 1 &&
+              item.bottom <= top + pane.clientHeight + 1 &&
+              element.scrollWidth <= element.clientWidth + 1
+            );
           }),
         )
         .toBe(true);
+      await active.focus();
+      await expect(active).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+      await expect(trigger).toHaveAttribute("aria-expanded", "false");
+      await expect(trigger).toBeFocused();
     }
   }
   await page.evaluate(() => {

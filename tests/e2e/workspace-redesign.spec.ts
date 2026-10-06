@@ -103,7 +103,10 @@ test("desktop sidebar collapses to labeled icons, restores preference and suppor
   page,
   isMobile,
 }) => {
-  test.skip(isMobile, "Mobile retains the compact bottom navigation");
+  test.skip(
+    isMobile,
+    "Desktop sidebar collapse is unavailable in the mobile Sheet layout",
+  );
   await page.goto("/dashboard");
   const sidebar = page.locator('[data-slot="sidebar"][data-state]');
   const gap = sidebar.locator('[data-slot="sidebar-gap"]');

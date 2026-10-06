@@ -408,7 +408,17 @@ export function AuthForm({ kind }: { kind: "login" | "register" | "reset" }) {
           </div>
         ) : (
           <form
-            onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
+            onSubmit={form.handleSubmit(
+              (values) => mutation.mutate(values),
+              () => {
+                if (mutation.isPending || remaining) return;
+                mutation.reset();
+                if (kind === "login") {
+                  setCaptcha(null);
+                  setRefresh((value) => value + 1);
+                }
+              },
+            )}
             aria-busy={mutation.isPending}
           >
             <FieldGroup className="gap-5">
@@ -420,7 +430,11 @@ export function AuthForm({ kind }: { kind: "login" | "register" | "reset" }) {
                   placeholder={t("ui.accountPlaceholder")}
                   autoComplete="username"
                   required
-                  {...form.register("account")}
+                  error={form.formState.errors.account?.message}
+                  {...form.register("account", {
+                    validate: (value) =>
+                      !!value.trim() || t("ui.accountRequired"),
+                  })}
                 />
               ) : (
                 <>
@@ -530,23 +544,25 @@ export function AuthForm({ kind }: { kind: "login" | "register" | "reset" }) {
                   <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
                 )}
               </Button>
-              <p className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+              <p className="auth-note flex items-start justify-center gap-2 text-xs leading-relaxed text-muted-foreground">
                 <ShieldCheckIcon
-                  className="size-3.5 shrink-0"
+                  className="mt-0.5 size-3.5 shrink-0"
                   aria-hidden="true"
                 />
-                {t("ui.authNote")}
+                <span className="min-w-0">{t("ui.authNote")}</span>
               </p>
             </FieldGroup>
           </form>
         )}
       </CardContent>
       <CardFooter className="flex-col gap-3 p-6">
-        <p className="text-sm text-muted-foreground">
-          {t(kind === "login" ? "ui.noAccount" : "ui.haveAccount")}{" "}
+        <p className="auth-account-switch flex max-w-full flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-center text-sm leading-relaxed text-muted-foreground">
+          <span className="min-w-0">
+            {t(kind === "login" ? "ui.noAccount" : "ui.haveAccount")}
+          </span>
           <Link
             href={kind === "login" ? "/register" : "/login"}
-            className="auth-text-link font-medium"
+            className="auth-text-link max-w-full font-medium"
           >
             {t(kind === "login" ? "v.register" : "auth.login")}
           </Link>

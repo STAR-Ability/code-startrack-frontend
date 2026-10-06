@@ -14,7 +14,8 @@ panel padding. Numeric headlines use tabular figures.
 
 Use the shared reading measures instead of introducing route-local widths:
 `max-w-workspace` (80rem), `max-w-reading` (48rem), `max-w-form` (42rem) and
-`max-w-auth` (28rem). Their application to page families belongs to the shell and
+`max-w-auth` (28rem). Account binding and privacy settings use
+`max-w-settings`, an alias of the shared 48rem reading measure. Their application to page families belongs to the shell and
 feature composition. Public section intervals use 48/64/80px across widths.
 
 Control density tokens are `--control-dense` (2rem), `--control-standard` (2.5rem)
@@ -150,8 +151,35 @@ and its menu uses a locally scrolling Sheet bounded to half the viewport.
 - Analysis: report conclusions and actions first. Frozen report evidence and
   current aggregate evidence are separate disclosures; each retains its own DTO
   and time context. Never replace frozen numbers with a current query response.
-- Account and team management: retain existing navigation, authorization and
-  mutation boundaries. Shared surface changes do not change their data sources.
+- Public pages: a semantic ordered process rail connects binding, synchronization,
+  analysis, recommendations and review. Editorial capability/example rows keep
+  numeric markers alongside readable bodies at narrow enlarged-text widths. The
+  narrow rails bound their physical marker spacing while heading text grows;
+  icons move above headings when the process container cannot preserve a useful
+  reading width. The capability hero keeps its vertical rail on desktop; the recommendation example
+  uses three steps. Synthetic examples disclose their origin and use complete
+  internally consistent snapshots. Supported analysis is separate from future
+  Agent and additional-source directions. Personal aggregate profiles/reports
+  remain distinct from account-specific recommendations, ratings and submissions.
+- Authentication/security: account-switch links and supporting notes wrap.
+  Whitespace-only login accounts receive an associated field error and focus;
+  invalid submissions clear old operation feedback and refresh CAPTCHA without
+  altering raw password bytes. Identity context and the full email address remain
+  readable within their card container.
+- Accounts/settings: passive account rows separate identity, localized binding
+  state, summary, lazy details and actions. Sync pairs exact dates and actions only
+  when its container has useful width. Privacy uses four described scope rows with
+  associated Select help and local saving/confirmed feedback. Notification rows
+  retain timestamps, supplied read state and routing; list and unread-count
+  failures expose independent recovery and cached-result context. Narrow lists
+  bound the icon gutter and wrap badges so enlarged text stays inside each row.
+- Collaboration: team directories precede supporting work queues. Team detail
+  combines authorized context with a compact task rail; management forms and
+  records keep confirmations, permissions and paging. Member views identify the
+  authorized ACTIVE learner from TeamMemberDto.user, retain team UUID/link context
+  and link only permitted sibling domains. Each domain keeps independent query
+  withdrawal/recovery. Member submission rows retain UserSubmissionDto provenance
+  and backend source links; frozen reports keep their original evidence.
 
 ## Charts and disclosures
 

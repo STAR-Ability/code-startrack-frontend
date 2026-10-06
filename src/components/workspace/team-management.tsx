@@ -45,75 +45,77 @@ export function TeamMembers({ team }: { team: TeamDetailDto }) {
   return (
     <Panel title="v12.members">
       <QueryFeedback query={query} />
-      {query.data?.data.map((member) => (
-        <article
-          key={member.membershipId}
-          className="flex flex-col gap-3 border-b py-3 last:border-0"
-        >
-          <div className="flex flex-wrap justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-3">
-              <Avatar>
-                {member.user.avatarUrl && (
-                  <AvatarImage src={member.user.avatarUrl} alt="" />
-                )}
-                <AvatarFallback>
-                  {(member.user.displayName ?? member.user.username).slice(
-                    0,
-                    2,
-                  )}
-                </AvatarFallback>
-              </Avatar>
-              <h3 className="break-words font-medium">
-                {member.user.displayName ?? member.user.username}
-              </h3>
-            </div>
-            <Badge variant="outline">
-              {t(member.role === "OWNER" ? "v12.owner" : "v12.member")}
-            </Badge>
-          </div>
-          <Status value={member.status} />
-          {!Object.values(member.dataAccess).some(Boolean) && (
-            <p className="text-sm text-muted-foreground">
-              {t("v12.PRIVATE_DENIED")}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-3">
-            {(
-              [
-                "basicTraining",
-                "abilityProfile",
-                "detailedSubmissions",
-                "analysisReport",
-              ] as const
-            )
-              .filter((key) => member.dataAccess[key])
-              .map((key) => (
-                <Link
-                  key={key}
-                  href={`/teams/member?teamId=${team.teamId}&memberPublicId=${member.user.publicId}&view=${key}`}
-                  className="text-sm underline underline-offset-4"
-                >
-                  {t(`v12.${key}`)}
-                </Link>
-              ))}
-            {team.canManage &&
-              team.status === "ACTIVE" &&
-              member.role !== "OWNER" &&
-              member.status === "ACTIVE" && (
-                <Button
-                  wrap
-                  variant="outline"
-                  disabled={mutation.blocked}
-                  onClick={() => setRemove(member)}
-                >
-                  {t("v12.remove")}
-                </Button>
+      <ul className="team-record-list" aria-label={t("v12.members")}>
+        {query.data?.data.map((member) => (
+          <li key={member.membershipId}>
+            <article className="team-member-record flex min-w-0 flex-col gap-3">
+              <div className="team-record-summary flex min-w-0 flex-wrap justify-between gap-2">
+                <div className="flex min-w-0 items-center gap-3">
+                  <Avatar>
+                    {member.user.avatarUrl && (
+                      <AvatarImage src={member.user.avatarUrl} alt="" />
+                    )}
+                    <AvatarFallback>
+                      {(member.user.displayName ?? member.user.username).slice(
+                        0,
+                        2,
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                  <h3 className="min-w-0 wrap-anywhere font-medium">
+                    {member.user.displayName ?? member.user.username}
+                  </h3>
+                </div>
+                <Badge variant="outline">
+                  {t(member.role === "OWNER" ? "v12.owner" : "v12.member")}
+                </Badge>
+              </div>
+              <Status value={member.status} />
+              {!Object.values(member.dataAccess).some(Boolean) && (
+                <p className="text-sm text-muted-foreground">
+                  {t("v12.PRIVATE_DENIED")}
+                </p>
               )}
-          </div>
-        </article>
-      ))}
+              <div className="team-record-actions flex min-w-0 flex-wrap items-center gap-3">
+                {(
+                  [
+                    "basicTraining",
+                    "abilityProfile",
+                    "detailedSubmissions",
+                    "analysisReport",
+                  ] as const
+                )
+                  .filter((key) => member.dataAccess[key])
+                  .map((key) => (
+                    <Link
+                      key={key}
+                      href={`/teams/member?teamId=${team.teamId}&memberPublicId=${member.user.publicId}&view=${key}`}
+                      className="auth-text-link min-w-0 text-sm wrap-anywhere"
+                    >
+                      {t(`v12.${key}`)}
+                    </Link>
+                  ))}
+                {team.canManage &&
+                  team.status === "ACTIVE" &&
+                  member.role !== "OWNER" &&
+                  member.status === "ACTIVE" && (
+                    <Button
+                      wrap
+                      variant="outline"
+                      disabled={mutation.blocked}
+                      onClick={() => setRemove(member)}
+                    >
+                      {t("v12.remove")}
+                    </Button>
+                  )}
+              </div>
+            </article>
+          </li>
+        ))}
+      </ul>
       {query.data?.data.length === 0 && (
         <EmptyState
+          embedded
           title={t(
             team.status === "DISSOLVED" ? "v.noRecords" : "v12.membersAnomaly",
           )}
@@ -181,7 +183,7 @@ export function TeamApplications({ team }: { team: TeamDetailDto }) {
   const active = team.status === "ACTIVE";
   return (
     <Panel title="v12.applications">
-      <Field className="max-w-sm">
+      <Field className="team-record-filter min-w-0 max-w-sm">
         <FieldLabel htmlFor={`${id}-status`}>{t("v12.status")}</FieldLabel>
         <ChoiceSelect
           id={`${id}-status`}
@@ -199,16 +201,19 @@ export function TeamApplications({ team }: { team: TeamDetailDto }) {
         />
       </Field>
       <QueryFeedback query={applications} />
-      {applications.data?.data.map((application) => (
-        <ApplicationRow
-          key={application.applicationId}
-          application={application}
-          manage
-          readonly={!active}
-        />
-      ))}
+      <ul className="team-record-list" aria-label={t("v12.applications")}>
+        {applications.data?.data.map((application) => (
+          <li key={application.applicationId}>
+            <ApplicationRow
+              application={application}
+              manage
+              readonly={!active}
+            />
+          </li>
+        ))}
+      </ul>
       {applications.data?.data.length === 0 && (
-        <EmptyState title={t("v12.noApplications")} />
+        <EmptyState embedded title={t("v12.noApplications")} />
       )}
       <Pagination
         meta={applications.data?.meta}
@@ -241,41 +246,42 @@ export function TeamInvitations({ team }: { team: TeamDetailDto }) {
   const active = team.status === "ACTIVE";
   return (
     <Panel title="v12.invitations">
-      {active && <InviteForm teamId={team.teamId} />}
-      <Field className="max-w-sm">
-        <FieldLabel htmlFor={`${id}-status`}>{t("v12.status")}</FieldLabel>
-        <ChoiceSelect
-          id={`${id}-status`}
-          value={invitationStatus}
-          onValueChange={(value) => {
-            setInvitationStatus(value);
-            setInvitationPage(1);
-          }}
-          options={[
-            { value: "", label: t("v12.all") },
-            ...(
-              [
-                "PENDING",
-                "ACCEPTED",
-                "REJECTED",
-                "EXPIRED",
-                "CANCELLED",
-              ] as const
-            ).map((value) => ({ value, label: t(`v12.status.${value}`) })),
-          ]}
-        />
-      </Field>
+      <div className="team-record-controls grid min-w-0 items-end gap-4">
+        {active && <InviteForm teamId={team.teamId} />}
+        <Field className="team-record-filter min-w-0 max-w-sm">
+          <FieldLabel htmlFor={`${id}-status`}>{t("v12.status")}</FieldLabel>
+          <ChoiceSelect
+            id={`${id}-status`}
+            value={invitationStatus}
+            onValueChange={(value) => {
+              setInvitationStatus(value);
+              setInvitationPage(1);
+            }}
+            options={[
+              { value: "", label: t("v12.all") },
+              ...(
+                [
+                  "PENDING",
+                  "ACCEPTED",
+                  "REJECTED",
+                  "EXPIRED",
+                  "CANCELLED",
+                ] as const
+              ).map((value) => ({ value, label: t(`v12.status.${value}`) })),
+            ]}
+          />
+        </Field>
+      </div>
       <QueryFeedback query={invitations} />
-      {invitations.data?.data.map((invitation) => (
-        <InvitationRow
-          key={invitation.invitationId}
-          invitation={invitation}
-          manage
-          readonly={!active}
-        />
-      ))}
+      <ul className="team-record-list" aria-label={t("v12.invitations")}>
+        {invitations.data?.data.map((invitation) => (
+          <li key={invitation.invitationId}>
+            <InvitationRow invitation={invitation} manage readonly={!active} />
+          </li>
+        ))}
+      </ul>
       {invitations.data?.data.length === 0 && (
-        <EmptyState title={t("v12.noInvitations")} />
+        <EmptyState embedded title={t("v12.noInvitations")} />
       )}
       <Pagination
         meta={invitations.data?.meta}
@@ -316,7 +322,7 @@ export function TeamSettings({ team }: { team: TeamDetailDto }) {
   );
   const active = team.status === "ACTIVE";
   return (
-    <>
+    <div className="team-settings-layout flex min-w-0 flex-col gap-5">
       {team.status !== "DISSOLVED" && (
         <>
           <TeamForm key={team.teamId} team={team} />
@@ -438,6 +444,6 @@ export function TeamSettings({ team }: { team: TeamDetailDto }) {
           <ErrorNotice error={mutation.error} />
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

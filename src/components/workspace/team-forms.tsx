@@ -12,7 +12,12 @@ import { isCurrentUser } from "@/lib/query/session";
 import { compareInstants } from "@/lib/time";
 import type { TeamDetailDto } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
-import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldError,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -77,9 +82,12 @@ export function TeamForm({ team }: { team?: TeamDetailDto }) {
     (!team ||
       (mutation.data.updatedAt === team.updatedAt && !form.formState.isDirty));
   return (
-    <Panel title={team ? "v12.editTeam" : "v12.createTeam"}>
+    <Panel
+      className="team-form-panel"
+      title={team ? "v12.editTeam" : "v12.createTeam"}
+    >
       <form
-        className="flex flex-col gap-4"
+        className="team-settings-form flex min-w-0 flex-col gap-4"
         onSubmit={form.handleSubmit((values) =>
           mutation.mutate({
             ...values,
@@ -88,31 +96,43 @@ export function TeamForm({ team }: { team?: TeamDetailDto }) {
           }),
         )}
       >
-        {(["name", "description", "avatarUrl"] as const).map((key) => (
-          <Field key={key} data-invalid={!!form.formState.errors[key]}>
-            <FieldLabel htmlFor={`${id}-${key}`}>{t(`v12.${key}`)}</FieldLabel>
-            {key === "description" ? (
-              <Textarea
-                id={`${id}-${key}`}
-                {...form.register(key)}
-                disabled={mutation.blocked}
-              />
-            ) : (
-              <Input
-                id={`${id}-${key}`}
-                {...form.register(key)}
-                aria-invalid={!!form.formState.errors[key]}
-                aria-describedby={
-                  form.formState.errors[key] ? `${id}-${key}-error` : undefined
-                }
-                disabled={mutation.blocked}
-              />
-            )}
-            <FieldError id={`${id}-${key}-error`}>
-              {form.formState.errors[key] && t("v.invalidForm")}
-            </FieldError>
-          </Field>
-        ))}
+        <FieldGroup>
+          {(["name", "description", "avatarUrl"] as const).map((key) => (
+            <Field key={key} data-invalid={!!form.formState.errors[key]}>
+              <FieldLabel htmlFor={`${id}-${key}`}>
+                {t(`v12.${key}`)}
+              </FieldLabel>
+              {key === "description" ? (
+                <Textarea
+                  id={`${id}-${key}`}
+                  {...form.register(key)}
+                  aria-invalid={!!form.formState.errors[key]}
+                  aria-describedby={
+                    form.formState.errors[key]
+                      ? `${id}-${key}-error`
+                      : undefined
+                  }
+                  disabled={mutation.blocked}
+                />
+              ) : (
+                <Input
+                  id={`${id}-${key}`}
+                  {...form.register(key)}
+                  aria-invalid={!!form.formState.errors[key]}
+                  aria-describedby={
+                    form.formState.errors[key]
+                      ? `${id}-${key}-error`
+                      : undefined
+                  }
+                  disabled={mutation.blocked}
+                />
+              )}
+              <FieldError id={`${id}-${key}-error`}>
+                {form.formState.errors[key] && t("v.invalidForm")}
+              </FieldError>
+            </Field>
+          ))}
+        </FieldGroup>
         <Button
           wrap
           type="submit"
@@ -142,34 +162,36 @@ export function InviteForm({ teamId }: { teamId: string }) {
   );
   return (
     <form
-      className="flex flex-col gap-3"
+      className="team-invite-form flex min-w-0 flex-col gap-3"
       onSubmit={form.handleSubmit(({ email }) => mutation.mutate(email))}
     >
-      <Field data-invalid={!!form.formState.errors.email}>
-        <FieldLabel htmlFor={id}>{t("v12.email")}</FieldLabel>
-        <Input
-          id={id}
-          type="email"
-          autoComplete="email"
-          {...form.register("email")}
+      <FieldGroup className="team-invite-fields grid min-w-0 items-end gap-3">
+        <Field data-invalid={!!form.formState.errors.email}>
+          <FieldLabel htmlFor={id}>{t("v12.email")}</FieldLabel>
+          <Input
+            id={id}
+            type="email"
+            autoComplete="email"
+            {...form.register("email")}
+            disabled={mutation.blocked}
+            aria-invalid={!!form.formState.errors.email}
+            aria-describedby={
+              form.formState.errors.email ? `${id}-error` : undefined
+            }
+          />
+          <FieldError id={`${id}-error`}>
+            {form.formState.errors.email && t("v.invalidForm")}
+          </FieldError>
+        </Field>
+        <Button
+          wrap
+          type="submit"
+          className="justify-self-start"
           disabled={mutation.blocked}
-          aria-invalid={!!form.formState.errors.email}
-          aria-describedby={
-            form.formState.errors.email ? `${id}-error` : undefined
-          }
-        />
-        <FieldError id={`${id}-error`}>
-          {form.formState.errors.email && t("v.invalidForm")}
-        </FieldError>
-      </Field>
-      <Button
-        wrap
-        type="submit"
-        className="self-start"
-        disabled={mutation.blocked}
-      >
-        {t("v12.invite")}
-      </Button>
+        >
+          {t("v12.invite")}
+        </Button>
+      </FieldGroup>
       <ErrorNotice error={mutation.error} />
       {mutation.isSuccess && (
         <StatusDelivery status={mutation.data.emailDeliveryStatus} />

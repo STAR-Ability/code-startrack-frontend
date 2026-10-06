@@ -1,6 +1,7 @@
 import type { Page } from "@playwright/test";
 import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 import { translate } from "../../src/lib/i18n/locale";
+import { previewProblems } from "../../src/lib/demo/preview";
 
 test.beforeEach(() => configureUpstream());
 
@@ -217,3 +218,211 @@ test("an open public menu closes on desktop resize and releases keyboard navigat
   await expect(page).toHaveURL("/product/profile");
   expect(await upstreamCalls()).toEqual([]);
 });
+
+for (const locale of ["zh-CN", "en"] as const) {
+  test(`${locale}: public process, examples, CTA rows and About badges stay readable with 200% text`, async ({
+    page,
+    context,
+  }) => {
+    await context.addCookies([
+      {
+        name: "codestartrack_locale",
+        value: locale,
+        url: "http://127.0.0.1:3100",
+      },
+    ]);
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    await enlargeAndSettleText(page);
+
+    const process = page.getByRole("region", {
+      name: translate(locale, "landing.flowTitle"),
+    });
+    const steps = process.locator("ol > li");
+    await expect(steps).toHaveCount(5);
+    const journey = page.getByRole("region", {
+      name: translate(locale, "landing.journeyTitle"),
+    });
+    const examples = journey.locator("ol > li");
+    await expect(examples).toHaveCount(3);
+    for (const example of [...(await steps.all()), ...(await examples.all())]) {
+      const geometry = await example.evaluate((row) => {
+        const marker = row.querySelector(".public-marker")!;
+        const body = row.querySelector(".public-body")!;
+        const markerBounds = marker.getBoundingClientRect();
+        const bodyBounds = body.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(marker);
+        const fragments = [...range.getClientRects()];
+        return {
+          oneVisualLine:
+            fragments.length > 0 &&
+            fragments.every(
+              (fragment) =>
+                Math.abs(fragment.top - fragments[0].top) <= 1 &&
+                Math.abs(fragment.bottom - fragments[0].bottom) <= 1,
+            ),
+          markerContained:
+            markerBounds.left >= 0 && markerBounds.right <= innerWidth,
+          aligned: Math.abs(markerBounds.top - bodyBounds.top) <= 2,
+          readableBody:
+            bodyBounds.width >= row.getBoundingClientRect().width / 2,
+          bodyContained: body.scrollWidth <= body.clientWidth,
+          fragments: fragments.map((fragment) => fragment.toJSON()),
+          markerBounds: markerBounds.toJSON(),
+          bodyBounds: bodyBounds.toJSON(),
+        };
+      });
+      expect(
+        geometry,
+        `Each ordinal stays on one visual line beside readable content: ${JSON.stringify(geometry)}`,
+      ).toMatchObject({
+        oneVisualLine: true,
+        markerContained: true,
+        aligned: true,
+        readableBody: true,
+        bodyContained: true,
+      });
+    }
+
+    for (const [index, problem] of previewProblems.entries()) {
+      const row = examples.nth(index);
+      await expect(
+        row.getByRole("heading", { name: problem.title }),
+      ).toBeVisible();
+      await expect(row).toContainText(
+        translate(locale, "landing.day", { day: String(problem.day) }),
+      );
+      const trigger = row.getByRole("button", {
+        name: problem.tags[0],
+        exact: true,
+      });
+      await trigger.focus();
+      await trigger.press("Enter");
+      const details = page.getByRole("dialog", { name: problem.title });
+      await expect(details).toBeVisible();
+      await expect(details).toContainText(translate(locale, "landing.sample"));
+      await expect(details).toContainText(
+        `${problem.tags.join(" · ")} / ${problem.difficulty}`,
+      );
+      await page.keyboard.press("Escape");
+      await expect(details).toBeHidden();
+      await expect(trigger).toBeFocused();
+    }
+    const hero = page.locator(".brand-hero");
+    const finalCta = page.getByRole("region", {
+      name: translate(locale, "landing.ctaTitle"),
+      exact: true,
+    });
+    const ctaRows = [
+      hero
+        .getByRole("link", {
+          name: translate(locale, "nav.start"),
+          exact: true,
+        })
+        .locator(".."),
+      finalCta
+        .getByRole("link", {
+          name: translate(locale, "entry.openDemo"),
+          exact: true,
+        })
+        .locator(".."),
+    ];
+    for (const width of [320, 768]) {
+      await page.setViewportSize({ width, height: 800 });
+      await enlargeAndSettleText(page);
+      for (const row of ctaRows) {
+        await expect(row.getByRole("link")).toHaveCount(2);
+        await expect
+          .poll(
+            () =>
+              row.evaluate((element) => {
+                const bounds = element.getBoundingClientRect();
+                const parent = element.parentElement!.getBoundingClientRect();
+                return (
+                  element.scrollWidth <= element.clientWidth + 1 &&
+                  bounds.left >= parent.left - 1 &&
+                  bounds.right <= parent.right + 1 &&
+                  bounds.left >= 0 &&
+                  bounds.right <= innerWidth
+                );
+              }),
+            { message: `CTA row fits its content area at ${width}px` },
+          )
+          .toBe(true);
+        for (const link of await row.getByRole("link").all()) {
+          await expect(link).toBeVisible();
+          await expect
+            .poll(
+              () =>
+                link.evaluate((element) => {
+                  const bounds = element.getBoundingClientRect();
+                  const parent = element.parentElement!.getBoundingClientRect();
+                  return (
+                    element.scrollWidth <= element.clientWidth + 1 &&
+                    element.scrollHeight <= element.clientHeight + 1 &&
+                    bounds.left >= parent.left - 1 &&
+                    bounds.right <= parent.right + 1
+                  );
+                }),
+              { message: `Full CTA label fits its row at ${width}px` },
+            )
+            .toBe(true);
+        }
+      }
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth,
+          ),
+        )
+        .toBe(true);
+    }
+    await page.setViewportSize({ width: 320, height: 800 });
+    await page.goto("/about");
+    await enlargeAndSettleText(page);
+    const roadmap = page.locator(".public-example-list > li");
+    await expect(roadmap).toHaveCount(3);
+    for (const [index, state] of (
+      ["available", "available", "planned"] as const
+    ).entries()) {
+      const row = roadmap.nth(index);
+      const badge = row.locator('[data-slot="badge"]');
+      await expect(badge).toHaveCount(1);
+      await expect(badge).toHaveText(translate(locale, `showcase.${state}`));
+      await expect(badge).toBeVisible();
+      await expect
+        .poll(
+          () =>
+            badge.evaluate((element) => {
+              const bounds = element.getBoundingClientRect();
+              const row = element.parentElement!.getBoundingClientRect();
+              const range = document.createRange();
+              range.selectNodeContents(element);
+              return (
+                element.scrollWidth <= element.clientWidth + 1 &&
+                element.scrollHeight <= element.clientHeight + 1 &&
+                bounds.left >= row.left - 1 &&
+                bounds.right <= row.right + 1 &&
+                [...range.getClientRects()].every(
+                  (text) =>
+                    text.left >= bounds.left - 1 &&
+                    text.right <= bounds.right + 1 &&
+                    text.top >= bounds.top - 1 &&
+                    text.bottom <= bounds.bottom + 1,
+                )
+              );
+            }),
+          { message: "The full About status label fits its roadmap row" },
+        )
+        .toBe(true);
+    }
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+    expect(await upstreamCalls()).toEqual([]);
+  });
+}

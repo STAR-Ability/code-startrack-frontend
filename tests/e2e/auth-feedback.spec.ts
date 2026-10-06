@@ -1,3 +1,4 @@
+import { translate } from "@/lib/i18n/locale";
 import { test, expect, configureUpstream } from "./fixtures";
 
 test.beforeEach(() => configureUpstream());
@@ -103,6 +104,137 @@ test("password visibility and reduced motion work on the redesigned login", asyn
     "/reset-password",
   );
 });
+
+for (const locale of ["zh-CN", "en"] as const) {
+  test(`${locale}: blank login accounts recover locally while preserving password and CAPTCHA security`, async ({
+    page,
+    context,
+  }) => {
+    await configureUpstream({ loggedOut: true });
+    await context.addCookies([
+      {
+        name: "codestartrack_locale",
+        value: locale,
+        url: "http://127.0.0.1:3100",
+      },
+    ]);
+    let captchaRequests = 0;
+    const loginRequests: { method: string; body: unknown }[] = [];
+    await page.route("**/api/v1/auth/captcha", async (route) => {
+      captchaRequests += 1;
+      await route.continue();
+    });
+    await page.route("**/api/v1/auth/login", async (route) => {
+      loginRequests.push({
+        method: route.request().method(),
+        body: route.request().postDataJSON(),
+      });
+      if (loginRequests.length !== 1) return route.continue();
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: {
+            code: "INTERNAL_ERROR",
+            message: "Synthetic login failure",
+            details: {},
+          },
+          requestId: "00000000-0000-4000-8000-000000000900",
+        }),
+      });
+    });
+    await page.goto("/login");
+    const account = page.getByLabel(translate(locale, "v.account"), {
+      exact: true,
+    });
+    const password = page.getByLabel(translate(locale, "v.password"), {
+      exact: true,
+    });
+    const captcha = page.getByRole("textbox", {
+      name: translate(locale, "v.captcha"),
+      exact: true,
+    });
+    const submit = page.getByRole("button", {
+      name: translate(locale, "auth.login"),
+      exact: true,
+    });
+    const operationAlert = page.locator("form").getByRole("alert");
+    const toasts = page.locator('[data-slot="toast"]');
+    const rawPassword = " p ";
+    await expect(captcha).toBeEnabled();
+    await expect.poll(() => captchaRequests).toBe(1);
+    await account.fill("   ");
+    await password.fill(rawPassword);
+    await captcha.fill("abcd");
+    await submit.click();
+
+    async function expectLocalRecovery(
+      expectedCaptchaRequests: number,
+      expectedLoginRequests: number,
+    ) {
+      await expect(account).toHaveAttribute("aria-invalid", "true");
+      await expect(account).toBeFocused();
+      await expect(account).toHaveAccessibleDescription(
+        translate(locale, "ui.accountRequired"),
+      );
+      await expect(
+        page.getByText(translate(locale, "ui.accountRequired"), {
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect.poll(() => captchaRequests).toBe(expectedCaptchaRequests);
+      await expect(captcha).toBeEnabled();
+      await expect(captcha).toHaveValue("");
+      await expect(account).toHaveValue("   ");
+      await expect(password).toHaveValue(rawPassword);
+      await expect(operationAlert).toHaveCount(0);
+      await expect(toasts).toHaveCount(0);
+      expect(loginRequests).toHaveLength(expectedLoginRequests);
+    }
+
+    await expectLocalRecovery(2, 0);
+    await account.fill("  demo_student  ");
+    await captcha.fill("abcd");
+    await submit.click();
+    await expect(operationAlert).toContainText(
+      translate(locale, "ui.connectionHint"),
+    );
+    await expect(toasts).toHaveCount(1);
+    await expect(toasts).toContainText(translate(locale, "ui.errorTitle"));
+    await expect(account).toHaveAttribute("aria-invalid", "false");
+    await expect.poll(() => captchaRequests).toBe(3);
+    await expect(captcha).toBeEnabled();
+    await expect(captcha).toHaveValue("");
+    const expectedLogin = {
+      method: "POST",
+      body: {
+        account: "demo_student",
+        password: rawPassword,
+        captchaChallengeId: "00000000-0000-4000-8000-000000000100",
+        captchaAnswer: "abcd",
+      },
+    };
+    expect(loginRequests).toEqual([expectedLogin]);
+
+    await account.fill("   ");
+    await captcha.fill("abcd");
+    await submit.click();
+    await expectLocalRecovery(4, 1);
+    const recoveryPassword = " synthetic-demo-password ";
+    await password.fill(recoveryPassword);
+    await account.fill("  demo_student  ");
+    await captcha.fill("abcd");
+    await submit.click();
+    await expect(page).toHaveURL("/dashboard");
+    expect(loginRequests).toEqual([
+      expectedLogin,
+      {
+        ...expectedLogin,
+        body: { ...expectedLogin.body, password: recoveryPassword },
+      },
+    ]);
+  });
+}
 
 test("a slow account query is dismissed on switch and never becomes another account's notice", async ({
   page,

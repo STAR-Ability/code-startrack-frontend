@@ -5,13 +5,6 @@ import { useLocale } from "@/components/layout/locale-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
-import {
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -25,7 +18,7 @@ export function Journey() {
   const { t } = useLocale();
   return (
     <section className="landing-section" aria-labelledby="journey-title">
-      <div className="mb-12 flex flex-col items-start gap-3">
+      <div className="mb-8 flex flex-col items-start gap-3">
         <Badge variant="outline" wrap>
           {t("landing.sample")}
         </Badge>
@@ -34,75 +27,71 @@ export function Journey() {
         </h2>
         <p className="section-description">{t("landing.journeyNote")}</p>
       </div>
-      <div className="journey-track">
-        {previewProblems.map((problem) => (
-          <Popover key={problem.id}>
-            <div className="journey-stop">
-              <p className="mb-4 font-mono text-xs text-muted-foreground">
-                {t("landing.day", { day: String(problem.day) })}
-              </p>
-              <PopoverTrigger render={<Button variant="outline" wrap />}>
-                <CircleDotIcon data-icon="inline-start" aria-hidden="true" />
-                {problem.tags[0]}
-              </PopoverTrigger>
-              <p className="mt-4 text-xs text-muted-foreground">
-                {problem.difficulty} · Codeforces
-              </p>
+      <ol className="public-example-list">
+        {previewProblems.map((problem, index) => (
+          <li key={problem.id} className="public-example-row">
+            <span className="public-marker" aria-hidden="true">
+              0{index + 1}
+            </span>
+            <div className="public-body flex-1">
+              <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+                <p className="font-mono whitespace-nowrap">
+                  {t("landing.day", { day: String(problem.day) })}
+                </p>
+                <p className="min-w-0 wrap-anywhere">
+                  {problem.id} · Codeforces · {problem.difficulty}
+                </p>
+              </div>
+              <h3 className="text-base font-semibold wrap-anywhere">
+                {problem.title}
+              </h3>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <Popover>
+                  <PopoverTrigger render={<Button variant="outline" wrap />}>
+                    <CircleDotIcon
+                      data-icon="inline-start"
+                      aria-hidden="true"
+                    />
+                    {problem.tags[0]}
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <PopoverHeader>
+                      <PopoverTitle>{problem.title}</PopoverTitle>
+                      <PopoverDescription>
+                        {t("landing.sample")}
+                      </PopoverDescription>
+                    </PopoverHeader>
+                    <p className="text-sm wrap-anywhere">
+                      {problem.tags.join(" · ")} / {problem.difficulty}
+                    </p>
+                  </PopoverContent>
+                </Popover>
+                {problem.tags.slice(1).map((tag) => (
+                  <Badge key={tag} variant="secondary" wrap>
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
             </div>
-            <PopoverContent>
-              <PopoverHeader>
-                <PopoverTitle>{problem.title}</PopoverTitle>
-                <PopoverDescription>{t("landing.sample")}</PopoverDescription>
-              </PopoverHeader>
-              <p>
-                {problem.tags.join(" · ")} / {problem.difficulty}
-              </p>
-            </PopoverContent>
-          </Popover>
+          </li>
         ))}
-        <div className="journey-stop">
-          <p className="mb-4 font-mono text-xs text-muted-foreground">
-            {t("landing.today")}
+      </ol>
+      <div className="mt-8 flex min-w-0 flex-wrap items-end justify-between gap-5 border-t pt-6">
+        <div className="flex min-w-0 flex-col gap-3">
+          <p className="meta-label">{t("landing.today")}</p>
+          <h3 className="section-heading">{t("landing.stackTitle")}</h3>
+          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+            {t("landing.stackNote")}
           </p>
-          <Link
-            href="/practice"
-            prefetch={false}
-            className={buttonVariants({ wrap: true })}
-          >
-            <span className="min-w-0">{t("nav.start")}</span>
-            <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />
-          </Link>
         </div>
-      </div>
-      <div className="mt-24 grid items-center gap-10 lg:grid-cols-2">
-        <div className="flex flex-col items-start gap-4">
-          <h3 className="section-title">{t("landing.stackTitle")}</h3>
-          <p className="section-description">{t("landing.stackNote")}</p>
-          <Badge variant="secondary" wrap>
-            {t("landing.sample")}
-          </Badge>
-        </div>
-        <div className="problem-stack">
-          {previewProblems.map((problem) => (
-            <Card key={problem.id} className="stack-card">
-              <CardHeader>
-                <CardDescription>
-                  {problem.id} / Codeforces · {problem.difficulty}
-                </CardDescription>
-                <CardTitle>{problem.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {problem.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Link
+          href="/practice"
+          prefetch={false}
+          className={buttonVariants({ wrap: true })}
+        >
+          <span className="min-w-0">{t("nav.start")}</span>
+          <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />
+        </Link>
       </div>
     </section>
   );

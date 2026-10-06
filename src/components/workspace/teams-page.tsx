@@ -12,7 +12,7 @@ import {
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldLabel } from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { ChoiceSelect } from "@/components/ui/choice-select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useUserQuery } from "./use-user-query";
@@ -89,18 +89,21 @@ function TeamsContent({ managed }: { managed: boolean }) {
   return (
     <>
       {managed ? (
-        <div className="workspace-context-header flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
+        <div className="workspace-context-header team-directory-context">
+          <p className="min-w-0 text-sm text-muted-foreground">
             {t(task === "overview" ? "v12.coachNote" : "v12.managedQueueNote")}
           </p>
-          <Link href="/coach/teams/create" className={buttonVariants()}>
+          <Link
+            href="/coach/teams/create"
+            className={buttonVariants({ wrap: true })}
+          >
             {t("v12.createTeam")}
           </Link>
         </div>
       ) : (
         <ToggleGroup
           value={[tab]}
-          className="flex-wrap"
+          className="team-directory-navigation flex-wrap"
           aria-label={t("v12.teams")}
           onValueChange={(value) => {
             if (tabs.includes(value[0] as Tab)) {
@@ -128,29 +131,33 @@ function TeamsContent({ managed }: { managed: boolean }) {
       )}
       {tab === "search" && (
         <form
-          className="flex flex-wrap items-end gap-3"
+          className="team-directory-controls"
           onSubmit={(event) => {
             event.preventDefault();
             setSearch(q.trim());
             setPage(1);
           }}
         >
-          <Field className="max-w-md">
-            <FieldLabel htmlFor={`${id}-q`}>{t("v12.searchQuery")}</FieldLabel>
-            <Input
-              id={`${id}-q`}
-              value={q}
-              onChange={(event) => setQ(event.target.value)}
-              required
-            />
-          </Field>
-          <Button wrap type="submit">
-            {t("v12.search")}
-          </Button>
+          <FieldGroup className="team-directory-search-fields grid min-w-0 items-end gap-3">
+            <Field className="min-w-0">
+              <FieldLabel htmlFor={`${id}-q`}>
+                {t("v12.searchQuery")}
+              </FieldLabel>
+              <Input
+                id={`${id}-q`}
+                value={q}
+                onChange={(event) => setQ(event.target.value)}
+                required
+              />
+            </Field>
+            <Button wrap type="submit">
+              {t("v12.search")}
+            </Button>
+          </FieldGroup>
         </form>
       )}
       {["applications", "invitations"].includes(tab) && (
-        <Field className="max-w-sm">
+        <Field className="team-directory-controls max-w-sm">
           <FieldLabel htmlFor={`${id}-status`}>{t("v12.status")}</FieldLabel>
           <ChoiceSelect
             id={`${id}-status`}
@@ -169,8 +176,14 @@ function TeamsContent({ managed }: { managed: boolean }) {
           />
         </Field>
       )}
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">
+      <section
+        className="team-directory-section flex min-w-0 flex-col gap-3"
+        aria-labelledby={`${id}-directory`}
+      >
+        <h2
+          id={`${id}-directory`}
+          className="team-directory-heading text-lg font-semibold"
+        >
           {t(
             managed
               ? task === "applications"
@@ -186,39 +199,60 @@ function TeamsContent({ managed }: { managed: boolean }) {
           )}
         </h2>
         {tab === "search" && !search && (
-          <EmptyState title={t("v12.searchGuide")} />
+          <EmptyState title={t("v12.searchGuide")} embedded />
         )}
         <QueryFeedback query={query} />
-        {tab === "mine" && (
-          <div className="grid gap-4 lg:grid-cols-2">
+        {tab === "mine" && !!mine.data?.data.length && (
+          <ul
+            className="team-directory-list"
+            aria-labelledby={`${id}-directory`}
+          >
             {mine.data?.data.map((team) => (
-              <TeamCard key={team.teamId} team={team} section={task} />
+              <li key={team.teamId} className="min-w-0">
+                <TeamCard team={team} section={task} />
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-        {tab === "search" && (
-          <div className="grid gap-4 lg:grid-cols-2">
+        {tab === "search" && !!results.data?.data.length && (
+          <ul
+            className="team-directory-list"
+            aria-labelledby={`${id}-directory`}
+          >
             {results.data?.data.map((team) => (
-              <TeamCard key={team.teamId} team={team} searchable />
+              <li key={team.teamId} className="min-w-0">
+                <TeamCard team={team} searchable />
+              </li>
             ))}
-          </div>
+          </ul>
         )}
-        {tab === "applications" &&
-          applications.data?.data.map((application) => (
-            <ApplicationRow
-              key={application.applicationId}
-              application={application}
-            />
-          ))}
-        {tab === "invitations" &&
-          invitations.data?.data.map((invitation) => (
-            <InvitationRow
-              key={invitation.invitationId}
-              invitation={invitation}
-            />
-          ))}
+        {tab === "applications" && !!applications.data?.data.length && (
+          <ul
+            className="team-directory-queue"
+            aria-labelledby={`${id}-directory`}
+          >
+            {applications.data?.data.map((application) => (
+              <li key={application.applicationId} className="min-w-0">
+                <ApplicationRow application={application} />
+              </li>
+            ))}
+          </ul>
+        )}
+        {tab === "invitations" && !!invitations.data?.data.length && (
+          <ul
+            className="team-directory-queue"
+            aria-labelledby={`${id}-directory`}
+          >
+            {invitations.data?.data.map((invitation) => (
+              <li key={invitation.invitationId} className="min-w-0">
+                <InvitationRow invitation={invitation} />
+              </li>
+            ))}
+          </ul>
+        )}
         {query.data?.data.length === 0 && (
           <EmptyState
+            embedded
             title={t(
               tab === "mine"
                 ? "v12.noTeams"

@@ -13,14 +13,24 @@ export function DemoPage() {
       <main
         id="main-content"
         tabIndex={-1}
-        className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-10"
+        className="mx-auto flex w-full max-w-workspace min-w-0 flex-col gap-5 px-5 py-6 sm:px-8"
       >
-        <h1 className="text-3xl font-semibold">{t("v.demoTitle")}</h1>
+        <h1 className="page-title">{t("v.demoTitle")}</h1>
         <Badge variant="outline" wrap>
           {t("v.demoNote")}
         </Badge>
-        <BatchView batch={demoBatch()} firstOnly />
-        <AnalysisView analysis={demoAnalysis()} dimensions statistics />
+        <section
+          className="public-evidence flex min-w-0 flex-col gap-4"
+          aria-label={t("practice.forYou")}
+        >
+          <BatchView batch={demoBatch()} firstOnly compact />
+        </section>
+        <section
+          className="public-evidence flex min-w-0 flex-col gap-4"
+          aria-label={t("v.profile")}
+        >
+          <AnalysisView analysis={demoAnalysis()} dimensions statistics />
+        </section>
       </main>
     </>
   );

@@ -116,7 +116,9 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         </div>
       </main>
       <footer className="px-5 pb-6 pt-4 text-center text-xs text-muted-foreground">
-        {t("ui.footer")}
+        <p className="mx-auto max-w-2xl text-balance leading-relaxed">
+          {t("ui.footer")}
+        </p>
       </footer>
     </div>
   );

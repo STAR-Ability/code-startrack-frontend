@@ -15,6 +15,7 @@ import { TeamCard } from "./team-records";
 import { NotificationRow } from "./notifications-page";
 export function CoachPage() {
   const { t } = useLocale();
+  const id = useId();
   const query = useUserQuery("coach-dashboard", {}, (_id, signal) =>
     v012.coachDashboard(signal),
   );
@@ -30,8 +31,8 @@ export function CoachPage() {
         showInitialLoading={false}
         resource={t("v12.coachStats")}
       />
-      <section className="workspace-context-header coach-direction">
-        <div className="flex min-w-0 flex-1 basis-72 flex-col gap-3">
+      <section className="workspace-context-header coach-direction coach-context">
+        <div className="coach-context-copy flex min-w-0 flex-1 basis-72 flex-col gap-2">
           <h2 className="flex items-start gap-3 text-xl font-semibold tracking-tight">
             <GraduationCapIcon
               className="size-6 shrink-0 text-support"
@@ -43,7 +44,7 @@ export function CoachPage() {
             {t("v12.coachNote")}
           </p>
         </div>
-        <div className="flex min-w-0 flex-wrap gap-2">
+        <div className="coach-context-actions flex min-w-0 flex-wrap gap-2">
           <Link
             href={
               query.data?.pendingApplicationCount
@@ -87,10 +88,15 @@ export function CoachPage() {
           ],
         ]}
       />
-      <div className="grid min-w-0 gap-5 xl:grid-cols-3">
-        <section className="flex min-w-0 flex-col gap-4 xl:col-span-2">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">{t("v12.manage")}</h2>
+      <div className="coach-workspace-grid">
+        <section
+          className="coach-team-directory flex min-w-0 flex-col gap-3"
+          aria-labelledby={`${id}-teams`}
+        >
+          <div className="team-directory-heading flex min-w-0 flex-wrap items-center justify-between gap-3">
+            <h2 id={`${id}-teams`} className="text-lg font-semibold">
+              {t("v12.manage")}
+            </h2>
             <Link
               href="/coach/teams?task=applications"
               className="text-sm underline"
@@ -100,11 +106,21 @@ export function CoachPage() {
             </Link>
           </div>
           <QueryFeedback query={teams} resource={t("v12.manage")} />
-          {teams.data?.data.map((team) => (
-            <TeamCard key={team.teamId} team={team} />
-          ))}
+          {!!teams.data?.data.length && (
+            <ul
+              className="team-directory-list coach-team-list"
+              aria-labelledby={`${id}-teams`}
+            >
+              {teams.data.data.map((team) => (
+                <li key={team.teamId} className="min-w-0">
+                  <TeamCard team={team} />
+                </li>
+              ))}
+            </ul>
+          )}
           {teams.data?.data.length === 0 && (
             <EmptyState
+              embedded
               title={t("v12.noTeams")}
               href="/coach/teams/create"
               action={t("v12.createTeam")}
@@ -115,13 +131,20 @@ export function CoachPage() {
           title="v12.recentNotifications"
           variant="supporting"
           tone="support"
+          className="coach-notification-support"
         >
-          {query.data?.recentNotifications.map((notification) => (
-            <NotificationRow
-              key={notification.notificationId}
-              notification={notification}
-            />
-          ))}
+          {!!query.data?.recentNotifications.length && (
+            <ul
+              className="coach-notification-queue"
+              aria-label={t("v12.recentNotifications")}
+            >
+              {query.data.recentNotifications.map((notification) => (
+                <li key={notification.notificationId} className="min-w-0">
+                  <NotificationRow notification={notification} />
+                </li>
+              ))}
+            </ul>
+          )}
           {query.data?.recentNotifications.length === 0 && (
             <EmptyState title={t("v12.noNotifications")} embedded />
           )}

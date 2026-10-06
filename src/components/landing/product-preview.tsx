@@ -57,7 +57,7 @@ export function ProductPreview() {
         <circle cx="502" cy="157" r="5" />
       </svg>
       <div className="preview-cards">
-        <Card className="preview-profile" interaction="lift">
+        <Card className="preview-profile" interaction="none">
           <CardHeader>
             <div className="mb-2 flex items-center justify-between gap-3">
               <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -98,7 +98,7 @@ export function ProductPreview() {
             <CheckCheckIcon className="size-4 text-link" aria-hidden="true" />
           </CardFooter>
         </Card>
-        <Card className="preview-problem" interaction="lift">
+        <Card className="preview-problem" interaction="none">
           <CardHeader>
             <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
               <CodeXmlIcon className="size-4" aria-hidden="true" />

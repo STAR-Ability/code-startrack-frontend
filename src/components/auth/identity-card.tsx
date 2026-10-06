@@ -18,9 +18,13 @@ export function IdentityCard() {
   });
   const roles = isMissingResource(query.error) ? [] : (query.data?.roles ?? []);
   return (
-    <Card size="sm" interaction="none">
+    <Card
+      size="sm"
+      interaction="none"
+      className="identity-panel @container/identity"
+    >
       <CardHeader>
-        <CardTitle>
+        <CardTitle titleRole="section">
           <h2>{t("data.identity")}</h2>
         </CardTitle>
       </CardHeader>
@@ -30,30 +34,32 @@ export function IdentityCard() {
           name={t("data.identity")}
           empty={!roles.length}
         >
-          <dl className="grid min-w-0 gap-3 sm:grid-cols-3">
-            <div>
+          <dl className="identity-details grid min-w-0 grid-cols-[minmax(0,1fr)] gap-x-6 gap-y-4 @[30rem]/identity:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="min-w-0">
               <dt className="text-xs text-muted-foreground">
                 {t("v.username")}
               </dt>
-              <dd>{user.displayName ?? user.username}</dd>
+              <dd className="mt-1 wrap-anywhere">
+                {user.displayName ?? user.username}
+              </dd>
             </div>
-            <div>
-              <dt className="text-xs text-muted-foreground">{t("v.email")}</dt>
-              <dd className="wrap-anywhere">{user.email}</dd>
-            </div>
-            <div>
+            <div className="min-w-0">
               <dt className="text-xs text-muted-foreground">
                 {t("data.roles")}
               </dt>
-              <dd className="flex flex-wrap gap-2">
+              <dd className="mt-1 flex flex-wrap gap-2">
                 {roles.length
                   ? roles.map((role) => (
-                      <Badge key={role.code} variant="outline">
+                      <Badge key={role.code} variant="outline" wrap>
                         {role.name} · {role.code}
                       </Badge>
                     ))
                   : t("v.unavailable")}
               </dd>
+            </div>
+            <div className="min-w-0 @[30rem]/identity:col-span-full">
+              <dt className="text-xs text-muted-foreground">{t("v.email")}</dt>
+              <dd className="mt-1 wrap-anywhere">{user.email}</dd>
             </div>
           </dl>
         </DataRegion>

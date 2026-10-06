@@ -7,6 +7,7 @@ import { v012 } from "@/lib/api/v012";
 import { ApiError } from "@/lib/api/errors";
 import { keys } from "@/lib/query/keys";
 import { isCurrentUser } from "@/lib/query/session";
+import { compareInstants } from "@/lib/time";
 import {
   privacySchema,
   privacyScopes,
@@ -75,7 +76,7 @@ export function PrivacyForm({ settings }: { settings: PrivacySettingsDto }) {
           [401, 403, 404].includes(current.error.status);
         const newer =
           !!current?.data &&
-          Date.parse(current.data.updatedAt) > Date.parse(result.updatedAt);
+          compareInstants(current.data.updatedAt, result.updatedAt) > 0;
         // Retain the validated write if the following read fails. A later read
         // still owns the cache; a newer revision or denial must remain intact.
         if (!denied && !newer) client.setQueryData(key, result);

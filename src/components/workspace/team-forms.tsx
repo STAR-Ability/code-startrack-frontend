@@ -9,6 +9,7 @@ import { v012, type TeamInput } from "@/lib/api/v012";
 import { ApiError } from "@/lib/api/errors";
 import { keys } from "@/lib/query/keys";
 import { isCurrentUser } from "@/lib/query/session";
+import { compareInstants } from "@/lib/time";
 import type { TeamDetailDto } from "@/lib/api/v012-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
@@ -59,7 +60,7 @@ export function TeamForm({ team }: { team?: TeamDetailDto }) {
           [401, 403, 404].includes(current.error.status);
         const newer =
           !!current?.data &&
-          Date.parse(current.data.updatedAt) > Date.parse(result.updatedAt);
+          compareInstants(current.data.updatedAt, result.updatedAt) > 0;
         // Seed before invalidation so its read can replace this response, while
         // keeping confirmed settings when that read is temporarily unavailable.
         if (!denied && !newer) client.setQueryData(key, result);

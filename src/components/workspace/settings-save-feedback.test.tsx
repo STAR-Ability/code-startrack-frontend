@@ -16,7 +16,12 @@ import { LocaleProvider } from "@/components/layout/locale-provider";
 import { v012 } from "@/lib/api/v012";
 import { ApiError } from "@/lib/api/errors";
 import { v012Coach, v012Privacy, v012Teams } from "@/lib/demo/v012-fixtures";
-import type { PrivacySettingsDto, TeamDetailDto } from "@/lib/api/v012-schemas";
+import {
+  privacySchema,
+  teamDetailSchema,
+  type PrivacySettingsDto,
+  type TeamDetailDto,
+} from "@/lib/api/v012-schemas";
 import { keys } from "@/lib/query/keys";
 import { PrivacyPage } from "./privacy-page";
 import { TeamSettings } from "./team-management";
@@ -124,18 +129,23 @@ async function saveSettings(page: "privacy" | "team") {
   return client;
 }
 
-function deferSettingsSave(page: "privacy" | "team") {
+function deferSettingsSave(
+  page: "privacy" | "team",
+  updatedAt = "2026-10-06T03:00:00Z",
+) {
   let completeSave: () => void = () => {};
   if (page === "privacy") {
     vi.mocked(v012.updatePrivacy).mockImplementationOnce(
       () =>
         new Promise<PrivacySettingsDto>((resolve) => {
           completeSave = () =>
-            resolve({
-              ...privacy,
-              basicTraining: "TEAM_MEMBER",
-              updatedAt: "2026-10-06T03:00:00Z",
-            });
+            resolve(
+              privacySchema.parse({
+                ...privacy,
+                basicTraining: "TEAM_MEMBER",
+                updatedAt,
+              }),
+            );
         }),
     );
   } else {
@@ -143,11 +153,13 @@ function deferSettingsSave(page: "privacy" | "team") {
       () =>
         new Promise<TeamDetailDto>((resolve) => {
           completeSave = () =>
-            resolve({
-              ...team,
-              name: "Updated team",
-              updatedAt: "2026-10-06T03:00:00Z",
-            });
+            resolve(
+              teamDetailSchema.parse({
+                ...team,
+                name: "Updated team",
+                updatedAt,
+              }),
+            );
         }),
     );
   }
@@ -284,63 +296,77 @@ describe("settings save acknowledgement after query refresh", () => {
       ).toBe("2026-10-06T04:00:00Z");
     });
 
-    it(`${page}: does not replace a newer cache revision when a pending write completes`, async () => {
-      const completeSave = deferSettingsSave(page);
-      const client = showSettings(page);
-      await screen.findByRole(page === "privacy" ? "combobox" : "textbox", {
-        name: page === "privacy" ? "Basic training data" : "Team name",
-      });
-      editSettings(page, page === "privacy" ? "TEAM_MEMBER" : "Updated team");
-      fireEvent.click(screen.getByRole("button", { name: "Save" }));
-      await waitFor(() =>
-        expect(screen.getByRole("button", { name: "Save" })).toBeDisabled(),
-      );
+    it.each([
+      {
+        label: "a later second",
+        writeRevision: "2026-10-06T03:00:00Z",
+        cacheRevision: "2026-10-06T04:00:00Z",
+      },
+      {
+        label: "a larger fraction within the same millisecond",
+        writeRevision: "2026-10-06T03:00:00.000100Z",
+        cacheRevision: "2026-10-06T03:00:00.000900Z",
+      },
+    ])(
+      `${page}: retains a newer cache revision with $label when a pending write completes`,
+      async ({ writeRevision, cacheRevision }) => {
+        const completeSave = deferSettingsSave(page, writeRevision);
+        const client = showSettings(page);
+        await screen.findByRole(page === "privacy" ? "combobox" : "textbox", {
+          name: page === "privacy" ? "Basic training data" : "Team name",
+        });
+        editSettings(page, page === "privacy" ? "TEAM_MEMBER" : "Updated team");
+        fireEvent.click(screen.getByRole("button", { name: "Save" }));
+        await waitFor(() =>
+          expect(screen.getByRole("button", { name: "Save" })).toBeDisabled(),
+        );
 
-      const readError = new ApiError("UPSTREAM_UNAVAILABLE", 503);
-      await act(async () => {
-        if (page === "privacy") {
-          vi.mocked(v012.privacy).mockRejectedValue(readError);
-          client.setQueryData(
-            keys.userResource(v012Coach.publicId, "privacy"),
-            {
-              ...privacy,
-              basicTraining: "TEAM_COACH",
-              updatedAt: "2026-10-06T04:00:00Z",
-            },
-          );
-        } else {
-          vi.mocked(v012.team).mockRejectedValue(readError);
-          client.setQueryData(
-            keys.team(v012Coach.publicId, team.teamId, "detail"),
-            {
-              ...team,
-              name: "Concurrent server revision",
-              updatedAt: "2026-10-06T04:00:00Z",
-            },
-          );
-        }
-        completeSave();
-      });
-
-      await screen.findByRole("alert");
-      expect(
-        page === "privacy"
-          ? screen.getByRole("combobox", { name: "Basic training data" })
-          : screen.getByRole("textbox", { name: "Team name" }),
-      ).toHaveValue(
-        page === "privacy" ? "TEAM_COACH" : "Concurrent server revision",
-      );
-      expect(screen.queryByText("Saved")).not.toBeInTheDocument();
-      expect(
-        page === "privacy"
-          ? client.getQueryData<PrivacySettingsDto>(
+        const readError = new ApiError("UPSTREAM_UNAVAILABLE", 503);
+        await act(async () => {
+          if (page === "privacy") {
+            vi.mocked(v012.privacy).mockRejectedValue(readError);
+            client.setQueryData(
               keys.userResource(v012Coach.publicId, "privacy"),
-            )?.updatedAt
-          : client.getQueryData<TeamDetailDto>(
+              privacySchema.parse({
+                ...privacy,
+                basicTraining: "TEAM_COACH",
+                updatedAt: cacheRevision,
+              }),
+            );
+          } else {
+            vi.mocked(v012.team).mockRejectedValue(readError);
+            client.setQueryData(
               keys.team(v012Coach.publicId, team.teamId, "detail"),
-            )?.updatedAt,
-      ).toBe("2026-10-06T04:00:00Z");
-    });
+              teamDetailSchema.parse({
+                ...team,
+                name: "Concurrent server revision",
+                updatedAt: cacheRevision,
+              }),
+            );
+          }
+          completeSave();
+        });
+
+        await screen.findByRole("alert");
+        expect(
+          page === "privacy"
+            ? screen.getByRole("combobox", { name: "Basic training data" })
+            : screen.getByRole("textbox", { name: "Team name" }),
+        ).toHaveValue(
+          page === "privacy" ? "TEAM_COACH" : "Concurrent server revision",
+        );
+        expect(screen.queryByText("Saved")).not.toBeInTheDocument();
+        expect(
+          page === "privacy"
+            ? client.getQueryData<PrivacySettingsDto>(
+                keys.userResource(v012Coach.publicId, "privacy"),
+              )?.updatedAt
+            : client.getQueryData<TeamDetailDto>(
+                keys.team(v012Coach.publicId, team.teamId, "detail"),
+              )?.updatedAt,
+        ).toBe(cacheRevision);
+      },
+    );
 
     for (const status of [401, 403, 404]) {
       it(`${page}: does not clear a concurrent ${status} read denial when a pending write completes`, async () => {

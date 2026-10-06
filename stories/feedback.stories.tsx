@@ -4,8 +4,13 @@ import {
   EmptyState,
   LoadingState,
   ErrorNotice,
+  DataRegion,
 } from "@/components/workspace/feedback";
+import { AnalysisView } from "@/components/workspace/analysis-view";
+import { useLocale } from "@/components/layout/locale-provider";
 import { ApiError } from "@/lib/api/errors";
+import type { DataQuery } from "@/lib/api/data-state";
+import { demoAnalysis } from "@/lib/demo/fixtures";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StoryFrame, mobile } from "./helpers";
 
@@ -27,7 +32,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Missing data, pending requests and connection failures must stay distinguishable. ErrorNotice preserves recovery and request details and uses the real toast provider. All errors here are synthetic; Retry only logs an action.",
+          "Missing data, pending requests and connection failures stay distinguishable. Named read regions keep local recovery and request details without repeating global error notifications. Feature skeletons own initial loading when available; cached data stays readable during refetch. Actions and CAPTCHA/job monitoring retain notifications through the real toast provider. All errors here are synthetic; Retry only logs an action.",
       },
     },
   },
@@ -71,3 +76,77 @@ export const Forbidden: Story = {
   ),
 };
 export const Mobile: Story = { globals: mobile };
+
+const snapshot = demoAnalysis();
+type ProfileQuery = Omit<DataQuery, "data"> & {
+  data: typeof snapshot | undefined;
+};
+const query: ProfileQuery = {
+  data: snapshot,
+  isPending: false,
+  isFetching: false,
+  error: null,
+  refetch: fn(),
+};
+
+function ProfileRegion({ query: state }: { query: ProfileQuery }) {
+  const { t } = useLocale();
+  return (
+    <DataRegion
+      query={state}
+      name={t("metrics.ability")}
+      showInitialLoading={false}
+    >
+      <AnalysisView
+        analysis={state.data ?? null}
+        dimensions
+        ability
+        loading={state.isFetching && state.data === undefined}
+        unavailable={!!state.error}
+      />
+    </DataRegion>
+  );
+}
+
+export const LocalLoading: Story = {
+  render: () => (
+    <ProfileRegion
+      query={{ ...query, data: undefined, isPending: true, isFetching: true }}
+    />
+  ),
+};
+export const Refreshing: Story = {
+  render: () => <ProfileRegion query={{ ...query, isFetching: true }} />,
+};
+export const CachedReadError: Story = {
+  render: () => (
+    <ProfileRegion query={{ ...query, error: new ApiError("NETWORK_ERROR") }} />
+  ),
+};
+export const CachedReadErrorMobile: Story = {
+  ...CachedReadError,
+  globals: mobile,
+};
+function SeparateReadFailures() {
+  const { t } = useLocale();
+  return (
+    <>
+      {(["metrics.ability", "v.analysisHistory"] as const).map((resource) => (
+        <DataRegion
+          key={resource}
+          name={t(resource)}
+          query={{
+            ...query,
+            data: undefined,
+            error: new ApiError("NETWORK_ERROR"),
+          }}
+        >
+          <p className="text-sm text-muted-foreground">{t("v.unavailable")}</p>
+        </DataRegion>
+      ))}
+    </>
+  );
+}
+export const IndependentReadErrors: Story = {
+  render: () => <SeparateReadFailures />,
+};

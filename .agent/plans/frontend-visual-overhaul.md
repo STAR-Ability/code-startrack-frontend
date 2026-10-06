@@ -164,7 +164,7 @@ Permanent fixes follow dev -> protected PR -> main -> GHCR -> deploy.
 
 - [x] Read handoff/instructions and inspect Git/tool/architecture/release policy.
 - [x] Baseline rendered/performance evidence and current baseline receipts.
-- [ ] Iteration 1 reviewed, validated, committed and pushed.
+- [x] Iteration 1 reviewed, validated, committed and pushed (`05587b4`).
 - [ ] Iteration 2 reviewed, validated, committed and pushed.
 - [ ] Iteration 3 reviewed, validated, committed and pushed.
 - [ ] Iteration 4 reviewed, validated, committed and pushed.
@@ -195,3 +195,29 @@ Permanent fixes follow dev -> protected PR -> main -> GHCR -> deploy.
   corrected export, including both original failures. Final lint/format/typecheck,
   production/Storybook builds and the affected landing unit check passed.
 - Production/release access is available; policy requires PR and both CI checks.
+- Iteration 2 source and independent reviews are complete: compact public chrome,
+  sidebar identity/account separation, persistent navigation groups, local active
+  link reveal, focused page measures, reversible Base UI overlays and scoped
+  feedback ownership. Enlarged text exposed real shell/form/hidden-label issues;
+  physical 240px/68px sidebar geometry, panel-based Privacy reflow and bounded
+  wrapping Brand content resolve them. Final 320px/200% public headers measure
+  302px English / 280px Chinese; four Privacy values retain 220px useful width at
+  768px/200%, and collapsed links remain 40px square without empty scroll overflow.
+- Iteration 2 final lint/format/type checks and production/Storybook builds pass;
+  default full unit run passes 270 tests. Storybook's initial 405 passes and 15
+  failures exposed new specimen/test assumptions about modal-hidden triggers,
+  disabled Select focus, visual-only Tooltip, locale live regions and viewport
+  globals. All affected cases pass in the final 92-case scoped run. Independent
+  rendered review passes 16 motion and eight feedback cases; 100 initial and 50
+  final ordinary-text route/width/locale captures have no overflow/runtime faults.
+- Iteration 2 scoped E2E initially passed 171 with one expected skip and eight
+  copies of four test assumptions: fractional scroll targets, a public label and
+  moved binding-status context. Test-only fixes retain the reading/focus/selected
+  binding/read-only contracts; both complete affected specs pass all 16 rerun
+  cases in desktop/mobile projects. Combined current scope verifies 179 distinct
+  cases with one expected skip. Receipts live under
+  `test-results/redesign/iteration-2/`.
+- Finite normal-text review leaves two minor presentation items for iteration 4:
+  narrow English public step markers and tablet Security email wrapping. Practice
+  result composition and all remaining public capability-copy corrections remain
+  the planned iteration 3/4 work.

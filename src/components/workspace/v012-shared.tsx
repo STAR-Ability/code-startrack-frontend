@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { cn } from "cn";
 import { useEffect } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -31,6 +32,7 @@ export function Panel({
   variant = "default",
   size = "sm",
   tone,
+  className,
 }: {
   title: CopyKey;
   description?: string;
@@ -38,6 +40,7 @@ export function Panel({
   variant?: React.ComponentProps<typeof Card>["variant"];
   size?: React.ComponentProps<typeof Card>["size"];
   tone?: React.ComponentProps<typeof Card>["tone"];
+  className?: string;
 }) {
   const { t } = useLocale();
   return (
@@ -46,7 +49,7 @@ export function Panel({
       variant={variant}
       tone={tone}
       interaction="none"
-      className="min-w-0 wrap-anywhere"
+      className={cn("min-w-0 wrap-anywhere", className)}
     >
       <CardHeader>
         <CardTitle titleRole="section">
@@ -158,7 +161,7 @@ export function AiJobNotice({
   if (!jobId) return null;
   return (
     <div className="flex flex-col gap-3">
-      <QueryFeedback query={query} compact />
+      <QueryFeedback query={query} compact notify />
       {query.data && (
         <Alert>
           <AlertDescription>

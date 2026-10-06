@@ -56,6 +56,7 @@ export function DataPage() {
       <DataRegion
         query={overview}
         name={t("profile.overview")}
+        showInitialLoading={false}
         empty={!overview.data || overview.data.summary.submissionCount === 0}
       >
         <AnalysisView
@@ -180,7 +181,7 @@ function Problems() {
             <Button type="submit">{t("v.filter")}</Button>
           </FieldGroup>
         </form>
-        <QueryFeedback query={query} />
+        <QueryFeedback query={query} resource={t("v.problems")} />
         {!query.isFetching && !query.error && query.data?.data.length === 0 && (
           <EmptyState title={t("v.noRecords")} />
         )}
@@ -333,7 +334,7 @@ function Submissions({ problemId }: { problemId?: string }) {
           </FieldGroup>
         </form>
       )}
-      <QueryFeedback query={query} />
+      <QueryFeedback query={query} resource={t("v.submissions")} />
       {!query.isFetching && !query.error && query.data?.data.length === 0 && (
         <EmptyState title={t("v.noRecords")} />
       )}
@@ -427,7 +428,7 @@ function Ratings() {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <QueryFeedback query={query} />
+        <QueryFeedback query={query} resource={t("v.ratingHistory")} />
         {!query.isFetching && !query.error && query.data?.data.length === 0 && (
           <EmptyState title={t("v.noRecords")} />
         )}

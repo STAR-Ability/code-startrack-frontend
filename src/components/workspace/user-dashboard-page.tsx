@@ -140,7 +140,11 @@ export function UserDashboardPage() {
         loading={analysis.isFetching && !analysis.data}
         failed={!!analysis.error}
       />
-      <QueryFeedback query={analysis} />
+      <QueryFeedback
+        query={analysis}
+        showInitialLoading={false}
+        resource={t("v12.abilitySummary")}
+      />
       {analysis.data && (
         <>
           <MetricPanel
@@ -219,7 +223,7 @@ export function UserDashboardPage() {
             <CardDescription>{t("v12.reportPreviewNote")}</CardDescription>
           </CardHeader>
           <CardContent className="flex min-w-0 flex-col gap-4">
-            <QueryFeedback query={report} />
+            <QueryFeedback query={report} resource={t("v12.reports")} />
             {report.data ? (
               <>
                 <p className="whitespace-pre-wrap wrap-anywhere leading-relaxed">
@@ -251,7 +255,7 @@ export function UserDashboardPage() {
         >
           <section className="flex min-w-0 flex-col gap-3">
             <h3 className="text-sm font-medium">{t("v12.myTeams")}</h3>
-            <QueryFeedback query={teams} />
+            <QueryFeedback query={teams} resource={t("v12.myTeams")} />
             <ul className="flex min-w-0 flex-col divide-y">
               {teams.data?.data.map((team) => (
                 <li
@@ -289,7 +293,10 @@ export function UserDashboardPage() {
           <Separator />
           <section className="flex min-w-0 flex-col gap-3">
             <h3 className="text-sm font-medium">{t("v12.invitations")}</h3>
-            <QueryFeedback query={invitations} />
+            <QueryFeedback
+              query={invitations}
+              resource={t("v12.invitations")}
+            />
             <ul className="flex min-w-0 flex-col divide-y">
               {invitations.data?.data.map((invite) => (
                 <li
@@ -325,7 +332,7 @@ export function UserDashboardPage() {
           <Separator />
           <section className="flex min-w-0 flex-col gap-3">
             <h3 className="text-sm font-medium">{t("v12.notifications")}</h3>
-            <QueryFeedback query={unread} />
+            <QueryFeedback query={unread} resource={t("v12.unread")} />
             <p className="text-xs text-muted-foreground">
               {t("v12.unread")}:{" "}
               <span className="font-medium tabular-nums text-foreground">

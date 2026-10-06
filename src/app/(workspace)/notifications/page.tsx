@@ -6,6 +6,7 @@ export default function Page() {
       title="v12.notifications"
       requireAccount={false}
       showSync={false}
+      measure="reading"
     >
       <NotificationsPage />
     </WorkspacePage>

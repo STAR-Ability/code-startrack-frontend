@@ -16,6 +16,7 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 import { SyncPanel } from "./sync-panel";
 import type { CopyKey } from "@/lib/i18n/messages";
+import { cn } from "@/lib/utils";
 
 export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
   const context = useOptionalAccounts();
@@ -23,16 +24,17 @@ export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
   const { t } = useLocale();
   const pathname = usePathname();
   const id = useId();
-  if (!context)
+  if (!context) {
+    if (session.data) return null;
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-background px-5 py-4 sm:px-8">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 border-b bg-background/80 px-5 py-2 sm:px-6 lg:px-8">
+        <div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
           {session.isFetching ? (
             <Spinner aria-hidden="true" />
           ) : (
             <Badge variant="secondary">{t("practice.visitor")}</Badge>
           )}
-          <span>
+          <span className="min-w-0 wrap-anywhere">
             {t(
               session.isFetching
                 ? "practice.checkingSession"
@@ -40,12 +42,16 @@ export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
             )}
           </span>
         </div>
-        <Link href="/login" className={buttonVariants({ size: "sm" })}>
+        <Link
+          href="/login"
+          className={buttonVariants({ size: "sm", wrap: true })}
+        >
           {t("auth.login")}
         </Link>
       </div>
     );
-  const { accounts, account, selectedAccountId, selectAccount, user, query } =
+  }
+  const { accounts, account, selectedAccountId, selectAccount, query } =
     context;
   const userOnly =
     !inline &&
@@ -56,53 +62,66 @@ export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
       "/accounts/analysis",
       "/accounts/profile",
     ].includes(pathname);
+  if (userOnly) return null;
   return (
     <div
       className={
         inline
-          ? "flex flex-wrap items-end gap-3"
-          : "flex flex-wrap items-end justify-between gap-3 border-b bg-background/80 px-5 py-3 sm:px-6"
+          ? "flex min-w-0 flex-wrap items-end gap-3"
+          : "flex min-w-0 flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b bg-background/80 px-5 py-2 sm:px-6 lg:px-8"
       }
     >
-      {!userOnly && (
-        <Field className="max-w-sm">
-          <FieldLabel htmlFor={id}>{t("v.selectAccount")}</FieldLabel>
-          <NativeSelect
-            id={id}
-            disabled={!accounts.length && account?.bindStatus !== "UNBOUND"}
-            value={selectedAccountId ?? ""}
-            onChange={(event) => selectAccount(event.target.value || null)}
-          >
-            {!selectedAccountId && (
-              <NativeSelectOption value="">
-                {t(
-                  query.isFetching
-                    ? "v.loading"
-                    : query.error
-                      ? "v.unavailable"
-                      : "v.noAccount",
-                )}
-              </NativeSelectOption>
-            )}
-            {accounts.map((item) => (
-              <NativeSelectOption key={item.accountId} value={item.accountId}>
-                {item.username} · {item.accountId}
-              </NativeSelectOption>
-            ))}
-            {account?.bindStatus === "UNBOUND" && (
-              <NativeSelectOption value={account.accountId}>
-                {account.username} · {t("v.readOnly")}
-              </NativeSelectOption>
-            )}
-          </NativeSelect>
-        </Field>
-      )}
+      <Field className="min-w-0 flex-1 basis-56 gap-1 sm:max-w-sm">
+        <FieldLabel
+          htmlFor={id}
+          className="text-xs font-normal text-muted-foreground"
+        >
+          {t("v.selectAccount")}
+        </FieldLabel>
+        <NativeSelect
+          id={id}
+          disabled={!accounts.length && account?.bindStatus !== "UNBOUND"}
+          value={selectedAccountId ?? ""}
+          onChange={(event) => selectAccount(event.target.value || null)}
+        >
+          {!selectedAccountId && (
+            <NativeSelectOption value="">
+              {t(
+                query.isFetching
+                  ? "v.loading"
+                  : query.error
+                    ? "v.unavailable"
+                    : "v.noAccount",
+              )}
+            </NativeSelectOption>
+          )}
+          {accounts.map((item) => (
+            <NativeSelectOption key={item.accountId} value={item.accountId}>
+              {item.username} · {item.accountId}
+            </NativeSelectOption>
+          ))}
+          {account?.bindStatus === "UNBOUND" && (
+            <NativeSelectOption value={account.accountId}>
+              {account.username} · {t("v.readOnly")}
+            </NativeSelectOption>
+          )}
+        </NativeSelect>
+      </Field>
       {!inline && (
-        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-3 text-sm">
-          <span className="min-w-0 wrap-anywhere">
-            {user.displayName ?? user.username}
-          </span>
-          <Link href="/accounts" className="underline underline-offset-4">
+        <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2 pb-2 text-xs">
+          {account && account.bindStatus !== "ACTIVE" && (
+            <Badge variant="secondary" wrap>
+              {t(
+                account.bindStatus === "UNBOUND"
+                  ? "v.readOnly"
+                  : "v.invalidAccount",
+              )}
+            </Badge>
+          )}
+          <Link
+            href="/accounts"
+            className="rounded-sm underline underline-offset-4"
+          >
             {t("v.accounts")}
           </Link>
         </div>
@@ -116,12 +135,14 @@ export function WorkspacePage({
   requireAccount = true,
   showSync = false,
   publicContent = false,
+  measure = "workspace",
 }: {
   title: CopyKey;
   children: React.ReactNode;
   requireAccount?: boolean;
   showSync?: boolean;
   publicContent?: boolean;
+  measure?: "workspace" | "reading" | "form";
 }) {
   const context = useOptionalAccounts();
   const account = context?.account;
@@ -131,14 +152,16 @@ export function WorkspacePage({
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-5 py-6 sm:px-6 lg:px-8"
+      className={cn(
+        "mx-auto flex w-full min-w-0 flex-1 flex-col gap-5 px-5 py-5 sm:px-6 sm:py-6 lg:px-8",
+        measure === "workspace" && "max-w-workspace",
+        measure === "reading" && "max-w-reading",
+        measure === "form" && "max-w-form",
+      )}
     >
-      <header className="workspace-page-header flex flex-col gap-3">
-        <p className="text-xs tracking-widest text-muted-foreground">
-          codeStartrack · {t("dashboard.workspace")}
-        </p>
+      <header className="workspace-page-header flex flex-col gap-2">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">{t(title)}</h1>
+          <h1 className="page-title">{t(title)}</h1>
           {context && (
             <RefreshButton
               key={`${context.user.publicId}:${context.selectedAccountId}:${pathname}`}
@@ -147,20 +170,6 @@ export function WorkspacePage({
             />
           )}
         </div>
-        {account && requireAccount && (
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline">{account.username}</Badge>
-            {account.bindStatus !== "ACTIVE" && (
-              <Badge variant="secondary" wrap>
-                {t(
-                  account.bindStatus === "UNBOUND"
-                    ? "v.readOnly"
-                    : "v.invalidAccount",
-                )}
-              </Badge>
-            )}
-          </div>
-        )}
       </header>
       {publicContent ? (
         children

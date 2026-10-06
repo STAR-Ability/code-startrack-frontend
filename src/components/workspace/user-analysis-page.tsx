@@ -224,7 +224,11 @@ export function UserProfilePage() {
           <UserRebuild secondary />
         </div>
       </div>
-      <QueryFeedback query={displayed} />
+      <QueryFeedback
+        query={displayed}
+        showInitialLoading={false}
+        resource={t("metrics.ability")}
+      />
       {!displayed.data && (
         <AnalysisView
           analysis={null}
@@ -268,7 +272,7 @@ export function UserProfilePage() {
       >
         {displayed.data && <UserSources analysis={displayed.data} />}
         <Panel title="v12.analysisHistory" variant="supporting">
-          <QueryFeedback query={history} />
+          <QueryFeedback query={history} resource={t("v12.analysisHistory")} />
           <ul className="flex min-w-0 flex-col divide-y">
             {history.data?.data.map((item) => (
               <li

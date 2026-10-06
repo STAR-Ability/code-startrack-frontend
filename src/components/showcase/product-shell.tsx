@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
 import { ArrowLeftIcon, ArrowUpRightIcon } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { useLocale } from "@/components/layout/locale-provider";
@@ -9,34 +8,11 @@ import { Badge } from "@/components/ui/badge";
 
 export function ProductShell({ children }: { children: React.ReactNode }) {
   const { t } = useLocale();
-  const main = useRef<HTMLElement>(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.setAttribute("data-revealed", "true");
-            observer.unobserve(entry.target);
-          }
-        }
-      },
-      { threshold: 0.08 },
-    );
-    main.current
-      ?.querySelectorAll(".landing-section")
-      .forEach((item) => observer.observe(item));
-    return () => observer.disconnect();
-  }, []);
   return (
     <>
       <AppHeader />
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className="brand-surface flex-1"
-        ref={main}
-      >
-        <div className="mx-auto max-w-7xl px-5 pt-8 sm:px-8">
+      <main id="main-content" tabIndex={-1} className="brand-surface flex-1">
+        <div className="mx-auto max-w-workspace px-5 pt-6 sm:px-8">
           <Link
             href="/"
             className={buttonVariants({ variant: "link", size: "sm" })}
@@ -50,9 +26,7 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
             <div>
               <p className="section-eyebrow">codeStartrack</p>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                {t("showcase.about.open")}
-              </h2>
+              <h2 className="section-heading">{t("showcase.about.open")}</h2>
             </div>
             <Link
               href="/practice"

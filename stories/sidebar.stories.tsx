@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 import {
   BookOpenIcon,
   ChartNoAxesCombinedIcon,
@@ -17,17 +18,35 @@ import {
   SidebarMenuButton,
   SidebarInset,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { useLocale } from "@/components/layout/locale-provider";
+import { Brand } from "@/components/layout/brand";
 import { mobile } from "./helpers";
 
-function Example({ defaultOpen = true }) {
+function SidebarHeaderTrigger() {
   const { t } = useLocale();
+  const { isMobile, open } = useSidebar();
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
-      <Sidebar collapsible="icon">
-        <SidebarHeader>
-          <p className="truncate px-2 font-medium">codeStartrack</p>
+    <SidebarTrigger
+      aria-controls="storybook-sidebar"
+      aria-label={t(
+        isMobile ? "ui.close" : open ? "sidebar.collapse" : "sidebar.expand",
+      )}
+    />
+  );
+}
+
+function Example({ defaultOpen = true }) {
+  const { t, locale } = useLocale();
+  return (
+    <SidebarProvider defaultOpen={defaultOpen} className="workspace-layout">
+      <Sidebar collapsible="icon" id="storybook-sidebar">
+        <SidebarHeader className="p-[12px]">
+          <div className="sidebar-brand min-w-0">
+            <Brand />
+          </div>
+          <SidebarHeaderTrigger />
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
@@ -57,13 +76,13 @@ function Example({ defaultOpen = true }) {
       </Sidebar>
       <SidebarInset>
         <header className="flex items-center gap-3 border-b p-4">
-          <SidebarTrigger />
-          <h1 className="text-base font-medium">Workspace navigation</h1>
+          <SidebarTrigger aria-controls="storybook-sidebar" />
+          <h1 className="text-base font-medium">{t("nav.workspace")}</h1>
         </header>
         <p className="p-4 text-sm text-muted-foreground">
-          Toggle with the button or Ctrl/Cmd+B. At mobile widths, the primitive
-          opens a drawer. Production workspace navigation also has a compact
-          bottom bar.
+          {locale === "zh-CN"
+            ? "使用按钮或 Ctrl/Cmd+B 切换侧栏。移动端通过包含完整导航的侧边面板访问工作区；按 Escape 关闭并返回触发按钮。"
+            : "Toggle with the button or Ctrl/Cmd+B. Mobile uses a Sheet containing the full workspace navigation. Escape closes it and returns focus to the trigger."}
         </p>
       </SidebarInset>
     </SidebarProvider>
@@ -77,7 +96,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "The installed Nova/Base UI sidebar with actual routing stubs and keyboard support. The expanded and collapsed states are local to the example; it never loads an account.",
+          "The production 240px/68px Nova/Base UI sidebar dimensions, shared Brand and keyboard support. Collapsed desktop links own tooltips; mobile links use the Sheet directly. Routing is stubbed and this specimen never loads an account.",
       },
     },
   },
@@ -87,3 +106,39 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
 export const Collapsed: Story = { args: { defaultOpen: false } };
 export const Mobile: Story = { globals: mobile };
+export const MobileSheet: Story = {
+  globals: mobile,
+  play: async ({ canvasElement }) => {
+    const mobileViewport =
+      canvasElement.ownerDocument.defaultView!.matchMedia(
+        "(max-width: 767px)",
+      ).matches;
+    await waitFor(() => {
+      const desktopSidebar = canvasElement.querySelector(
+        '[data-slot="sidebar"][data-state]',
+      );
+      if (mobileViewport) {
+        expect(desktopSidebar).toBeNull();
+      } else {
+        expect(desktopSidebar).toHaveAttribute("data-state", "expanded");
+      }
+    });
+    const trigger = canvasElement.querySelector<HTMLButtonElement>(
+      '[data-slot="sidebar-inset"] [data-sidebar="trigger"]',
+    );
+    if (!trigger) throw new Error("The mobile navigation trigger is missing.");
+    await userEvent.click(trigger);
+    if (mobileViewport) {
+      const dialog = await within(canvasElement.ownerDocument.body).findByRole(
+        "dialog",
+      );
+      await waitFor(() => expect(dialog).toBeVisible());
+    } else {
+      await waitFor(() =>
+        expect(
+          canvasElement.querySelector('[data-slot="sidebar"][data-state]'),
+        ).toHaveAttribute("data-state", "collapsed"),
+      );
+    }
+  },
+};

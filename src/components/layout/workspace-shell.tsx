@@ -1,6 +1,12 @@
 "use client";
 import Link from "next/link";
-import { Suspense, useState, useSyncExternalStore } from "react";
+import {
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   HomeIcon,
@@ -18,6 +24,7 @@ import {
   ClipboardListIcon,
   MailIcon,
   ChevronDownIcon,
+  UserRoundIcon,
 } from "lucide-react";
 import { useLocale } from "./locale-provider";
 import { Brand, SkipLink } from "./brand";
@@ -36,7 +43,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { CopyKey } from "@/lib/i18n/messages";
 import { useWorkspaceSession } from "@/components/workspace/account-provider";
 import { WorkspaceSessionProvider } from "@/components/workspace/account-provider";
@@ -53,13 +60,71 @@ import { isWorkspaceLinkActive } from "@/lib/navigation/workspace";
 
 type NavigationLink = [string, CopyKey, typeof HomeIcon];
 type NavigationSection = { label: CopyKey; links: NavigationLink[] };
+type NavigationChoices = Partial<Record<CopyKey, boolean>>;
 
-function Navigation() {
+function Navigation({
+  groupChoices,
+  onGroupChange,
+}: {
+  groupChoices: NavigationChoices;
+  onGroupChange: (label: CopyKey, open: boolean) => void;
+}) {
   const { t } = useLocale();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { state, isMobile, setOpenMobile } = useSidebar();
+  const { state, isMobile, openMobile, setOpenMobile } = useSidebar();
   const { data: user } = useWorkspaceSession();
+  const navigation = useRef<HTMLElement>(null);
+  const coachAvailable = user?.roles.includes("COACH") ?? false;
+  useEffect(() => {
+    if (isMobile && !openMobile) return;
+    let cancelled = false;
+    const frame = requestAnimationFrame(() => {
+      const pane = navigation.current?.closest<HTMLElement>(
+        '[data-slot="sidebar-content"]',
+      );
+      if (!pane) return;
+      const reveal = () => {
+        if (cancelled || !pane.clientHeight) return;
+        const active = navigation.current?.querySelector<HTMLAnchorElement>(
+          'a[aria-current="page"]',
+        );
+        if (
+          !active ||
+          active.closest('[data-slot="collapsible-content"][data-closed]')
+        )
+          return;
+        const linkBounds = active.getBoundingClientRect();
+        if (!linkBounds.width || !linkBounds.height) return;
+        const paneTop = pane.getBoundingClientRect().top + pane.clientTop;
+        const paneBottom = paneTop + pane.clientHeight;
+        const delta =
+          linkBounds.top < paneTop
+            ? linkBounds.top - paneTop
+            : Math.max(0, linkBounds.bottom - paneBottom);
+        if (!delta) return;
+        pane.scrollTop = Math.min(
+          Math.max(0, pane.scrollHeight - pane.clientHeight),
+          Math.max(0, pane.scrollTop + delta),
+        );
+      };
+      const transitions =
+        pane
+          .closest('[data-slot="sidebar-container"]')
+          ?.getAnimations()
+          .map((animation) => animation.finished) ?? [];
+      if (transitions.length) {
+        void Promise.allSettled(transitions).then(reveal);
+      } else {
+        reveal();
+      }
+    });
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+    };
+    // Query tasks and deliberate group choices keep their current pane position.
+  }, [pathname, coachAvailable, isMobile, openMobile, state]);
   const sections: NavigationSection[] = [
     {
       label: "v12.navLearning",
@@ -79,7 +144,7 @@ function Navigation() {
         ["/teams?tab=invitations", "v12.invitations", MailIcon],
       ],
     },
-    ...(user?.roles.includes("COACH")
+    ...(coachAvailable
       ? [
           {
             label: "v12.navCoach" as const,
@@ -114,7 +179,7 @@ function Navigation() {
   ];
   const collapsed = state === "collapsed" && !isMobile;
   return (
-    <nav aria-label={t("nav.workspace")}>
+    <nav ref={navigation} aria-label={t("nav.workspace")}>
       {sections.map((section, index) => {
         const links = (
           <SidebarMenu className="gap-1">
@@ -169,8 +234,8 @@ function Navigation() {
               links
             ) : (
               <Collapsible
-                defaultOpen
-                key={`${section.label}:${pathname}:${searchParams.toString()}`}
+                open={groupChoices[section.label] ?? true}
+                onOpenChange={(open) => onGroupChange(section.label, open)}
               >
                 <SidebarGroupLabel
                   render={
@@ -178,7 +243,7 @@ function Navigation() {
                       <span>{t(section.label)}</span>
                       <ChevronDownIcon
                         aria-hidden="true"
-                        className="transition-transform duration-200 in-data-open:rotate-180 motion-reduce:transition-none"
+                        className="transition-transform duration-(--motion-panel) ease-(--motion-ease) in-data-open:rotate-180 motion-reduce:transition-none"
                       />
                     </CollapsibleTrigger>
                   }
@@ -194,32 +259,74 @@ function Navigation() {
 }
 function WorkspaceSidebar() {
   const { t, locale, setLocale } = useLocale();
-  const { state, open, isMobile, openMobile } = useSidebar();
+  const { state, open, isMobile, openMobile, setOpenMobile } = useSidebar();
+  const { data: user } = useWorkspaceSession();
+  const [groupChoices, setGroupChoices] = useState<NavigationChoices>({});
+  const collapsed = state === "collapsed" && !isMobile;
+  const identity = user?.displayName ?? user?.username;
   return (
     <aside className="shrink-0">
       <Sidebar collapsible="icon" id="workspace-sidebar">
-        <SidebarHeader className="gap-3 p-3 pb-2">
-          <div className="sidebar-brand">
-            <Brand />
-          </div>
-          <SidebarTrigger
-            aria-label={t(
-              isMobile
-                ? "ui.toggleSidebar"
-                : open
-                  ? "sidebar.collapse"
-                  : "sidebar.expand",
+        <SidebarHeader className="p-[12px]">
+          <div
+            className={cn(
+              "flex min-w-0 flex-col items-start gap-3",
+              collapsed && "items-center",
             )}
-            aria-expanded={isMobile ? openMobile : open}
-            aria-controls="workspace-sidebar"
-          />
+          >
+            <div className="sidebar-brand min-w-0">
+              <Brand />
+            </div>
+            <SidebarTrigger
+              aria-label={t(
+                isMobile
+                  ? "ui.toggleSidebar"
+                  : open
+                    ? "sidebar.collapse"
+                    : "sidebar.expand",
+              )}
+              aria-expanded={isMobile ? openMobile : open}
+              aria-controls="workspace-sidebar"
+            />
+          </div>
         </SidebarHeader>
         <SidebarContent>
           <Suspense>
-            <Navigation />
+            <Navigation
+              groupChoices={groupChoices}
+              onGroupChange={(label, open) =>
+                setGroupChoices((choices) => ({ ...choices, [label]: open }))
+              }
+            />
           </Suspense>
         </SidebarContent>
-        <SidebarFooter className="border-t p-3">
+        <SidebarFooter
+          className={cn("gap-3 border-t p-[12px]", collapsed && "items-center")}
+        >
+          {identity &&
+            (collapsed ? (
+              <Link
+                href="/security"
+                prefetch={false}
+                aria-label={`${t("sidebar.signedInAs")}: ${identity}`}
+                className={buttonVariants({ variant: "ghost", size: "icon" })}
+              >
+                <UserRoundIcon aria-hidden="true" />
+              </Link>
+            ) : (
+              <div className="flex min-w-0 flex-col gap-1">
+                <p className="meta-label">{t("sidebar.signedInAs")}</p>
+                <Link
+                  href="/security"
+                  prefetch={false}
+                  className="min-w-0 rounded-sm text-sm font-medium wrap-anywhere underline-offset-4 hover:underline"
+                  aria-label={`${t("sidebar.signedInAs")}: ${identity}`}
+                  onClick={() => setOpenMobile(false)}
+                >
+                  {identity}
+                </Link>
+              </div>
+            ))}
           {state === "expanded" || isMobile ? (
             <LocaleSwitch />
           ) : (
@@ -261,19 +368,16 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
         className="workspace-layout"
         open={chosen ?? saved}
         onOpenChange={setChosen}
-        style={
-          {
-            "--sidebar-width": "15rem",
-            "--sidebar-width-icon": "4.25rem",
-          } as React.CSSProperties
-        }
       >
         <WorkspaceSidebar />
         <div className="workspace-surface flex min-w-0 flex-1 flex-col">
           <MockNotice />
           <header className="flex flex-wrap items-center justify-between gap-2 border-b bg-background/90 px-3 py-2 md:hidden">
             <div className="flex min-w-0 items-center gap-2">
-              <SidebarTrigger aria-label={t("ui.mobileNavigation")} />
+              <SidebarTrigger
+                aria-label={t("ui.mobileNavigation")}
+                aria-controls="workspace-sidebar"
+              />
               <Brand compact />
             </div>
             <div className="min-w-0 max-w-full">

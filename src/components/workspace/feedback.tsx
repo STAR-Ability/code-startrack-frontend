@@ -99,6 +99,8 @@ export function ErrorNotice({
   empty = false,
   compact = false,
   dataError = false,
+  notify = true,
+  resource,
 }: {
   error: unknown;
   retry?: () => void;
@@ -106,6 +108,8 @@ export function ErrorNotice({
   empty?: boolean;
   compact?: boolean;
   dataError?: boolean;
+  notify?: boolean;
+  resource?: string;
 }) {
   const { t } = useLocale();
   const id = useId();
@@ -128,7 +132,7 @@ export function ErrorNotice({
   const active = !!error && !pending && apiError?.status !== 401;
   const signature = apiError?.code ?? (error ? "UNKNOWN" : "");
   useEffect(() => {
-    if (!active) return;
+    if (!active || !notify) return;
     const noticeId = `error-${id}`;
     toast.add({
       id: noticeId,
@@ -138,7 +142,7 @@ export function ErrorNotice({
       timeout: 8_000,
     });
     return () => toast.close(noticeId);
-  }, [active, signature, id, title, message]);
+  }, [active, signature, id, title, message, notify]);
   if (!error || pending || apiError?.status === 401) return null;
   const recovery = (
     <>
@@ -171,11 +175,14 @@ export function ErrorNotice({
   );
   return compact ? (
     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-      <p role="alert">{message}</p>
+      <p role="alert">
+        {resource && <strong className="font-medium">{resource} · </strong>}
+        {message}
+      </p>
       {recovery}
     </div>
   ) : empty ? (
-    <Empty className="feedback-enter border bg-card">
+    <Empty role="alert" className="feedback-enter border bg-card">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           {invalidResponse ? (
@@ -184,6 +191,7 @@ export function ErrorNotice({
             <WifiOffIcon aria-hidden="true" />
           )}
         </EmptyMedia>
+        {resource && <p className="text-xs font-medium">{resource}</p>}
         <EmptyTitle>
           {invalidResponse ? title : t("ui.unavailableTitle")}
         </EmptyTitle>
@@ -194,7 +202,14 @@ export function ErrorNotice({
   ) : (
     <Alert className="feedback-enter">
       <CircleAlertIcon aria-hidden="true" />
-      <AlertTitle>{title}</AlertTitle>
+      <AlertTitle>
+        {resource && (
+          <span className="block text-xs font-normal text-muted-foreground">
+            {resource}
+          </span>
+        )}
+        {title}
+      </AlertTitle>
       <AlertDescription>
         <p>{message}</p>
         {recovery}
@@ -240,6 +255,9 @@ export function QueryFeedback({
   query,
   compact = false,
   showLoading = true,
+  showInitialLoading = true,
+  notify = false,
+  resource,
 }: {
   query: {
     isPending: boolean;
@@ -250,12 +268,26 @@ export function QueryFeedback({
   };
   compact?: boolean;
   showLoading?: boolean;
+  showInitialLoading?: boolean;
+  notify?: boolean;
+  resource?: string;
 }) {
   const { t } = useLocale();
   const mock = useMockMode();
   const data = isMissingResource(query.error) ? undefined : query.data;
   useSlowRequest(query.isFetching);
   if (!query.isFetching && !query.error) return null;
+  if (
+    showLoading &&
+    !showInitialLoading &&
+    query.isFetching &&
+    data === undefined
+  )
+    return (
+      <span role="status" className="sr-only">
+        {t("v.loading")}
+      </span>
+    );
   return (
     <div
       data-state={dataState({ ...query, data }, mock)}
@@ -276,6 +308,8 @@ export function QueryFeedback({
         ))}
       <ErrorNotice
         dataError
+        notify={notify}
+        resource={resource}
         error={query.error}
         retry={() => void query.refetch()}
         pending={query.isFetching}
@@ -294,11 +328,13 @@ export function DataRegion({
   children,
   empty,
   name,
+  showInitialLoading = true,
 }: {
   query: DataQuery;
   children: React.ReactNode;
   empty?: boolean;
   name: string;
+  showInitialLoading?: boolean;
 }) {
   const mock = useMockMode();
   return (
@@ -308,7 +344,11 @@ export function DataRegion({
       data-state={dataState(query, mock, empty)}
       className="flex min-w-0 flex-col gap-4"
     >
-      <QueryFeedback query={query} />
+      <QueryFeedback
+        query={query}
+        resource={name}
+        showInitialLoading={showInitialLoading}
+      />
       {children}
     </section>
   );

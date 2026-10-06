@@ -164,7 +164,7 @@ export function Captcha({
           </div>
         </div>
       </Field>
-      <QueryFeedback query={query} compact showLoading={false} />
+      <QueryFeedback query={query} compact showLoading={false} notify />
     </FieldGroup>
   );
 }

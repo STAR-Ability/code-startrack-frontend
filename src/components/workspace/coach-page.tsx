@@ -25,7 +25,11 @@ export function CoachPage() {
   );
   return (
     <>
-      <QueryFeedback query={query} />
+      <QueryFeedback
+        query={query}
+        showInitialLoading={false}
+        resource={t("v12.coachStats")}
+      />
       <section className="workspace-context-header coach-direction">
         <div className="flex min-w-0 flex-1 basis-72 flex-col gap-3">
           <h2 className="flex items-start gap-3 text-xl font-semibold tracking-tight">
@@ -95,7 +99,7 @@ export function CoachPage() {
               {query.data?.pendingApplicationCount ?? "—"}
             </Link>
           </div>
-          <QueryFeedback query={teams} />
+          <QueryFeedback query={teams} resource={t("v12.manage")} />
           {teams.data?.data.map((team) => (
             <TeamCard key={team.teamId} team={team} />
           ))}

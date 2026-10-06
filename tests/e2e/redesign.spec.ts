@@ -5,10 +5,12 @@ test("account switch cancels old reads and never displays a late Alpha response 
 }) => {
   await configureUpstream({ delayAlpha: true, paginateAccounts: true });
   await page.goto("/data");
-  await page
-    .getByLabel("当前 Codeforces 账号")
-    .selectOption("9007199254740995");
-  await expect(page.getByRole("main")).toContainText("DemoBeta");
+  const selectedAccount = page.getByLabel("当前 Codeforces 账号");
+  await selectedAccount.selectOption("9007199254740995");
+  await expect(selectedAccount).toHaveValue("9007199254740995");
+  await expect(selectedAccount.locator("option:checked")).toHaveText(
+    "DemoBeta · 9007199254740995",
+  );
   await expect(
     page.getByRole("main").getByText("DemoAlpha", { exact: true }),
   ).toHaveCount(0);
@@ -70,7 +72,14 @@ test("unbinding selects another account while history stays separate and read-on
     .locator('[data-slot="card"]')
     .filter({ hasText: "9007199254740991" });
   await historical.getByRole("link", { name: "查看此账号" }).click();
-  await expect(page.getByRole("main")).toContainText("已解绑 · 只读历史");
+  const selectedAccount = page.getByLabel("当前 Codeforces 账号");
+  await expect(selectedAccount).toHaveValue("9007199254740991");
+  await expect(selectedAccount.locator("option:checked")).toContainText(
+    "已解绑 · 只读历史",
+  );
+  await expect(
+    page.getByText("已解绑 · 只读历史", { exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "同步数据", exact: true }),
   ).toHaveCount(0);

@@ -1,11 +1,18 @@
 import { render, screen } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import Home from "@/app/page";
 import { LocaleProvider } from "@/components/layout/locale-provider";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
+afterEach(() => vi.unstubAllGlobals());
 
 test("separates public local Demo from authenticated learner routes", () => {
+  vi.stubGlobal("matchMedia", (media: string) => ({
+    media,
+    matches: false,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  }));
   vi.stubGlobal(
     "IntersectionObserver",
     class {
@@ -33,5 +40,4 @@ test("separates public local Demo from authenticated learner routes", () => {
     screen.getAllByText("交互示意 · 非真实学习者数据").length,
   ).toBeGreaterThan(0);
   expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
-  vi.unstubAllGlobals();
 });

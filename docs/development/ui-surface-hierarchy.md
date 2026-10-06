@@ -30,6 +30,14 @@ Ordinary controls change color and boundaries without generic lift or scaling.
 Decorative public/auth/practice movement is static; local feedback can use a
 short opacity transition. Reduced motion keeps state visible without movement.
 
+Anchored menus, tooltips, popovers and directional selects use `popup-motion`
+with Base UI starting/ending attributes, opacity and a 4px offset toward their
+trigger. Instant paths and aligned `data-side="none"` selects remain stationary.
+Modal panels preserve their positioning and focus lifecycle; closing and reopening
+reverse transitions rather than replaying entry keyframes. Reduced motion removes
+the displacement. Never hide an open modal with responsive CSS: close its Root so
+focus and page interactivity recover through the component lifecycle.
+
 ## Viewport background and scrolling content
 
 The public, workspace and authentication shells own their decorative backgrounds.
@@ -109,6 +117,25 @@ through its Card props instead of creating a separate general-purpose card.
 
 ## Page responsibilities
 
+WorkspacePage's `measure` selects workspace, reading or form width independently
+of authorization. Form routes use the focused measure; chart-heavy analysis stays
+wide until its internal composition supplies a narrower reading region. The shared
+page header uses the page-title role without repeating the sidebar brand or selected
+binding. Signed-in identity lives in the sidebar footer, including the mobile Sheet;
+the account selector and binding status appear on account-scoped routes. Aggregate,
+team and security views retain their independent no-binding access rules.
+
+Navigation group choices persist across client route/query changes, desktop
+collapse and mobile Sheet dismissal. Long navigation labels wrap and grow; only
+collapsed desktop icons own tooltips. Sidebar geometry uses physical 240px/68px
+widths so enlarging text does not consume the reading column; expanded labels
+grow while invisible collapsed labels are clipped. Form grids respond to the
+containing panel's available width rather than only the viewport breakpoint.
+On route entry the sidebar reveals an available active link within its own
+scrolling pane, preserving document scroll, focus and closed group choices.
+Narrow public chrome scrolls with the page,
+and its menu uses a locally scrolling Sheet bounded to half the viewport.
+
 - Dashboard: current activity, concise ability direction and entry points to
   deeper work. Full ability evidence belongs on profile; detailed distributions
   belong on data/profile rather than being repeated on the overview.
@@ -186,3 +213,14 @@ width so enlarged text can stack instead of becoming letter-width columns.
 Recommendation reads with no known result show the shared loading feedback.
 Render the settled empty batch only after that initial read resolves; retain
 known cached results while a refresh is pending.
+
+QueryFeedback owns inline read recovery and accepts a localized resource name so
+independent failures remain distinguishable. Read errors do not create global
+notifications by default. ErrorNotice retains action notifications; CAPTCHA and
+async AI/synchronization job monitoring explicitly opt in to query notifications.
+Retries, cooldowns and diagnostic disclosures remain local to each operation.
+
+DataRegion keeps its children mounted during loading and errors. Use
+`showInitialLoading={false}` only when those children already own a shape-matched
+skeleton; accessible loading status remains, and cached refetches retain the small
+refresh indicator. Other initial reads keep the generic loading presentation.

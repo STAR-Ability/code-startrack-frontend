@@ -7,6 +7,7 @@ export default function Page() {
       title="v12.createTeam"
       requireAccount={false}
       showSync={false}
+      measure="form"
     >
       <CoachGate>
         <TeamForm />

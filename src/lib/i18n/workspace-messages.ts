@@ -33,6 +33,7 @@ export const workspaceZh = {
   "sidebar.collapse": "收起侧栏",
   "sidebar.expand": "展开侧栏",
   "sidebar.language": "切换显示语言",
+  "sidebar.signedInAs": "登录身份",
   "security.operations": "账号操作",
   "security.sessions": "登录会话",
   "security.passwordDescription": "使用当前密码验证身份，再设置新密码。",
@@ -401,6 +402,7 @@ export const workspaceEn = {
   "sidebar.collapse": "Collapse sidebar",
   "sidebar.expand": "Expand sidebar",
   "sidebar.language": "Switch display language",
+  "sidebar.signedInAs": "Signed in as",
   "security.operations": "Account actions",
   "security.sessions": "Sign-in sessions",
   "security.passwordDescription":

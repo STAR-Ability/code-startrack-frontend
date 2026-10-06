@@ -89,9 +89,13 @@ export function PrivacyForm({ settings }: { settings: PrivacySettingsDto }) {
     mutation.data.updatedAt === settings.updatedAt &&
     !form.formState.isDirty;
   return (
-    <Panel title="v12.privacyControls" description={t("v12.privacyNote")}>
+    <Panel
+      title="v12.privacyControls"
+      description={t("v12.privacyNote")}
+      className="@container/privacy"
+    >
       <form
-        className="grid gap-5 md:grid-cols-2"
+        className="grid gap-5 @min-[28rem]/privacy:grid-cols-2"
         onSubmit={form.handleSubmit((values) => mutation.mutate(values))}
       >
         {(

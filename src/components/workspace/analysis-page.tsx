@@ -96,6 +96,7 @@ export function AnalysisPage({
       <DataRegion
         query={displayed}
         name={t(profileOnly ? "metrics.ability" : "metrics.analysis")}
+        showInitialLoading={false}
         empty={!displayed.data || displayed.data.summary.submissionCount === 0}
       >
         <AnalysisView
@@ -121,7 +122,10 @@ export function AnalysisPage({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <QueryFeedback query={history} />
+                  <QueryFeedback
+                    query={history}
+                    resource={t("v.analysisHistory")}
+                  />
                   {trend.length > 1 ? (
                     <Chart
                       label={t("v.trend")}

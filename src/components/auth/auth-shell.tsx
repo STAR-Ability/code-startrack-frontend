@@ -19,13 +19,17 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="auth-shell flex min-h-svh flex-col">
       <SkipLink />
-      <header className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-6 sm:px-10">
+      <header className="mx-auto flex w-full max-w-workspace flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-8">
         <Brand />
         <div className="flex max-w-full flex-wrap items-center gap-3">
           <LocaleSwitch />
           <Link
             href="/demo"
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
+            className={buttonVariants({
+              variant: "ghost",
+              size: "sm",
+              wrap: true,
+            })}
           >
             {t("ui.exploreDemo")}
             <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />
@@ -35,7 +39,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="mx-auto grid w-full max-w-6xl flex-1 grid-cols-[minmax(0,1fr)] items-center gap-12 px-5 py-8 sm:px-10 sm:py-12 lg:grid-cols-[1fr_440px] lg:gap-16"
+        className="mx-auto grid w-full max-w-workspace flex-1 grid-cols-[minmax(0,1fr)] items-center gap-8 px-5 py-6 sm:px-8 sm:py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,var(--content-auth))] lg:gap-16"
       >
         <section
           className="auth-story hidden min-w-0 flex-col gap-7 lg:flex"
@@ -49,7 +53,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
             {t("ui.storyTitle")}
             <span>{t("ui.storyTitleEnd")}</span>
           </h2>
-          <p className="max-w-sm text-base leading-8 text-muted-foreground">
+          <p className="max-w-sm text-base leading-relaxed text-muted-foreground">
             {t("ui.storyDescription")}
           </p>
           <div className="auth-orbit" aria-hidden="true">
@@ -107,7 +111,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
             )}
           </div>
         </section>
-        <div className="auth-form-enter mx-auto w-full min-w-0 max-w-[440px]">
+        <div className="auth-form-enter mx-auto w-full min-w-0 max-w-auth">
           {children}
         </div>
       </main>

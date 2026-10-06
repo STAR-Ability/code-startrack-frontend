@@ -136,8 +136,8 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <QueryFeedback query={status} />
-        {jobId && <QueryFeedback query={job} showLoading={false} />}
+        <QueryFeedback query={status} resource={t("v.syncStatus")} />
+        {jobId && <QueryFeedback query={job} showLoading={false} notify />}
         {
           <dl className="grid gap-3 text-sm sm:grid-cols-2">
             <div>

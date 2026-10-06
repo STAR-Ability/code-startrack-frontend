@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -78,6 +78,7 @@ function TeamDetailContent({
 }) {
   const { t } = useLocale();
   const [confirm, setConfirm] = useState(false);
+  const cancelLeaveRef = useRef<HTMLButtonElement>(null);
   const query = useTeamQuery(teamId, "detail", {}, (signal) =>
     v012.team(teamId, signal),
   );
@@ -238,7 +239,7 @@ function TeamDetailContent({
           if (!mutation.isPending) setConfirm(open);
         }}
       >
-        <AlertDialogContent>
+        <AlertDialogContent initialFocus={cancelLeaveRef}>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("v12.confirmLeave")}</AlertDialogTitle>
             <AlertDialogDescription>{team?.name}</AlertDialogDescription>
@@ -252,7 +253,7 @@ function TeamDetailContent({
           >
             {t("v12.leave")}
           </Button>
-          <AlertDialogCancel disabled={mutation.isPending}>
+          <AlertDialogCancel ref={cancelLeaveRef} disabled={mutation.isPending}>
             {t("v12.cancel")}
           </AlertDialogCancel>
         </AlertDialogContent>

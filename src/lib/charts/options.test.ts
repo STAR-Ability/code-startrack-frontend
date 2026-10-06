@@ -104,4 +104,79 @@ describe("chart data presentation", () => {
       canvas.mockRestore();
     }
   });
+
+  it("keeps all six radar labels inside narrow chart surfaces without hiding data", () => {
+    const canvas = vi
+      .spyOn(HTMLCanvasElement.prototype, "getContext")
+      .mockReturnValue({
+        measureText: (text: string) => ({ width: text.length * 6 }),
+      } as unknown as CanvasRenderingContext2D);
+    const chart = init(null, undefined, {
+      renderer: "svg",
+      ssr: true,
+      width: 248,
+      height: 288,
+    });
+    const names = [
+      [
+        "Implementation",
+        "Algorithms",
+        "Data structures",
+        "Dynamic programming",
+        "Graphs",
+        "Math",
+      ],
+      ["实现", "算法", "数据结构", "动态规划", "图论", "数学"],
+    ];
+    try {
+      for (const labels of names) {
+        const dimensions = labels.map((name, index) => ({
+          name,
+          score: 20 + index * 10,
+        }));
+        chart.setOption(
+          { ...radarOption(dimensions, "Ability"), animation: false },
+          { notMerge: true },
+        );
+        for (const width of [248, 318, 500, 900, 248]) {
+          const height = width < 500 ? 288 : 320;
+          chart.resize({ width, height });
+          const renderedLabels = chart
+            .getZr()
+            .storage.getDisplayList(true)
+            .filter((element) => element.type === "tspan");
+          expect(renderedLabels.length).toBeGreaterThanOrEqual(labels.length);
+          const svg = new DOMParser().parseFromString(
+            chart.renderToSVGString(),
+            "image/svg+xml",
+          );
+          expect(
+            [...svg.querySelectorAll("text")].map((label) => label.textContent),
+          ).toEqual(
+            width <= 360 ? labels.flatMap((name) => name.split(/\s+/)) : labels,
+          );
+          for (const label of renderedLabels) {
+            const bounds = label.getBoundingRect().clone();
+            bounds.applyTransform(label.transform);
+            expect(
+              bounds.x,
+              `${width}px label: ${JSON.stringify(label.style)}`,
+            ).toBeGreaterThanOrEqual(0);
+            expect(bounds.y).toBeGreaterThanOrEqual(0);
+            expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+            expect(bounds.y + bounds.height).toBeLessThanOrEqual(height);
+          }
+          expect(chart.getOption()).toMatchObject({
+            radar: [{ indicator: labels.map((name) => ({ name, max: 100 })) }],
+            series: [
+              { data: [{ value: dimensions.map(({ score }) => score) }] },
+            ],
+          });
+        }
+      }
+    } finally {
+      chart.dispose();
+      canvas.mockRestore();
+    }
+  });
 });

@@ -37,3 +37,83 @@ test("blocked locale persistence is announced and client navigation retains the 
     page.getByRole("heading", { name: "Training workspace demo" }),
   ).toBeVisible();
 });
+
+test("ability radar retains drawn marks and scores through locale and viewport changes", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 390, height: 900 });
+  await page.goto("/demo");
+  const radar = page.locator('[role="img"][data-palette="ability"]');
+  const scores = [
+    "20 / 100",
+    "30 / 100",
+    "40 / 100",
+    "50 / 100",
+    "60 / 100",
+    "70 / 100",
+  ];
+  const labels = {
+    "zh-CN": ["基础实现", "算法", "数据结构", "动态规划", "图论", "数学"],
+    en: [
+      "Implementation",
+      "Algorithms",
+      "Data structures",
+      "Dynamic programming",
+      "Graphs",
+      "Math",
+    ],
+  };
+  for (const { locale, width } of [
+    { locale: "zh-CN", width: 390 },
+    { locale: "en", width: 320 },
+    { locale: "zh-CN", width: 1440 },
+    { locale: "en", width: 820 },
+    { locale: "zh-CN", width: 390 },
+  ] as const) {
+    await page
+      .getByRole("button", {
+        name: locale === "en" ? "English" : "简体中文",
+        exact: true,
+      })
+      .click();
+    await expect(page.locator("html")).toHaveAttribute("lang", locale);
+    await page.setViewportSize({ width, height: 900 });
+    await expect
+      .poll(() => radar.locator("svg path").count())
+      .toBeGreaterThan(6);
+    // Responsive labels can wrap into multiple SVG text nodes.
+    for (const label of labels[locale]) {
+      await expect
+        .poll(async () =>
+          (await radar.locator("svg text").allTextContents())
+            .join("")
+            .replace(/\s/g, ""),
+        )
+        .toContain(label.replace(/\s/g, ""));
+    }
+    await expect
+      .poll(() =>
+        radar.evaluate((element) => {
+          const bounds = element.getBoundingClientRect();
+          return [...element.querySelectorAll("svg text")].every((text) => {
+            const label = text.getBoundingClientRect();
+            return (
+              label.left >= bounds.left &&
+              label.right <= bounds.right &&
+              label.top >= bounds.top &&
+              label.bottom <= bounds.bottom
+            );
+          });
+        }),
+      )
+      .toBe(true);
+    await expect(page.locator(".analysis-dimension-row dd")).toHaveText(scores);
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+  }
+  expect(await upstreamCalls()).toEqual([]);
+});

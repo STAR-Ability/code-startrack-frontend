@@ -19,9 +19,10 @@ export function Chart({
   const instance = useRef<ECharts | null>(null);
   const latest = useRef({ option, label, palette });
   useEffect(() => {
-    // ECharts retains old media rules when subsequent options omit them.
+    // Reset the model when media is present or removed: replaceMerge applies to
+    // partial media rules and clears their omitted series/radar indicators.
     const resetMedia =
-      Boolean(latest.current.option.media?.length) !==
+      Boolean(latest.current.option.media?.length) ||
       Boolean(option.media?.length);
     latest.current = { option, label, palette };
     const chart = instance.current;

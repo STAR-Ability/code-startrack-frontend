@@ -138,6 +138,7 @@ export function radarOption(
     radius: "58%",
     axisNameGap: 10,
     axisName: {
+      formatter: (name?: string) => name ?? "",
       fontSize: 11,
       lineHeight: 16,
       width: 100,
@@ -178,7 +179,13 @@ export function radarOption(
           radar: {
             radius: "48%",
             axisNameGap: 6,
-            axisName: { fontSize: 10, lineHeight: 13, width: 72 },
+            axisName: {
+              fontSize: 10,
+              lineHeight: 13,
+              width: 72,
+              // Radar axis names override width/overflow; wrap words explicitly.
+              formatter: (name?: string) => name?.replace(/\s+/g, "\n") ?? "",
+            },
           },
         },
       },

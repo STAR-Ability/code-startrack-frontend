@@ -222,7 +222,11 @@ export function RecommendationCard({
                 {t("recommendation.featured")}
               </Badge>
             )}
-            {featured && <Badge variant="outline">Codeforces</Badge>}
+            {featured && (
+              <Badge variant="outline" wrap>
+                Codeforces
+              </Badge>
+            )}
             {item.solvedSinceGeneration && (
               <Badge variant="success" wrap>
                 {t("v.solvedSince")}

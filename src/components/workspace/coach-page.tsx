@@ -135,7 +135,7 @@ export function CoachPage() {
         >
           {!!query.data?.recentNotifications.length && (
             <ul
-              className="coach-notification-queue"
+              className="coach-notification-queue notification-list"
               aria-label={t("v12.recentNotifications")}
             >
               {query.data.recentNotifications.map((notification) => (

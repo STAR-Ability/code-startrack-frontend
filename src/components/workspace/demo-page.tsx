@@ -20,13 +20,13 @@ export function DemoPage() {
           {t("v.demoNote")}
         </Badge>
         <section
-          className="public-evidence flex min-w-0 flex-col gap-4"
+          className="flex min-w-0 flex-col gap-4"
           aria-label={t("practice.forYou")}
         >
           <BatchView batch={demoBatch()} firstOnly compact />
         </section>
         <section
-          className="public-evidence flex min-w-0 flex-col gap-4"
+          className="flex min-w-0 flex-col gap-4"
           aria-label={t("v.profile")}
         >
           <AnalysisView analysis={demoAnalysis()} dimensions statistics />

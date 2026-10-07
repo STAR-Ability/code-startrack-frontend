@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LocaleProvider } from "@/components/layout/locale-provider";
-import { translate, type Locale } from "@/lib/i18n/locale";
+import { formatTimestamp, translate, type Locale } from "@/lib/i18n/locale";
 import { v012TeamAnalysis, v012TeamBatch } from "@/lib/demo/v012-fixtures";
 import { TeamAnalysisView, TeamBatchView } from "./team-insights";
 
@@ -21,6 +21,75 @@ function view(locale: Locale, children: React.ReactNode) {
 
 describe.each(["en", "zh-CN"] as const)("team insights in %s", (locale) => {
   const t = (key: Parameters<typeof translate>[1]) => translate(locale, key);
+
+  it.each([true, false])(
+    "shows the supplied analysis time and audience with explicit history context (%s)",
+    (historical) => {
+      const analysis = {
+        ...v012TeamAnalysis(),
+        dataCutoffAt: "2026-06-03T04:05:06.123456Z",
+        createdAt: "2026-07-02T10:11:12.987654Z",
+      };
+      render(
+        view(
+          locale,
+          <TeamAnalysisView analysis={analysis} historical={historical} />,
+        ),
+      );
+
+      for (const [label, value] of [
+        ["v.cutoff", analysis.dataCutoffAt],
+        ["v.createdAt", analysis.createdAt],
+      ] as const) {
+        const detail = screen.getByText(`${t(label)}:`).nextElementSibling;
+        expect(detail).toHaveTextContent(formatTimestamp(value, locale));
+        expect(detail?.querySelector("time")).toHaveAttribute(
+          "datetime",
+          value,
+        );
+      }
+      expect(
+        screen.getAllByText(t(`v12.audience.${analysis.audience}`)),
+      ).toHaveLength(1);
+      expect(!!screen.queryByText(t("v12.teamHistoricalAnalysis"))).toBe(
+        historical,
+      );
+      expect(
+        screen.queryByText(t("v12.teamHistoricalBatch")),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it.each([true, false])(
+    "shows the supplied batch generation time and audience with explicit history context (%s)",
+    (historical) => {
+      const batch = {
+        ...v012TeamBatch(undefined, "MEMBER"),
+        generatedAt: "2026-05-04T07:08:09.123456Z",
+      };
+      render(
+        view(locale, <TeamBatchView batch={batch} historical={historical} />),
+      );
+
+      const detail = screen.getByText(
+        `${t("v.createdAt")}:`,
+      ).nextElementSibling;
+      expect(detail).toHaveTextContent(
+        formatTimestamp(batch.generatedAt, locale),
+      );
+      expect(detail?.querySelector("time")).toHaveAttribute(
+        "datetime",
+        batch.generatedAt,
+      );
+      expect(
+        screen.getAllByText(t(`v12.audience.${batch.audience}`)),
+      ).toHaveLength(1);
+      expect(!!screen.queryByText(t("v12.teamHistoricalBatch"))).toBe(
+        historical,
+      );
+      expect(screen.queryByText(`${t("v.cutoff")}:`)).not.toBeInTheDocument();
+    },
+  );
 
   it("labels dimension samples while preserving zero and precise supplied scores", () => {
     const source = v012TeamAnalysis();

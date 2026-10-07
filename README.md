@@ -1,13 +1,13 @@
 # codeStartrack Frontend
 
-**码练星轨 (codeStartrack) V0.13.3** renders evolving backend algorithm versions with strong structural validation and refines profiles, recommendations, dashboards, charts and collaboration workspaces. It preserves confirmed settings after failed refreshes and uses keyboard-safe team confirmations. It retains multi-account data, frozen reports, coach tools, privacy and notifications. It uses Next.js App Router, Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
+**码练星轨 (codeStartrack) V0.14.0** presents an evidence-led training workspace with a compact application shell, action-first dashboard and practice flow, readable exact chart values, comparable submissions and focused settings. Public examples distinguish supported capabilities from future directions; collaboration views identify the authorized learner and shared domain. It preserves backend-owned aggregates, account data, frozen reports, permission withdrawal and session safeguards, using Next.js App Router, Tailwind, shadcn Base UI / Nova, ECharts, Lucide and bilingual Chinese/English UI.
 
 The public landing page and `/demo` use local illustrations and synthetic fixtures. Workspace shells, including `/practice`, are browsable without login. Personal data and actions require a backend Session and the `STUDENT` role; visitors see login prompts within those panels. Empty responses preserve card/list structure; failed reads show safe placeholders, a visible error and retry without blocking navigation:
 
 | Route                                           | Purpose                                                                            |
 | ----------------------------------------------- | ---------------------------------------------------------------------------------- |
 | `/product`                                      | Public product capabilities and the current training loop                          |
-| `/product/profile`                              | Illustrative profile and guidance for interpreting account evidence                |
+| `/product/profile`                              | Illustrative personal aggregate profile and evidence interpretation                |
 | `/product/recommendations`                      | Public recommendation modes and a clearly labeled synthetic example                |
 | `/about`                                        | Product principles, current capabilities and future boundaries                     |
 | `/dashboard`                                    | Backend-owned personal aggregate, reports, teams and notifications                 |
@@ -106,7 +106,9 @@ pnpm test:container
 
 E2E uses the production export, a local HTTP proxy on `127.0.0.1:3100` and a synthetic V0.11/V0.12 backend on `127.0.0.1:3210`. It never uses `.env.local` to choose an upstream. Desktop/mobile tests cover locale, keyboard and narrow layouts, authentication, bigint IDs, delayed account switching, unbinding, readonly history, analysis windows, nullable data, recommendation idempotency and task states. They also cover frozen reports, application/invitation transitions, team lifecycle/ownership, privacy withdrawal, coach redemption and audience isolation. Browser network guards reject external requests and old API paths. Container checks require a running Docker daemon.
 
-The [workspace execution plan](.agent/plans/v0.12-workspace-redesign.md) and [delivery report](docs/development/v0.12-workspace-delivery.md) record earlier implementation and validation. The [current integration audit](docs/development/v0.13-integration.md) distinguishes authenticated real-data verification from synthetic mutation coverage. The [independent acceptance plan](.agent/plans/v0.13.3-production-acceptance.md) describes the release work. The [canonical release tracker](https://github.com/STAR-Ability/code-startrack-frontend/issues/29) records publication, exact-image and authenticated post-deployment evidence as the respective gates complete; consult that Issue for current status.
+The [visual regression workflow](docs/development/frontend-visual-regression.md) describes four deterministic composition comparisons, separate Darwin/Linux expectations and the deliberate layout-defect probe. Review baseline changes alongside the responsive and keyboard checks.
+
+The [workspace execution plan](.agent/plans/v0.12-workspace-redesign.md) and [delivery report](docs/development/v0.12-workspace-delivery.md) record earlier implementation and validation. The [current integration audit](docs/development/v0.13-integration.md) distinguishes authenticated real-data verification from synthetic mutation coverage. The [five-iteration redesign plan](.agent/plans/frontend-visual-overhaul.md) describes the current redesign and release gates. [Issue #29](https://github.com/STAR-Ability/code-startrack-frontend/issues/29) retains the preceding V0.13.3 publication and production acceptance evidence.
 
 ## Production deployment
 

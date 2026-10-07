@@ -1,11 +1,10 @@
 # codeStartrack frontend production deployment
 
 This guide records the inspected `startrack-prod` architecture and established
-publication/rollback method. The [V0.13.3 release and authenticated production
-acceptance Issue #29](https://github.com/STAR-Ability/code-startrack-frontend/issues/29)
-is the canonical current release tracker. It records verification, accepted main
-revision, immutable image and deployment results as the remaining gates complete.
-Consult Issue #29 for the latest gate status and final receipts.
+publication/rollback method. Reinspect the live frontend before selecting any
+versioned example below. The [five-iteration redesign plan](../../.agent/plans/frontend-visual-overhaul.md)
+describes the V0.14.0 release gates; [Issue #29](https://github.com/STAR-Ability/code-startrack-frontend/issues/29)
+retains the preceding V0.13.3 publication and authenticated acceptance evidence.
 
 The historical [V0.13.1 release acceptance Issue #23](https://github.com/STAR-Ability/code-startrack-frontend/issues/23)
 and [V0.13.2 radar correction Issue #25](https://github.com/STAR-Ability/code-startrack-frontend/issues/25)
@@ -80,8 +79,11 @@ states. Do not invent responses or reconfigure that service.
 | Previous immutable rollback reference | `ghcr.io/star-ability/code-startrack-frontend@sha256:036c3fb29a4eec9df67cafb65acac471a1c463fb935f08841045b7fb731517f0` |
 
 The old version/digest was checked against the registry and was the production
-frontend at that inspection. The release workflow refuses to overwrite an existing
-version tag. A later documentation-only commit records this receipt; the image's
+frontend at that inspection. The release workflow refuses to overwrite an existing version or commit tag.
+Only an exact registry `manifest unknown` establishes absence; authentication,
+network and other lookup failures stop publication. Version and SHA descriptors
+must contain matching valid SHA256 digests before `latest` or success evidence
+advances. A later documentation-only commit records this receipt; the image's
 OCI revision always identifies the build commit above.
 
 Validation passed: TypeScript, ESLint, formatting, 73 unit tests, production
@@ -307,7 +309,8 @@ ssh -o ExitOnForwardFailure=yes -N \
   -L 127.0.0.1:13000:127.0.0.1:3000 startrack-prod
 ```
 
-Public edge automation currently receives SafeLine HTTP 468. Preserve the WAF and
+Earlier public-edge automation received SafeLine HTTP 468; ordinary HTTPS status
+and browser behavior must be rechecked for each release. Preserve the WAF and
 complete its normal human verification for public browser acceptance. This is a
 separate limit from successful container and loopback health/API checks. Do not
 use insecure TLS options, disable WAF, or change system trust to make a probe pass.

@@ -89,6 +89,7 @@ export function AnalysisPage({
           {snapshotId && (
             <Button
               variant="outline"
+              wrap
               className="self-start"
               onClick={() => setSnapshotId(null)}
             >
@@ -191,6 +192,7 @@ export function AnalysisPage({
                 </span>
                 <Button
                   variant="outline"
+                  wrap
                   onClick={() => setSnapshotId(item.snapshotId)}
                 >
                   {t("v.snapshot")}

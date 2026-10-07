@@ -162,6 +162,10 @@ and its menu uses a locally scrolling Sheet bounded to half the viewport.
   Agent and additional-source directions. Personal aggregate profiles/reports
   remain distinct from account-specific recommendations, ratings and submissions.
 - Authentication/security: account-switch links and supporting notes wrap.
+  Auth story and form share a named local container; they become two columns
+  only when available width can accommodate the text-scaled form and story.
+  Enlarged desktop text therefore receives one centered form. Keep containment
+  off the shell that owns fixed decoration.
   Whitespace-only login accounts receive an associated field error and focus;
   invalid submissions clear old operation feedback and refresh CAPTCHA without
   altering raw password bytes. Identity context and the full email address remain
@@ -180,6 +184,10 @@ and its menu uses a locally scrolling Sheet bounded to half the viewport.
   and link only permitted sibling domains. Each domain keeps independent query
   withdrawal/recovery. Member submission rows retain UserSubmissionDto provenance
   and backend source links; frozen reports keep their original evidence.
+  Team analysis exposes its supplied cutoff and creation time; recommendation
+  batches expose their supplied generation time. A selected history ID adds an
+  explicit historical label near that context. Shared ability geometry retains
+  all six exact scores and each dimension's member sample count.
 
 ## Charts and disclosures
 
@@ -276,3 +284,17 @@ time, memory and timestamp available for comparison, with full IDs/team metadata
 in a named keyboard disclosure. Narrow containers use primary rows with complete
 details; a desktop Sheet follows its own width. Filters respond to the form
 container, and successful empty results remain distinct from loading/read failure.
+Measurement columns retain useful word width for unavailable values. Narrow
+disclosure padding, gap and icon size are bounded independently of enlarged text;
+labels still wrap and long tokens remain safe. Field-specific registered filter
+rules associate errors and focus the invalid ID, number or date control before a
+request. Correcting the other boundary revalidates a range error. Opaque decimal
+IDs, optional values, browser-timezone conversion and page reset stay unchanged.
+
+Light identifying field borders use `--input: #788292` so they remain visible on
+tinted reading surfaces; dark controls retain `#8b95a5`. Keyboard focus uses a
+solid 2px semantic ring with a 2px background offset for Input and Textarea.
+Identifying field hover borders use the full semantic ring color and exclude
+disabled, invalid and focused states. Those stronger states retain their own
+border and ring treatment, including invalid textarea keyboard focus. Inspect
+composited colors in both themes rather than relying on a token's unblended value.

@@ -81,12 +81,12 @@ export function SubmissionRecords({ items }: { items: SubmissionDto[] }) {
       <table className="submission-table">
         <caption className="sr-only">{t("v.submissions")}</caption>
         <colgroup>
-          <col style={{ width: "30%" }} />
+          <col style={{ width: "28%" }} />
           <col style={{ width: "15%" }} />
           <col style={{ width: "13%" }} />
-          <col style={{ width: "8%" }} />
-          <col style={{ width: "10%" }} />
-          <col style={{ width: "24%" }} />
+          <col style={{ width: "12%" }} />
+          <col style={{ width: "12%" }} />
+          <col style={{ width: "20%" }} />
         </colgroup>
         <thead>
           <tr>

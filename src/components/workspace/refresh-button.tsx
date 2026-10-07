@@ -96,6 +96,7 @@ export function RefreshButton({
           <Button
             variant="outline"
             size="sm"
+            wrap
             disabled={busy}
             aria-busy={busy}
             aria-label={t("interaction.refresh")}

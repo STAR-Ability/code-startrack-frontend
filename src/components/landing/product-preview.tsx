@@ -59,8 +59,8 @@ export function ProductPreview() {
       <div className="preview-cards">
         <Card className="preview-profile" interaction="none">
           <CardHeader>
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-3">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <ActivityIcon className="size-4" aria-hidden="true" />
               </span>
               <Badge variant="outline" wrap>

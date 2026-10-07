@@ -50,3 +50,7 @@ next-env.d.ts
 /storybook-static/
 
 .codegraph
+.codex 
+codex-relay.sh
+
+.codex-relay.env

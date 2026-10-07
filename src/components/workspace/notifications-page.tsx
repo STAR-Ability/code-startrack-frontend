@@ -40,7 +40,7 @@ export function NotificationRow({
         <h3 className="notification-title min-w-0 font-medium wrap-anywhere">
           {notification.title}
         </h3>
-        {!notification.read && <Badge>{t("v12.unread")}</Badge>}
+        {!notification.read && <Badge wrap>{t("v12.unread")}</Badge>}
       </div>
       <p className="notification-body text-sm wrap-anywhere whitespace-pre-wrap">
         {notification.body}

@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import type { SubmissionDto } from "../../src/lib/api/schemas";
 import { formatTimestamp, translate } from "../../src/lib/i18n/locale";
 import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
@@ -20,6 +20,53 @@ async function openSubmissions(page: Page, locale: "zh-CN" | "en") {
     })
     .click();
   return ((await (await loaded).json()) as { data: SubmissionDto[] }).data;
+}
+
+async function expectWholeWord(locator: Locator, word: string) {
+  const geometry = await locator.evaluate((element, expectedWord) => {
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const nodes: { node: Text; start: number; end: number }[] = [];
+    let content = "";
+    let node;
+    while ((node = walker.nextNode())) {
+      const text = node.textContent ?? "";
+      nodes.push({
+        node: node as Text,
+        start: content.length,
+        end: content.length + text.length,
+      });
+      content += text;
+    }
+    const start = content.indexOf(expectedWord);
+    const end = start + expectedWord.length;
+    const first = nodes.find((item) => item.start <= start && item.end > start);
+    const last = nodes.find((item) => item.start < end && item.end >= end);
+    const frame = element.getBoundingClientRect();
+    if (start < 0 || !first || !last) return { rects: [], frame };
+    const range = document.createRange();
+    range.setStart(first.node, start - first.start);
+    range.setEnd(last.node, end - last.start);
+    return {
+      rects: [...range.getClientRects()]
+        .filter((rect) => rect.width > 0 && rect.height > 0)
+        .map((rect) => ({
+          top: rect.top,
+          bottom: rect.bottom,
+          left: rect.left,
+          right: rect.right,
+        })),
+      frame: { left: frame.left, right: frame.right },
+    };
+  }, word);
+  expect(geometry.rects.length).toBeGreaterThan(0);
+  for (const rect of geometry.rects) {
+    expect(Math.abs(rect.top - geometry.rects[0].top)).toBeLessThanOrEqual(1);
+    expect(
+      Math.abs(rect.bottom - geometry.rects[0].bottom),
+    ).toBeLessThanOrEqual(1);
+    expect(rect.left).toBeGreaterThanOrEqual(geometry.frame.left - 1);
+    expect(rect.right).toBeLessThanOrEqual(geometry.frame.right + 1);
+  }
 }
 
 for (const locale of ["zh-CN", "en"] as const) {
@@ -191,11 +238,93 @@ for (const locale of ["zh-CN", "en"] as const) {
               ),
             )
             .toBe(true);
+        if (locale === "en" && width === 320 && fontSize === "200%")
+          await expectWholeWord(details, "Submission");
       }
     }
     await details.focus();
     await page.keyboard.press("Enter");
     await expect(details).toHaveAttribute("aria-expanded", "false");
+    expect((await upstreamCalls()).every((call) => call.method === "GET")).toBe(
+      true,
+    );
+  });
+
+  test(`${locale} submission filters focus associated field errors before a corrected read`, async ({
+    page,
+    context,
+  }) => {
+    await context.addCookies([
+      {
+        name: "codestartrack_locale",
+        value: locale,
+        url: "http://127.0.0.1:3100",
+      },
+    ]);
+    const requests: string[] = [];
+    page.on("request", (request) => {
+      if (new URL(request.url()).pathname.endsWith("/submissions"))
+        requests.push(request.url());
+    });
+    const items = await openSubmissions(page, locale);
+    const problemId = page.getByLabel(translate(locale, "v.problemId"), {
+      exact: true,
+    });
+    const from = page.getByLabel(translate(locale, "v.from"), { exact: true });
+    const to = page.getByLabel(translate(locale, "v.to"), { exact: true });
+    const apply = page.getByRole("button", {
+      name: translate(locale, "v.filter"),
+      exact: true,
+    });
+
+    await problemId.fill("1.5");
+    await apply.click();
+    await expect(problemId).toBeFocused();
+    await expect(problemId).toHaveAttribute("aria-invalid", "true");
+    await expect(problemId).toHaveAccessibleDescription(
+      translate(locale, "v.invalidProblemId"),
+    );
+    await expect(from).toHaveAttribute("aria-invalid", "false");
+    expect(requests).toHaveLength(1);
+
+    const fromValue = "2026-10-07T09:00";
+    const toValue = "2026-10-08T09:00";
+    await problemId.fill(items[0].problem.problemId);
+    await from.fill(fromValue);
+    await to.fill(fromValue);
+    await apply.click();
+    await expect(from).toBeFocused();
+    await expect(from).toHaveAttribute("aria-invalid", "true");
+    await expect(from).toHaveAccessibleDescription(
+      translate(locale, "v.invalidDates"),
+    );
+    await expect(problemId).toHaveAttribute("aria-invalid", "false");
+    await expect(to).toHaveAttribute("aria-invalid", "false");
+    expect(requests).toHaveLength(1);
+
+    await to.fill(toValue);
+    await expect(from).toHaveAttribute("aria-invalid", "false");
+    const applied = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return (
+        url.pathname.endsWith("/submissions") &&
+        url.searchParams.get("problemId") === items[0].problem.problemId
+      );
+    });
+    await apply.click();
+    const response = await applied;
+    const expectedDates = await page.evaluate(
+      ({ from, to }) => ({
+        from: new Date(from).toISOString(),
+        to: new Date(to).toISOString(),
+      }),
+      { from: fromValue, to: toValue },
+    );
+    const params = new URL(response.url()).searchParams;
+    expect(params.get("from")).toBe(expectedDates.from);
+    expect(params.get("to")).toBe(expectedDates.to);
+    expect(params.get("page")).toBe("1");
+    expect(requests).toHaveLength(2);
     expect((await upstreamCalls()).every((call) => call.method === "GET")).toBe(
       true,
     );
@@ -368,6 +497,43 @@ for (const locale of ["zh-CN", "en"] as const) {
     });
   }
 }
+
+test("English desktop null submission measurements remain whole words within their cells", async ({
+  page,
+  context,
+  isMobile,
+}) => {
+  test.skip(isMobile, "Desktop measurement is covered by the desktop project");
+  await context.addCookies([
+    {
+      name: "codestartrack_locale",
+      value: "en",
+      url: "http://127.0.0.1:3100",
+    },
+  ]);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.route("**/api/v1/oj-accounts/*/submissions?*", async (route) => {
+    const response = await route.fetch();
+    const body = (await response.json()) as { data: SubmissionDto[] };
+    expect(body.data.length).toBeGreaterThan(0);
+    body.data[0] = { ...body.data[0], timeMs: null, memoryBytes: null };
+    await route.fulfill({ response, json: body });
+  });
+  const items = await openSubmissions(page, "en");
+  expect(items[0].timeMs).toBeNull();
+  expect(items[0].memoryBytes).toBeNull();
+  const table = page.getByRole("table", { name: "Submissions", exact: true });
+  await expect(table).toBeVisible();
+  const record = table.locator("tr[data-submission-primary]").first();
+  for (const column of [2, 3]) {
+    const cell = record.locator("td").nth(column);
+    await expect(cell).toHaveText("Unavailable");
+    await expectWholeWord(cell, "Unavailable");
+  }
+  expect((await upstreamCalls()).every((call) => call.method === "GET")).toBe(
+    true,
+  );
+});
 
 test("a desktop problem Sheet uses the narrow layout and keeps its problem-scoped read", async ({
   page,

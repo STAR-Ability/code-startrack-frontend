@@ -44,7 +44,13 @@ import { useAccounts } from "./account-provider";
 import { ProblemLink } from "./recommendation-card";
 import { isAiJobPending } from "./use-ai-job";
 import { CompatibilityNotice } from "./compatibility-notice";
-export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
+export function TeamAnalysisView({
+  analysis,
+  historical = false,
+}: {
+  analysis: TeamAnalysisDto;
+  historical?: boolean;
+}) {
   const { t, locale } = useLocale();
   const number = (value: number) =>
     new Intl.NumberFormat(locale, {
@@ -59,9 +65,38 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
         version={analysis.algorithmVersion}
         family="team-profile"
       />
+      <div className="flex min-w-0 flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm text-muted-foreground">
+            {t(`v12.audience.${analysis.audience}`)}
+          </p>
+          {historical && (
+            <Badge variant="outline" wrap>
+              {t("v12.teamHistoricalAnalysis")}
+            </Badge>
+          )}
+        </div>
+        <dl className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
+          <div className="flex min-w-0 flex-wrap gap-x-2">
+            <dt>{t("v.cutoff")}:</dt>
+            <dd>
+              <time dateTime={analysis.dataCutoffAt}>
+                {formatTimestamp(analysis.dataCutoffAt, locale)}
+              </time>
+            </dd>
+          </div>
+          <div className="flex min-w-0 flex-wrap gap-x-2">
+            <dt>{t("v.createdAt")}:</dt>
+            <dd>
+              <time dateTime={analysis.createdAt}>
+                {formatTimestamp(analysis.createdAt, locale)}
+              </time>
+            </dd>
+          </div>
+        </dl>
+      </div>
       <MetricPanel
         title="v12.teamAnalysis"
-        description={t(`v12.audience.${analysis.audience}`)}
         metrics={[
           [
             "v12.included",
@@ -90,48 +125,63 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
           <AlertDescription>{t("v12.staleNote")}</AlertDescription>
         </Alert>
       )}
-      <Panel title="v.dimensions">
+      <Panel
+        title="v.dimensions"
+        variant="analysis"
+        className="@container/ability"
+      >
         {analysis.includedMemberCount === 0 ? (
           <EmptyState embedded title={t("v12.noAbilitySharing")} />
         ) : (
-          <>
-            <Chart
-              label={t("v.dimensions")}
-              palette="ability"
-              size="ability"
-              option={radarOption(
-                dimensions.map((dimension) => ({
-                  name: t(`data.dimension.${dimension.code}`),
-                  score: dimension.score,
-                })),
-                t("v.overallScore"),
-              )}
-            />
-            <dl className="grid gap-3 sm:grid-cols-2">
+          <div className="analysis-ability-content">
+            <div className="analysis-ability-chart">
+              <Chart
+                label={t("v.dimensions")}
+                palette="ability"
+                size="ability"
+                option={radarOption(
+                  dimensions.map((dimension) => ({
+                    name: t(`data.dimension.${dimension.code}`),
+                    score: dimension.score,
+                  })),
+                  t("v.overallScore"),
+                )}
+              />
+            </div>
+            <dl className="analysis-dimension-list">
               {dimensions.map((dimension) => (
                 <div
                   key={dimension.code}
-                  className="flex flex-wrap justify-between gap-2"
+                  className="analysis-dimension-row"
+                  data-weakest={dimension.code === analysis.weakestDimension}
                 >
-                  <dt className="flex flex-wrap items-center gap-2">
+                  <dt>
                     {t(`data.dimension.${dimension.code}`)}
                     {dimension.code === analysis.weakestDimension && (
-                      <Badge variant="outline">{t("v.weakest")}</Badge>
+                      <Badge variant="outline" wrap>
+                        {t("v.weakest")}
+                      </Badge>
                     )}
                   </dt>
-                  <dd className="flex flex-col gap-1 sm:items-end">
+                  <dd className="flex min-w-0 flex-col gap-1 @min-[14rem]/dimension-values:items-end">
                     <span className="font-mono tabular-nums">
                       {number(dimension.score)} / {number(100)}
                     </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="font-sans text-xs text-muted-foreground">
                       {t("v12.dimensionSamples")}:{" "}
                       {number(dimension.memberSampleCount)}
                     </span>
                   </dd>
+                  <dd aria-hidden="true" className="analysis-dimension-track">
+                    <div
+                      className="analysis-dimension-fill"
+                      style={{ width: `${dimension.score}%` }}
+                    />
+                  </dd>
                 </div>
               ))}
             </dl>
-          </>
+          </div>
         )}
       </Panel>
       <Panel title="v12.teamActivity">
@@ -203,8 +253,10 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
 }
 export function TeamBatchView({
   batch,
+  historical = false,
 }: {
   batch: TeamRecommendationBatchDto;
+  historical?: boolean;
 }) {
   const { t, locale } = useLocale();
   const number = (value: number) =>
@@ -217,9 +269,30 @@ export function TeamBatchView({
         version={batch.algorithmVersion}
         family="team-recommendation"
       />
+      <div className="flex min-w-0 flex-col gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-sm text-muted-foreground">
+            {t(`v12.audience.${batch.audience}`)}
+          </p>
+          {historical && (
+            <Badge variant="outline" wrap>
+              {t("v12.teamHistoricalBatch")}
+            </Badge>
+          )}
+        </div>
+        <dl className="text-xs text-muted-foreground">
+          <div className="flex min-w-0 flex-wrap gap-x-2">
+            <dt>{t("v.createdAt")}:</dt>
+            <dd>
+              <time dateTime={batch.generatedAt}>
+                {formatTimestamp(batch.generatedAt, locale)}
+              </time>
+            </dd>
+          </div>
+        </dl>
+      </div>
       <p>
-        {t(`v12.audience.${batch.audience}`)} · {t("v12.targetRating")}:{" "}
-        {number(batch.targetRating)} ·{" "}
+        {t("v12.targetRating")}: {number(batch.targetRating)} ·{" "}
         {t(`data.dimension.${batch.targetDimension}`)}
       </p>
       <p>
@@ -428,7 +501,7 @@ export function TeamInsights({ team }: { team: TeamDetailDto }) {
       <ErrorNotice error={mutation.error} />
       <AiJobNotice jobId={jobId} teamId={team.teamId} />
       {displayed ? (
-        <TeamAnalysisView analysis={displayed} />
+        <TeamAnalysisView analysis={displayed} historical={!!snapshotId} />
       ) : (
         !latest.isFetching &&
         !latest.error && <EmptyState title={t("v12.noTeamAnalysis")} />
@@ -542,7 +615,11 @@ export function TeamRecommendations({ team }: { team: TeamDetailDto }) {
   );
   const displayed = batchId ? detail : latest;
   return (
-    <Panel title="v12.teamRecommendations">
+    <section
+      className="flex min-w-0 flex-col gap-4"
+      aria-label={t("v12.teamRecommendations")}
+    >
+      <h2 className="section-heading">{t("v12.teamRecommendations")}</h2>
       <div className="flex flex-wrap gap-3">
         {team.canManage && (
           <Field className="max-w-sm">
@@ -605,7 +682,9 @@ export function TeamRecommendations({ team }: { team: TeamDetailDto }) {
       <ErrorNotice error={mutation.error} />
       <AiJobNotice jobId={jobId} teamId={team.teamId} />
       <QueryFeedback query={displayed} />
-      {displayed.data && <TeamBatchView batch={displayed.data} />}
+      {displayed.data && (
+        <TeamBatchView batch={displayed.data} historical={!!batchId} />
+      )}
       {!displayed.isFetching && !displayed.error && displayed.data === null && (
         <EmptyState title={t("v12.noTeamRecommendations")} />
       )}
@@ -638,6 +717,6 @@ export function TeamRecommendations({ team }: { team: TeamDetailDto }) {
         setPage={setPage}
         pending={history.isFetching}
       />
-    </Panel>
+    </section>
   );
 }

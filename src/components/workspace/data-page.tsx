@@ -137,17 +137,11 @@ function Problems() {
           ))}
         </ToggleGroup>
         <form
+          className="@container/problem-controls"
+          noValidate
           onSubmit={form.handleSubmit((values) => {
             const min = values.min === "" ? undefined : Number(values.min);
             const max = values.max === "" ? undefined : Number(values.max);
-            if (
-              (min !== undefined && !Number.isSafeInteger(min)) ||
-              (max !== undefined && !Number.isSafeInteger(max)) ||
-              (min !== undefined && max !== undefined && min > max)
-            ) {
-              form.setError("min", { message: t("v.invalidFilter") });
-              return;
-            }
             setFilters({
               tag: values.tag || undefined,
               minDifficulty: min,
@@ -156,22 +150,45 @@ function Problems() {
             setPage(1);
           })}
         >
-          <FieldGroup className="sm:flex-row sm:items-end">
+          <FieldGroup className="problem-filter-fields grid min-w-0 items-end gap-3">
             <FormInput label={t("v.tag")} {...form.register("tag")} />
             <FormInput
               label={t("v.minDifficulty")}
               type="number"
               step={1}
               error={form.formState.errors.min?.message}
-              {...form.register("min")}
+              {...form.register("min", {
+                validate: (value, values) => {
+                  if (value === "") return true;
+                  const min = Number(value);
+                  const max =
+                    values.max === "" ? undefined : Number(values.max);
+                  return (
+                    (Number.isSafeInteger(min) &&
+                      (max === undefined ||
+                        !Number.isSafeInteger(max) ||
+                        min <= max)) ||
+                    t("v.invalidFilter")
+                  );
+                },
+              })}
             />
             <FormInput
               label={t("v.maxDifficulty")}
               type="number"
               step={1}
-              {...form.register("max")}
+              error={form.formState.errors.max?.message}
+              {...form.register("max", {
+                deps: ["min"],
+                validate: (value) =>
+                  value === "" ||
+                  Number.isSafeInteger(Number(value)) ||
+                  t("v.invalidFilter"),
+              })}
             />
-            <Button type="submit">{t("v.filter")}</Button>
+            <Button type="submit" wrap>
+              {t("v.filter")}
+            </Button>
           </FieldGroup>
         </form>
         <QueryFeedback query={query} resource={t("v.problems")} />
@@ -200,7 +217,11 @@ function Problems() {
                 )}
               </Badge>
             </div>
-            <Button variant="outline" onClick={() => setProblem(item.problem)}>
+            <Button
+              variant="outline"
+              wrap
+              onClick={() => setProblem(item.problem)}
+            >
               {t("v.problemSubmissions")}
             </Button>
           </div>
@@ -270,18 +291,6 @@ function Submissions({ problemId }: { problemId?: string }) {
       {!problemId && (
         <form
           onSubmit={form.handleSubmit((values) => {
-            if (
-              (values.problemId &&
-                !idSchema.safeParse(values.problemId).success) ||
-              (values.from && !Number.isFinite(Date.parse(values.from))) ||
-              (values.to && !Number.isFinite(Date.parse(values.to))) ||
-              (values.from &&
-                values.to &&
-                Date.parse(values.from) >= Date.parse(values.to))
-            ) {
-              form.setError("from", { message: t("v.invalidDates") });
-              return;
-            }
             setFilters({
               verdict: values.verdict || undefined,
               problemId: values.problemId || undefined,
@@ -310,18 +319,45 @@ function Submissions({ problemId }: { problemId?: string }) {
             <FormInput
               label={t("v.problemId")}
               inputMode="numeric"
-              {...form.register("problemId")}
+              error={form.formState.errors.problemId?.message}
+              {...form.register("problemId", {
+                validate: (value) =>
+                  value === "" ||
+                  idSchema.safeParse(value).success ||
+                  t("v.invalidProblemId"),
+              })}
             />
             <FormInput
               label={t("v.from")}
               type="datetime-local"
               error={form.formState.errors.from?.message}
-              {...form.register("from")}
+              {...form.register("from", {
+                validate: (value, values) => {
+                  if (value === "") return true;
+                  const from = Date.parse(value);
+                  const to =
+                    values.to === "" ? undefined : Date.parse(values.to);
+                  return (
+                    (Number.isFinite(from) &&
+                      (to === undefined ||
+                        !Number.isFinite(to) ||
+                        from < to)) ||
+                    t("v.invalidDates")
+                  );
+                },
+              })}
             />
             <FormInput
               label={t("v.to")}
               type="datetime-local"
-              {...form.register("to")}
+              error={form.formState.errors.to?.message}
+              {...form.register("to", {
+                deps: ["from"],
+                validate: (value) =>
+                  value === "" ||
+                  Number.isFinite(Date.parse(value)) ||
+                  t("v.invalidDates"),
+              })}
             />
             <Button type="submit" wrap>
               {t("v.filter")}

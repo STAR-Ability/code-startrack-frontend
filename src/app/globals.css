@@ -139,7 +139,7 @@
   --accent-foreground: var(--foreground);
   --destructive: #b32644;
   --border: #e5e7eb;
-  --input: #8b95a5;
+  --input: #788292;
   --ring: var(--info);
   --chart-1: var(--info);
   --chart-2: var(--success);
@@ -353,7 +353,6 @@
     transition-timing-function: var(--motion-ease);
   }
   .sidebar-brand > a > span:last-child,
-  .sidebar-copy,
   .workspace-layout [data-slot="sidebar-menu-button"] > span {
     max-width: 12rem;
     opacity: 1;
@@ -388,9 +387,6 @@
   }
   [data-collapsible="icon"] [data-slot="sidebar-menu-button"] {
     overflow: hidden;
-  }
-  [data-collapsible="icon"] .sidebar-copy {
-    display: none;
   }
   .metric-strip {
     @apply grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-3;
@@ -500,16 +496,6 @@
   }
   .workspace-nav[aria-current="page"] > svg {
     color: var(--navigation-accent);
-  }
-  .workspace-nav-mobile {
-    @apply h-full flex-col gap-1 px-1 py-2 text-center text-xs wrap-anywhere;
-  }
-  .workspace-nav-mobile[aria-current="page"] {
-    box-shadow: none;
-  }
-  .mobile-navigation {
-    z-index: 10;
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
   .product-preview {
     @apply relative min-w-0 rounded-3xl px-2 py-8 sm:px-6;
@@ -664,6 +650,15 @@
     background:
       radial-gradient(ellipse at 16% 40%, var(--accent), transparent 46%),
       linear-gradient(180deg, var(--background), var(--muted));
+  }
+  .auth-layout {
+    container: auth-layout / inline-size;
+  }
+  .auth-composition {
+    @apply grid w-full min-w-0 grid-cols-[minmax(0,1fr)] items-center gap-8;
+  }
+  .auth-story {
+    display: none;
   }
   .auth-story-title {
     font-size: clamp(2.25rem, 3.4vw, 3.25rem);
@@ -869,13 +864,6 @@
     text-decoration: underline;
     text-underline-offset: 6px;
   }
-  .profile-exhibit {
-    padding: clamp(1rem, 3vw, 2rem);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-3xl);
-    background: linear-gradient(160deg, var(--canvas), var(--background));
-    box-shadow: var(--raised-shadow);
-  }
   .brand-emblem {
     position: relative;
     isolation: isolate;
@@ -933,11 +921,6 @@
 @layer components {
   .workspace-context-header {
     @apply relative isolate overflow-hidden rounded-2xl border border-surface-border bg-surface-panel p-5 sm:p-6;
-  }
-  .workspace-task-tile {
-    @apply relative grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-xl border border-surface-border bg-surface-panel p-4 transition-[border-color,background-color] hover:border-ring/40 focus-visible:outline-2 focus-visible:outline-ring motion-reduce:transition-none sm:flex sm:flex-col sm:items-start sm:gap-3 sm:p-5;
-    transition-duration: var(--motion-control);
-    transition-timing-function: var(--motion-ease);
   }
   .workspace-team-card {
     @apply flex min-w-0 flex-col gap-4 rounded-xl border border-surface-border bg-surface-panel p-5;
@@ -1150,6 +1133,16 @@
     @apply h-full rounded-full bg-insight;
   }
 }
+@container recommendation (max-width: 14rem) {
+  .recommendation-heading {
+    flex-direction: column;
+  }
+  .recommendation-action-panel {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
 @container recommendation (min-width: 40rem) {
   .recommendation-content-featured {
     grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.85fr);
@@ -1288,9 +1281,11 @@
   .submission-mobile-list {
     @apply flex min-w-0 flex-col divide-y;
   }
+  .problem-filter-fields,
   .submission-filter-fields {
     @apply grid min-w-0 grid-cols-1 items-end gap-3;
   }
+  .problem-filter-fields :is(input, [data-slot="field"]),
   .submission-filter-fields :is(input, [data-slot="field"]) {
     @apply min-w-0;
   }
@@ -1338,6 +1333,16 @@
   }
   .submission-mobile-list {
     display: none;
+  }
+}
+@container problem-controls (min-width: 32rem) {
+  .problem-filter-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container problem-controls (min-width: 56rem) {
+  .problem-filter-fields {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
   }
 }
 @container submission-controls (min-width: 32rem) {
@@ -1624,4 +1629,23 @@
     width: 20px;
     height: 20px;
   }
+}
+
+@container auth-layout (min-width: 60rem) {
+  .auth-composition {
+    grid-template-columns: minmax(0, 1fr) minmax(0, var(--content-auth));
+    gap: 4rem;
+  }
+  .auth-story {
+    display: flex;
+  }
+}
+
+.submission-mobile-list .group\/disclosure {
+  padding-inline: clamp(10px, 0.75rem, 12px);
+  gap: 8px;
+}
+.submission-mobile-list .group\/disclosure > svg {
+  width: clamp(16px, 1rem, 24px);
+  height: clamp(16px, 1rem, 24px);
 }

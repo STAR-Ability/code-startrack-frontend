@@ -294,3 +294,20 @@ Permanent fixes follow dev -> protected PR -> main -> GHCR -> deploy.
   45.6 seconds; a separately traced initial host/runner interruption is retained.
   No production source change was required by these E2E failures. Receipts live
   under `test-results/redesign/iteration-4/`.
+
+- Iteration 5's first full local candidate passes lint, format, strict types,
+  32-page production export and Storybook build. All 506 Storybook cases pass.
+  Default unit concurrency initially yields 363 passes and 33 resource failures
+  (28 default 5-second timeouts and five Bash spawn timeouts); the unchanged full
+  suite passes all 396 tests with two workers. No assertions, timeouts or default
+  worker configuration were weakened. Protected remote CI still runs the default
+  command and remains a required release gate.
+- Fresh independent iteration 5 review captures 354 bilingual route/width/text
+  samples and 28 adversarial states. There are no document-overflow/runtime faults,
+  but actual images expose child/text clipping in home/demo, data and snapshot
+  actions, team recommendation facts and coach unread badges at 320px/200%.
+  Scoped composition/wrapping fixes are implemented; their rebuilt rendered
+  review and regression tests remain pending. A separate Linux trace diagnosis
+  finds the iteration 4 enlarged-English member header overflows by 3px;
+  RefreshButton now uses its existing wrapping variant, with strict revalidation
+  pending. Final performance, platform baselines, full E2E and release are pending.

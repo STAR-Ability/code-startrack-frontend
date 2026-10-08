@@ -6,7 +6,8 @@ export const showcaseZh = {
   "showcase.note": "本页为产品展示，示例数据不代表真实账号或分析结果。",
   "showcase.available": "当前支持",
   "showcase.planned": "未来方向",
-  "showcase.service": "当前分析与推荐能力尚不可用；这里仅展示训练思路。",
+  "showcase.service":
+    "本页展示示例数据。登录后可查看学习画像与推荐；真实结果取决于你的训练记录及后端服务可用性。",
   "showcase.features.label": "产品能力",
   "showcase.features.title": "从一次提交，走向下一次进步。",
   "showcase.features.description":
@@ -22,7 +23,7 @@ export const showcaseZh = {
     "围绕难度匹配、薄弱训练和综合模式查看推荐。题目保留来源，回到原平台完成练习。",
   "showcase.features.boundary": "一个空间，各自清晰。",
   "showcase.features.boundaryNote":
-    "账号可以汇总展示，画像和推荐仍按账号独立计算。我们不把不同账号的分数拼成一个虚假的能力值。",
+    "Codeforces 账号视图保留各自的画像与推荐；用户学习画像与混合推荐可结合平台题目和外部训练记录，不合并不同的难度尺度。",
   "showcase.features.input": "公开训练记录",
   "showcase.features.context": "带时间的训练快照",
   "showcase.features.output": "可解释的练习选择",
@@ -86,7 +87,8 @@ export const showcaseZh = {
   "showcase.about.nowNote":
     "界面能做什么，服务已支持什么，未来想做什么，分别说明。",
   "showcase.about.accounts": "多账号管理、训练数据与记录浏览",
-  "showcase.about.analysis": "画像与推荐界面 · 分析能力尚不可用",
+  "showcase.about.analysis": "学习画像、混合推荐与静态分析工具证据",
+  "showcase.about.synthesis": "AI 综合分析 · 尚未开放",
   "showcase.about.agent": "渐进式 Agent 辅助与更多数据源",
   "showcase.about.open": "从一次练习开始。",
 } as const;
@@ -101,7 +103,7 @@ export const showcaseEn = {
   "showcase.available": "Available today",
   "showcase.planned": "Future direction",
   "showcase.service":
-    "Analysis and recommendations are currently unavailable. This page illustrates the training approach.",
+    "This public page uses illustrative data. Sign in to view learning profiles and recommendations; real results depend on your training records and backend service availability.",
   "showcase.features.label": "Capabilities",
   "showcase.features.title": "From one submission to your next step.",
   "showcase.features.description":
@@ -117,7 +119,7 @@ export const showcaseEn = {
     "Explore level matching, weakness training and a hybrid mode. Every problem keeps its source so you can practice on the original platform.",
   "showcase.features.boundary": "One space. Clear boundaries.",
   "showcase.features.boundaryNote":
-    "Accounts can appear in a shared overview, while profiles and recommendations stay independent. Different scores are never combined into an invented ability score.",
+    "Codeforces account views retain their own profiles and recommendations. User learning profiles and mixed recommendations can combine platform and external practice records, while keeping difficulty scales separate.",
   "showcase.features.input": "Public practice records",
   "showcase.features.context": "Dated training snapshots",
   "showcase.features.output": "Explainable practice choices",
@@ -182,7 +184,8 @@ export const showcaseEn = {
     "Distinguish the interface, deployed services and future intentions.",
   "showcase.about.accounts": "Multiple accounts, practice data and history",
   "showcase.about.analysis":
-    "Profile and recommendation UI · analysis currently unavailable",
+    "Learning profiles, mixed recommendations and static analysis tool evidence",
+  "showcase.about.synthesis": "AI synthesis · not yet open",
   "showcase.about.agent": "Progressive Agent assistance and more data sources",
   "showcase.about.open": "Start with one practice session.",
 } satisfies Record<keyof typeof showcaseZh, string>;

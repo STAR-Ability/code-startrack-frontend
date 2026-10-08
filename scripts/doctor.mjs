@@ -59,6 +59,6 @@ for (const entry of readdirSync(".agents/skills", { withFileTypes: true })) {
   }
 }
 console.log(
-  "Browser launch, MCP connections and actual Skill discovery require the smoke checks documented in docs/development/codex-cli.md.",
+  "Browser launch and MCP connections are not checked here. See README.md#checks and .agents/skills/codestartrack-browser-review/SKILL.md for offline browser verification; restart Codex after Skill/MCP changes.",
 );
 process.exitCode = failures ? 1 : 0;

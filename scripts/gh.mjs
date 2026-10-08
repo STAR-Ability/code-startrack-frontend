@@ -12,7 +12,7 @@ const result = spawnSync(
 );
 if (result.error) {
   console.error(
-    "GitHub CLI is unavailable. See docs/development/codex-cli.md.",
+    "GitHub CLI is unavailable. Install gh on PATH or place the portable binary at .tools/gh/bin/gh.",
   );
 }
 process.exitCode = result.status ?? 1;

@@ -5,14 +5,13 @@ description: Verify codeStartrack UI changes with the project's offline Playwrig
 
 # codeStartrack browser review
 
-Read `docs/development/codex-cli.md` for environment setup and limitations.
+Read `README.md` (Development and Checks sections) for environment setup and limitations.
 
 ## Choose the right evidence
 
-- Read `package.json` and the changed routes first. Current V0.11 includes `/demo`,
-  `/dashboard`, `/practice`, account/data/analysis/profile/security workspaces
-  and auth routes. Use README and `docs/product/api-contract.md` for the active
-  contract; the old V0.1 fixed-user gateway is historical.
+- Read `package.json` and the changed routes first. Use README and
+  `docs/development/v0.2-integration.md` for routes, authoritative contracts and
+  retained CF/collaboration boundaries; the old V0.1 fixed-user gateway is historical.
 - Before Next-specific changes, read the relevant installed guide in
   `node_modules/next/dist/docs/`. Use Context7 for version-specific React,
   TypeScript, Tailwind or dependency questions that local docs do not answer.
@@ -32,7 +31,8 @@ Read `docs/development/codex-cli.md` for environment setup and limitations.
 4. Capture console and page errors, network failures, accessibility snapshots
    and screenshots. Check desktop, 390px and 320px widths, 200% text sizing,
    keyboard focus/skip link/dialog dismissal, and both zh-CN and en.
-5. Exercise entry → practice → profile and locale switching. Keep navigation
+5. Exercise the changed workflow and locale switching, including bank → editor →
+   submission → training → profile → recommendations for V0.2. Keep navigation
    local; inspect external links without following them. Account/auth/sync/
    recommendation mutations may be tested only against the synthetic fixture. Never perform these actions against a live backend.
 6. Save screenshots/traces under ignored `test-results/`; report reproducible

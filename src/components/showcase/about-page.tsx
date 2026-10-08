@@ -67,7 +67,8 @@ export function AboutPage() {
           {(
             [
               ["accounts", "success", "available"],
-              ["analysis", "warning", "planned"],
+              ["analysis", "success", "available"],
+              ["synthesis", "warning", "planned"],
               ["agent", "secondary", "planned"],
             ] as const
           ).map(([key, variant, state]) => (

@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { readData, readPage, request, queryString } from "./client";
-import { uuidSchema, type AnalysisWindow } from "./schemas";
+import {
+  userSchema,
+  uuidSchema,
+  type AnalysisWindow,
+  type SubmissionDto,
+} from "./schemas";
 import {
   aiJobSchema,
   applicationSchema,
@@ -22,6 +27,7 @@ import {
   type PrivacySettingsDto,
   type TeamAnalysisAudience,
   type TeamInvitationStatus,
+  type TeamMemberStatus,
   type TeamRecommendationMode,
 } from "./v012-schemas";
 export type Paging = { page?: number; pageSize?: number };
@@ -34,12 +40,6 @@ const uuid = (id: string) => uuidSchema.parse(id);
 const team = (id: string) => `/teams/${uuid(id)}`;
 const member = (teamId: string, publicId: string) =>
   `${team(teamId)}/members/${uuid(publicId)}`;
-// These mutation payloads are intentionally unspecified by the public contract.
-const action = (
-  path: string,
-  body?: unknown,
-  method: "POST" | "DELETE" = "POST",
-) => request(path, z.unknown(), { method, body });
 export const v012 = {
   userOverview: (
     publicId: string,
@@ -289,7 +289,11 @@ export const v012 = {
       undefined,
       { invitationId: id },
     ),
-  members: (teamId: string, paging: Paging, signal?: AbortSignal) =>
+  members: (
+    teamId: string,
+    paging: Paging & { status?: TeamMemberStatus },
+    signal?: AbortSignal,
+  ) =>
     readPage(
       `${team(teamId)}/members${queryString(paging)}`,
       teamMemberSchema,
@@ -297,33 +301,52 @@ export const v012 = {
       undefined,
       { teamId },
     ),
-  removeMember: (teamId: string, publicId: string) =>
-    action(member(teamId, publicId), undefined, "DELETE"),
-  leaveTeam: (teamId: string) => action(`${team(teamId)}/leave`),
+  removeMember: (teamId: string, publicId: string, reason?: string) =>
+    request(member(teamId, publicId), z.undefined(), {
+      method: "DELETE",
+      ...(reason ? { body: { reason } } : {}),
+    }),
+  leaveTeam: (teamId: string) =>
+    request(`${team(teamId)}/leave`, z.undefined(), { method: "POST" }),
   privacy: (signal?: AbortSignal) =>
     readData("/me/privacy", privacySchema, { signal }),
   updatePrivacy: (body: Partial<Omit<PrivacySettingsDto, "updatedAt">>) =>
     readData("/me/privacy", privacySchema, { method: "PATCH", body }),
-  memberTraining: (teamId: string, publicId: string, signal?: AbortSignal) =>
+  memberTraining: (
+    teamId: string,
+    publicId: string,
+    signal?: AbortSignal,
+    window?: AnalysisWindow,
+  ) =>
     readData(
-      `${member(teamId, publicId)}/training/overview`,
-      sharedTrainingSchema,
+      `${member(teamId, publicId)}/training/overview${queryString({ window })}`,
+      sharedTrainingSchema.nullable(),
       { signal },
       undefined,
-      { publicId },
+      { publicId, ...(window ? { window } : {}) },
     ),
-  memberProfile: (teamId: string, publicId: string, signal?: AbortSignal) =>
+  memberProfile: (
+    teamId: string,
+    publicId: string,
+    signal?: AbortSignal,
+    window?: AnalysisWindow,
+  ) =>
     readData(
-      `${member(teamId, publicId)}/profile`,
-      sharedProfileSchema,
+      `${member(teamId, publicId)}/profile${queryString({ window })}`,
+      sharedProfileSchema.nullable(),
       { signal },
       undefined,
-      { publicId },
+      { publicId, ...(window ? { window } : {}) },
     ),
   memberSubmissions: (
     teamId: string,
     publicId: string,
-    paging: Paging,
+    paging: Paging & {
+      verdict?: SubmissionDto["verdict"];
+      problemId?: string;
+      from?: string;
+      to?: string;
+    },
     signal?: AbortSignal,
   ) =>
     readPage(
@@ -437,7 +460,10 @@ export const v012 = {
   coachDashboard: (signal?: AbortSignal) =>
     readData("/coach/dashboard", coachDashboardSchema, { signal }),
   redeemCoachCode: (code: string) =>
-    action("/coach-invite-codes/redeem", { code }),
+    readData("/coach-invite-codes/redeem", z.object({ user: userSchema }), {
+      method: "POST",
+      body: { code },
+    }),
   notifications: (
     filters: Paging & { unreadOnly?: boolean },
     signal?: AbortSignal,
@@ -453,6 +479,18 @@ export const v012 = {
       z.object({ count: z.number().int().nonnegative().safe() }),
       { signal },
     ),
-  readNotification: (id: string) => action(`/notifications/${uuid(id)}/read`),
-  readAllNotifications: () => action("/notifications/read-all"),
+  readNotification: (id: string) =>
+    readData(
+      `/notifications/${uuid(id)}/read`,
+      notificationSchema,
+      { method: "POST" },
+      undefined,
+      { notificationId: id },
+    ),
+  readAllNotifications: () =>
+    readData(
+      "/notifications/read-all",
+      z.object({ updated: z.number().int().nonnegative().safe() }),
+      { method: "POST" },
+    ),
 };

@@ -16,6 +16,35 @@ const mime = {
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
 };
+const apiBodyLimit = 2 * 1024 * 1024;
+
+async function readApiBody(request, response) {
+  function rejectBody() {
+    response
+      .writeHead(413, {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      })
+      .end("Request body is too large");
+    request.resume();
+  }
+  if (Number(request.headers["content-length"]) > apiBodyLimit) {
+    rejectBody();
+    return null;
+  }
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of request.iterator({ destroyOnReturn: false })) {
+    size += chunk.length;
+    if (size > apiBodyLimit) {
+      rejectBody();
+      return null;
+    }
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks, size);
+}
+
 export function createFrontendServer({
   upstream = process.env.BACKEND_BASE_URL || "http://backend:8081",
   directory = "out",
@@ -41,6 +70,15 @@ export function createFrontendServer({
       return;
     }
     if (pathname.startsWith("/api/v1/")) {
+      let body;
+      try {
+        // Validate the complete body before forwarding a potentially mutating request.
+        body = await readApiBody(request, response);
+      } catch {
+        if (!response.destroyed) response.writeHead(400).end();
+        return;
+      }
+      if (body === null) return;
       const proxy = (target.protocol === "https:" ? httpsRequest : httpRequest)(
         new URL(`${pathname}${requestUrl.search}`, target),
         {
@@ -68,7 +106,7 @@ export function createFrontendServer({
         response.end();
       });
       response.on("close", () => proxy.destroy());
-      request.pipe(proxy);
+      proxy.end(body);
       return;
     }
     if (pathname.startsWith("/api/")) {

@@ -63,6 +63,7 @@ export const teamSummarySchema = z.object({
 });
 export const teamDetailSchema = teamSummarySchema.extend({
   creator: userBriefSchema,
+  activeMemberCount: count.optional(),
   canManage: z.boolean(),
   canLeave: z.boolean(),
 });

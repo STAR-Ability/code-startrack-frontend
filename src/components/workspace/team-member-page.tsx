@@ -35,9 +35,10 @@ type MemberView = (typeof views)[number];
 export function SharedTrainingView({
   data,
 }: {
-  data: SharedTrainingOverviewDto;
+  data: SharedTrainingOverviewDto | null;
 }) {
   const { t, locale } = useLocale();
+  if (data === null) return <EmptyState title={t("v.noAnalysis")} />;
   const number = (value: number) => new Intl.NumberFormat(locale).format(value);
   return (
     <>
@@ -205,8 +206,13 @@ export function SharedTrainingView({
     </>
   );
 }
-export function SharedProfileView({ data }: { data: SharedAbilityProfileDto }) {
+export function SharedProfileView({
+  data,
+}: {
+  data: SharedAbilityProfileDto | null;
+}) {
   const { t } = useLocale();
+  if (data === null) return <EmptyState title={t("v.noAnalysis")} />;
   const dimensions = [...data.dimensions].sort(
     (a, b) => a.displayOrder - b.displayOrder,
   );
@@ -411,10 +417,10 @@ function MemberData({
           {t("v.retry")}
         </Button>
       )}
-      {view === "basicTraining" && training.data && (
+      {view === "basicTraining" && training.data !== undefined && (
         <SharedTrainingView data={training.data} />
       )}{" "}
-      {view === "abilityProfile" && profile.data && (
+      {view === "abilityProfile" && profile.data !== undefined && (
         <SharedProfileView data={profile.data} />
       )}{" "}
       {view === "detailedSubmissions" && (

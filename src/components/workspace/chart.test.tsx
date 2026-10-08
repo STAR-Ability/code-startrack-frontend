@@ -1,5 +1,13 @@
 import { act, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import type { ECharts } from "echarts";
 import { Chart } from "./chart";
 import { radarOption, trendOption } from "@/lib/charts/options";
@@ -23,6 +31,12 @@ let motion: {
 };
 let disconnectResize: ReturnType<typeof vi.fn>;
 let disconnectTheme: ReturnType<typeof vi.fn>;
+let actualEcharts: typeof import("echarts");
+
+beforeAll(async () => {
+  // Load the full engine as fixture setup; lifecycle assertions keep their normal test budget.
+  actualEcharts = await vi.importActual<typeof import("echarts")>("echarts");
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -84,7 +98,7 @@ async function loadChart() {
 }
 
 async function useRealEcharts() {
-  const actual = await vi.importActual<typeof import("echarts")>("echarts");
+  const actual = actualEcharts;
   const canvas = vi
     .spyOn(HTMLCanvasElement.prototype, "getContext")
     .mockReturnValue({

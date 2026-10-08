@@ -122,6 +122,43 @@ describe("V0.2 mounted polling and mutation ownership", () => {
     expect(rebuild).not.toHaveBeenCalled();
     client.clear();
   });
+  it("restarts one bounded null-first-profile read attempt after Refresh with a prior source event", async () => {
+    const read = vi.spyOn(v02, "learningProfile").mockResolvedValue(null);
+    const { client, wrapper } = harness();
+    await invalidateV02LearningSources(client, demoUser.publicId);
+    const { result } = renderHook(() => useV02LatestProfile("ALL"), {
+      wrapper,
+    });
+    await tick();
+    await tick(61000);
+    const firstAttempt = read.mock.calls.length;
+    await tick(9000);
+    expect(read).toHaveBeenCalledTimes(firstAttempt);
+    await act(async () => {
+      await result.current.refetch();
+    });
+    await tick(3000);
+    expect(read.mock.calls.length).toBeGreaterThan(firstAttempt + 1);
+    await tick(61000);
+    const secondAttempt = read.mock.calls.length;
+    await tick(9000);
+    expect(read).toHaveBeenCalledTimes(secondAttempt);
+    client.clear();
+  });
+  it("keeps null profiles without a source-change event out of automatic polling after Refresh", async () => {
+    const read = vi.spyOn(v02, "learningProfile").mockResolvedValue(null);
+    const { client, wrapper } = harness();
+    const { result } = renderHook(() => useV02LatestProfile("ALL"), {
+      wrapper,
+    });
+    await tick();
+    await act(async () => {
+      await result.current.refetch();
+    });
+    await tick(9000);
+    expect(read).toHaveBeenCalledTimes(2);
+    client.clear();
+  });
   it("stops stale reconciliation after its bounded attempt and lets Refresh restart reads", async () => {
     const read = vi
       .spyOn(v02, "learningProfile")

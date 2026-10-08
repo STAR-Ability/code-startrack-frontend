@@ -29,8 +29,12 @@ export function LearningRecommendationView({
         </Alert>
       )}
       <div className="flex flex-wrap gap-2">
-        <Badge variant="outline">{t(`v02.source.${batch.source}`)}</Badge>
-        <Badge variant="secondary">{t(`v.mode.${batch.mode}`)}</Badge>
+        <Badge wrap variant="outline">
+          {t(`v02.source.${batch.source}`)}
+        </Badge>
+        <Badge wrap variant="secondary">
+          {t(`v.mode.${batch.mode}`)}
+        </Badge>
       </div>
       <p className="text-sm text-muted-foreground">
         <time dateTime={batch.generatedAt}>

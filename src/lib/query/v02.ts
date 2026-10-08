@@ -92,8 +92,11 @@ export const PROFILE_RECONCILIATION_MS = 60000;
 export class V02LatestProfilePolling {
   private startedAt: number | null = null;
   private sourceChangedAt: number | undefined;
-  reset(now = Date.now()) {
+  private manuallyRetriedSource: number | undefined;
+  reset(now = Date.now(), sourceChangedAt?: number) {
     this.startedAt = now;
+    this.manuallyRetriedSource = sourceChangedAt;
+    if (sourceChangedAt !== undefined) this.sourceChangedAt = sourceChangedAt;
   }
   delay(
     profile: LearningProfile | null | undefined,
@@ -104,10 +107,16 @@ export class V02LatestProfilePolling {
   ): number | false {
     if (deniedV02(error) || (error instanceof ApiError && error.status === 400))
       return false;
-    const sourceUpdatePending =
+    const recentSourceUpdate =
       sourceChangedAt !== undefined &&
       now - sourceChangedAt < PROFILE_RECONCILIATION_MS;
-    if (sourceUpdatePending && sourceChangedAt !== this.sourceChangedAt) {
+    const manualSourceRead =
+      sourceChangedAt !== undefined &&
+      sourceChangedAt === this.manuallyRetriedSource &&
+      this.startedAt !== null &&
+      now - this.startedAt < PROFILE_RECONCILIATION_MS;
+    const sourceUpdatePending = recentSourceUpdate || manualSourceRead;
+    if (recentSourceUpdate && sourceChangedAt !== this.sourceChangedAt) {
       this.sourceChangedAt = sourceChangedAt;
       this.startedAt = sourceChangedAt;
     }

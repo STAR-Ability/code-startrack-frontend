@@ -128,7 +128,11 @@ export function LearningRecommendationPage() {
               }}
             >
               {recommendationSources.map((item) => (
-                <ToggleGroupItem key={item} value={item}>
+                <ToggleGroupItem
+                  key={item}
+                  value={item}
+                  className="h-auto max-w-full min-w-0 py-2 whitespace-normal"
+                >
                   {t(`v02.source.${item}`)}
                 </ToggleGroupItem>
               ))}
@@ -149,7 +153,11 @@ export function LearningRecommendationPage() {
               }}
             >
               {modes.map((item) => (
-                <ToggleGroupItem key={item} value={item}>
+                <ToggleGroupItem
+                  key={item}
+                  value={item}
+                  className="h-auto max-w-full min-w-0 py-2 whitespace-normal"
+                >
                   {t(`v.mode.${item}`)}
                 </ToggleGroupItem>
               ))}
@@ -198,7 +206,7 @@ export function LearningRecommendationPage() {
             </Field>
           </FieldGroup>
           <div>
-            <Button type="submit" disabled={generation.blocked}>
+            <Button wrap type="submit" disabled={generation.blocked}>
               {generation.isPending && <Spinner aria-hidden="true" />}
               {t(generation.isPending ? "v02.generating" : "v02.generate")}
             </Button>
@@ -224,7 +232,7 @@ export function LearningRecommendationPage() {
         <div>
           <Link
             href="/learning-recommendations"
-            className={buttonVariants({ variant: "outline" })}
+            className={buttonVariants({ variant: "outline", wrap: true })}
             onClick={() => {
               selectionVersion.current++;
               setSelection(null);
@@ -273,7 +281,12 @@ export function LearningRecommendationPage() {
           >
             {t(`v02.source.${source}`)} · {t(`v.mode.${mode}`)}
           </ToggleGroupItem>
-          <ToggleGroupItem value="ALL">{t("v02.historyAll")}</ToggleGroupItem>
+          <ToggleGroupItem
+            value="ALL"
+            className="h-auto max-w-full min-w-0 py-2 whitespace-normal"
+          >
+            {t("v02.historyAll")}
+          </ToggleGroupItem>
         </ToggleGroup>
         <QueryFeedback query={history} />
         {history.data?.data.length === 0 && (

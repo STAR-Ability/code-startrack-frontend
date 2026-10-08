@@ -473,6 +473,7 @@ export function createMockBackend({ scenario = "success" } = {}) {
         };
         jobs.set(account.accountId, initialSync);
         jobs.set(initialSync.jobId, initialSync);
+        learning.sourceChanged({ user, bound, config, event: "bound" });
         data({ account, initialSync }, 201);
         return;
       }
@@ -548,6 +549,12 @@ export function createMockBackend({ scenario = "success" } = {}) {
           } else
             for (const snapshot of snapshots.get(account.accountId) ?? [])
               snapshot.stale = true;
+          learning.sourceChanged({
+            user,
+            bound,
+            config,
+            event: "sync-completed",
+          });
         }
       }
       data(job);
@@ -581,6 +588,7 @@ export function createMockBackend({ scenario = "success" } = {}) {
           },
         ];
       }
+      learning.sourceChanged({ user, bound, config, event: "unbound" });
       noContent();
       return;
     }

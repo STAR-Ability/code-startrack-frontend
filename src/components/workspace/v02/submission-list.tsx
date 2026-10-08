@@ -108,6 +108,7 @@ function SubmissionListContent({ initial }: { initial: SubmissionFilters }) {
         {t("v02.submissionListNote")}
       </p>
       <form
+        className="min-w-0"
         noValidate
         onSubmit={form.handleSubmit((values) => {
           form.clearErrors();
@@ -142,12 +143,13 @@ function SubmissionListContent({ initial }: { initial: SubmissionFilters }) {
           setPage(1);
         })}
       >
-        <FieldGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <FieldGroup className="grid min-w-0 grid-cols-1 gap-4 *:min-w-0 sm:grid-cols-2 lg:grid-cols-3">
           <Field>
             <FieldLabel htmlFor="submission-status-filter">
               {t("v02.judgeState")}
             </FieldLabel>
             <NativeSelect
+              className="w-full min-w-0"
               id="submission-status-filter"
               {...form.register("judgeStatus")}
             >
@@ -166,6 +168,7 @@ function SubmissionListContent({ initial }: { initial: SubmissionFilters }) {
               {t("v02.verdict")}
             </FieldLabel>
             <NativeSelect
+              className="w-full min-w-0"
               id="submission-verdict-filter"
               {...form.register("verdict")}
             >

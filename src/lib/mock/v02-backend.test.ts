@@ -63,7 +63,10 @@ async function call(
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
   expect(response.headers.get("X-codeStartrack-Mock")).toBe("true");
-  return { response, payload: await response.json() };
+  return {
+    response,
+    payload: response.status === 204 ? null : await response.json(),
+  };
 }
 const localRef = v02Problems[0].problemRef;
 const input = (sourceCode = v02SourceCode) => ({
@@ -905,14 +908,6 @@ describe("V0.2 authenticated HTTP service", () => {
     expect(
       (await call(`/sync-jobs/${sync.payload.data.jobId}`)).payload.data.status,
     ).toBe("SUCCESS");
-    const rebuilt = await call(
-      "/me/learning-profile/rebuild",
-      "POST",
-      undefined,
-      fixtureUuid(4192),
-    );
-    await call(`/learning-profile-jobs/${rebuilt.payload.data.jobId}`);
-    await call(`/learning-profile-jobs/${rebuilt.payload.data.jobId}`);
     expect((await call("/me/learning-profile/latest")).payload.data.stale).toBe(
       false,
     );
@@ -926,6 +921,97 @@ describe("V0.2 authenticated HTTP service", () => {
         )
       ).response.status,
     ).toBe(201);
+  });
+
+  it("automatically projects legacy CF source events while retaining frozen history", async () => {
+    await control({ scenario: "v02-new-learner", v02NoProfile: false });
+    const before = learningProfileSchema.parse(
+      (await call("/me/learning-profile/latest")).payload.data,
+    );
+    const planned = await call(
+      "/me/training-records",
+      "POST",
+      { problemRef: v02ExternalProblem.problemRef },
+      fixtureUuid(4200),
+    );
+    const binding = await call("/oj-accounts", "POST", {
+      platform: "codeforces",
+      username: "AutomaticProjection",
+    });
+    expect(binding.response.status).toBe(201);
+    const whileBinding = learningProfileSchema.parse(
+      (await call("/me/learning-profile/latest")).payload.data,
+    );
+    expect(whileBinding.snapshotId).toBe(before.snapshotId);
+    expect(whileBinding.stale).toBe(true);
+    await control({ preserveCalls: true, v02ExternalAccepted: true });
+    expect(
+      (await call(`/sync-jobs/${binding.payload.data.initialSync.jobId}`))
+        .payload.data.status,
+    ).toBe("SUCCESS");
+    const synced = learningProfileSchema.parse(
+      (await call("/me/learning-profile/latest")).payload.data,
+    );
+    expect(synced.snapshotId).not.toBe(before.snapshotId);
+    expect(synced.stale).toBe(false);
+    expect(synced.sources).toMatchObject({
+      externalSubmissionCount: 6,
+      codeAnalysisCount: 0,
+      sourceAccountIds: [binding.payload.data.account.accountId],
+    });
+    expect(
+      (
+        await call(
+          `/me/training-records/${planned.payload.data.trainingRecordId}`,
+        )
+      ).payload.data.status,
+    ).toBe("COMPLETED");
+    for (const window of ["7D", "30D", "365D", "ALL"]) {
+      expect(
+        (await call(`/me/learning-profile/latest?window=${window}`)).payload
+          .data.profileJobId,
+      ).toBe(synced.profileJobId);
+      expect(
+        (await call(`/me/learning-profile/history?window=${window}`)).payload
+          .meta.total,
+      ).toBe(2);
+    }
+    expect(
+      (await call("/me/learning-profile/latest")).payload.data.snapshotId,
+    ).toBe(synced.snapshotId);
+    expect(
+      (await call(`/me/learning-profile/${before.snapshotId}`)).payload.data,
+    ).toEqual(before);
+    expect(
+      (
+        await call(
+          `/oj-accounts/${binding.payload.data.account.accountId}`,
+          "DELETE",
+        )
+      ).response.status,
+    ).toBe(204);
+    const unbound = learningProfileSchema.parse(
+      (await call("/me/learning-profile/latest")).payload.data,
+    );
+    expect(unbound.snapshotId).not.toBe(synced.snapshotId);
+    expect(unbound.stale).toBe(false);
+    expect(unbound.sources).toMatchObject({
+      externalSubmissionCount: 0,
+      sourceAccountIds: [],
+    });
+    expect(
+      (await call(`/me/learning-profile/${synced.snapshotId}`)).payload.data,
+    ).toEqual(synced);
+    expect(
+      (
+        await call(
+          `/me/training-records/${planned.payload.data.trainingRecordId}`,
+        )
+      ).payload.data.status,
+    ).toBe("COMPLETED");
+    expect(
+      (await call("/me/learning-profile/history")).payload.meta.total,
+    ).toBe(3);
   });
 
   it("deduplicates training plans, freezes first attribution and uses actual external sync results", async () => {

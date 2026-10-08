@@ -18,6 +18,21 @@ const mime = {
 };
 const apiBodyLimit = 2 * 1024 * 1024;
 
+function apiCacheControl(value) {
+  const upstreamControl = (
+    Array.isArray(value) ? value.join(", ") : (value ?? "")
+  ).trim();
+  // Quoted extension values may contain commas and directive-like text.
+  const directives = upstreamControl
+    .replace(/"(?:\\.|[^"\\])*"?/g, '""')
+    .split(",");
+  return directives.some(
+    (directive) => directive.trim().toLowerCase() === "no-store",
+  )
+    ? upstreamControl
+    : [upstreamControl, "no-store"].filter(Boolean).join(", ");
+}
+
 async function readApiBody(request, response) {
   function rejectBody() {
     response
@@ -92,7 +107,7 @@ export function createFrontendServer({
         (incoming) => {
           response.writeHead(incoming.statusCode, {
             ...incoming.headers,
-            "cache-control": "no-store",
+            "cache-control": apiCacheControl(incoming.headers["cache-control"]),
           });
           incoming.pipe(response);
         },

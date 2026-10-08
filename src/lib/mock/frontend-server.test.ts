@@ -6,6 +6,23 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createFrontendServer } from "../../../scripts/start.mjs";
 
 const bodyLimit = 2 * 1024 * 1024;
+const sourceCode = "  int main() { return 0; }  \n\n";
+const sourcePolicies = [
+  { id: "1", upstream: "private, no-store", expected: "private, no-store" },
+  {
+    id: "2",
+    upstream: "private, no-cache, must-revalidate",
+    expected: "private, no-cache, must-revalidate, no-store",
+  },
+  {
+    id: "3",
+    upstream:
+      'private="Set-Cookie, Authorization", x-policy="avoid, no-store, reuse"',
+    expected:
+      'private="Set-Cookie, Authorization", x-policy="avoid, no-store, reuse", no-store',
+  },
+  { id: "4", upstream: "private, NO-STORE", expected: "private, NO-STORE" },
+];
 const calls: Array<{ path: string | undefined; size: number }> = [];
 const upstream = createServer(async (request, response) => {
   let size = 0;
@@ -15,6 +32,17 @@ const upstream = createServer(async (request, response) => {
     hash.update(chunk);
   }
   calls.push({ path: request.url, size });
+  const sourcePolicy = sourcePolicies.find(
+    ({ id }) => request.url === `/api/v1/submissions/${id}/source`,
+  );
+  if (sourcePolicy) {
+    response.writeHead(200, {
+      "Content-Type": "application/json",
+      "Cache-Control": sourcePolicy.upstream,
+    });
+    response.end(JSON.stringify({ sourceCode }));
+    return;
+  }
   if (request.url === "/api/v1/submissions/1/analysis") {
     response.writeHead(200, { "Content-Type": "application/octet-stream" });
     response.end(Buffer.alloc(32 * 1024 * 1024, "a"));
@@ -29,6 +57,19 @@ const upstream = createServer(async (request, response) => {
       origin: request.headers.origin,
     }),
   );
+});
+
+describe("static frontend private source cache policy", () => {
+  for (const { id, upstream, expected } of sourcePolicies) {
+    it(`preserves upstream ${upstream} and ensures no-store without changing source`, async () => {
+      const path = `/api/v1/submissions/${id}/source`;
+      const response = await fetch(`${base}${path}`);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("cache-control")).toBe(expected);
+      expect(await response.json()).toEqual({ sourceCode });
+      expect(calls).toEqual([{ path, size: 0 }]);
+    });
+  }
 });
 let frontend: Server;
 let base: string;

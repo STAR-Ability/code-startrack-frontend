@@ -50,10 +50,10 @@ export function TrainingProblem({
         )}
       </p>
       <div className="flex flex-wrap gap-2">
-        <Badge variant="outline">
+        <Badge wrap variant="outline">
           {t(`v02.source.${problem.problemRef.source}`)}
         </Badge>
-        <Badge variant="secondary">
+        <Badge wrap variant="secondary">
           {t(`v02.scale.${problem.difficultyScale}`)}
           {problem.difficulty !== null && ` · ${problem.difficulty}`}
         </Badge>
@@ -148,6 +148,7 @@ export function TrainingPlanAction({
         </>
       ) : (
         <Button
+          wrap
           disabled={mutation.blocked}
           onClick={() => mutation.mutate(body)}
         >

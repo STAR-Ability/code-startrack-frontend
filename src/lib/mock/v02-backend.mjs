@@ -1447,5 +1447,20 @@ export function createV02Mock() {
       );
     return missing("RESOURCE_NOT_FOUND");
   }
-  return { reset, handle };
+  function sourceChanged({ user, bound, config, event }) {
+    const state = initialize(user, bound, config);
+    if (event === "sync-completed") projectExternal(state, bound, config);
+    const currentFingerprint = fingerprint(state, bound, config);
+    state.batches.forEach(
+      (batch) =>
+        (batch.stale ||= batch.sourceFingerprint !== currentFingerprint),
+    );
+    if (sourceNotReady(bound)) return;
+    const latest = state.profiles.find((item) => item.window === "ALL");
+    if (!latest || latest.sourceFingerprint !== currentFingerprint) {
+      // The legacy mutation/task event advances the synthetic scheduled projection.
+      appendProfiles(state, user, bound, { ...config, stale: false });
+    }
+  }
+  return { reset, handle, sourceChanged };
 }

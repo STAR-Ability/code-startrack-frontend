@@ -67,6 +67,7 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
     <>
       <Panel title="v02.training" description={t("v02.trainingFactsNote")}>
         <form
+          className="min-w-0"
           onSubmit={form.handleSubmit((values) => {
             const parsed = trainingFiltersSchema.safeParse({
               source: values.source || undefined,
@@ -83,12 +84,16 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
             setFilters(parsed.data);
           })}
         >
-          <FieldGroup className="grid sm:grid-cols-2 lg:grid-cols-4">
-            <Field>
+          <FieldGroup className="grid min-w-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <Field className="min-w-0">
               <FieldLabel htmlFor="training-source">
                 {t("v02.problemSource")}
               </FieldLabel>
-              <NativeSelect id="training-source" {...form.register("source")}>
+              <NativeSelect
+                className="w-full min-w-0"
+                id="training-source"
+                {...form.register("source")}
+              >
                 <NativeSelectOption value="">
                   {t("v02.source.ALL")}
                 </NativeSelectOption>
@@ -99,11 +104,15 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
                 ))}
               </NativeSelect>
             </Field>
-            <Field>
+            <Field className="min-w-0">
               <FieldLabel htmlFor="training-status">
                 {t("v02.status")}
               </FieldLabel>
-              <NativeSelect id="training-status" {...form.register("status")}>
+              <NativeSelect
+                className="w-full min-w-0"
+                id="training-status"
+                {...form.register("status")}
+              >
                 <NativeSelectOption value="">
                   {t("v02.status.ALL")}
                 </NativeSelectOption>
@@ -114,7 +123,7 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
                 ))}
               </NativeSelect>
             </Field>
-            <Field>
+            <Field className="min-w-0">
               <FieldLabel htmlFor="training-from">{t("v02.from")}</FieldLabel>
               <Input
                 id="training-from"
@@ -122,7 +131,10 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
                 {...form.register("from")}
               />
             </Field>
-            <Field data-invalid={!!form.formState.errors.to}>
+            <Field
+              className="min-w-0"
+              data-invalid={!!form.formState.errors.to}
+            >
               <FieldLabel htmlFor="training-to">{t("v02.to")}</FieldLabel>
               <Input
                 id="training-to"
@@ -136,7 +148,12 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
               {t("v02.dateFilterNote")}
             </FieldDescription>
           </FieldGroup>
-          <Button type="submit" className="mt-4" disabled={query.isFetching}>
+          <Button
+            wrap
+            type="submit"
+            className="mt-4"
+            disabled={query.isFetching}
+          >
             {t("v02.applyFilters")}
           </Button>
         </form>

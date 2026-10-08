@@ -42,6 +42,7 @@ export function LearningProfileRebuild() {
     <div className="flex flex-col gap-3">
       <div>
         <Button
+          wrap
           disabled={mutation.blocked || active}
           onClick={() => mutation.mutate()}
         >
@@ -120,7 +121,7 @@ export function LearningProfilePage() {
         {(selection || invalid) && (
           <Link
             href="/learning-profile"
-            className={buttonVariants({ variant: "outline" })}
+            className={buttonVariants({ variant: "outline", wrap: true })}
             onClick={() => {
               setSelection(null);
               setIgnoreInvalid(true);

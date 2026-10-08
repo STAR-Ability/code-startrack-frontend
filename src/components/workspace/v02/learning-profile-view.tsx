@@ -101,19 +101,18 @@ export function LearningProfileView({
                 {dimensions.map((item) => (
                   <div
                     key={item.code}
-                    className="analysis-dimension-row"
+                    className="analysis-dimension-row grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]"
                     data-weakest={item.code === profile.weakestDimension}
                   >
                     <dt>
                       {t(`data.dimension.${item.code}`)}
                       {item.code === profile.weakestDimension && (
-                        <Badge variant="outline">{t("v.weakest")}</Badge>
+                        <Badge wrap variant="outline">
+                          {t("v.weakest")}
+                        </Badge>
                       )}
                     </dt>
-                    <dd>
-                      {formatNumber(item.score, locale, 2)} / 100 ·{" "}
-                      {t("v.solved")}: {item.solvedCount}
-                    </dd>
+                    <dd>{formatNumber(item.score, locale, 2)} / 100</dd>
                   </div>
                 ))}
               </dl>

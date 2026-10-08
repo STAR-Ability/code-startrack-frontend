@@ -49,6 +49,12 @@ describe("V0.2 independent task polling", () => {
     expect(initial.delay(null, 0, null, undefined, 0)).toBe(false);
     expect(initial.delay(null, 0, null, 0, 0)).toBe(3000);
     expect(initial.delay(null, 0, null, 0, 60000)).toBe(false);
+    initial.reset(61000, 0);
+    expect(initial.delay(null, 0, null, 0, 61000)).toBe(3000);
+    expect(initial.delay(null, 0, null, 0, 121000)).toBe(false);
+    const withoutSource = new V02LatestProfilePolling();
+    withoutSource.reset(61000);
+    expect(withoutSource.delay(null, 0, null, undefined, 61000)).toBe(false);
   });
   it("stops only actual/definitive judge terminal states and reconciles uncertain local failures", () => {
     const active = v02Submission(undefined, {

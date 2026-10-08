@@ -273,7 +273,12 @@ export function useV02LatestProfile(
       });
   }, [profile, user, client]);
   function refetch(...options: Parameters<typeof query.refetch>) {
-    strategy().reset();
+    const sourceUpdate = user
+      ? client.getQueryData<{ sourceChangedAt: number }>(
+          v02Keys.resource(user.publicId, "learning-reconciliation"),
+        )
+      : undefined;
+    strategy().reset(Date.now(), sourceUpdate?.sourceChangedAt);
     return query.refetch(...options);
   }
   return { ...query, refetch };

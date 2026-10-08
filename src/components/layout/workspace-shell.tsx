@@ -62,9 +62,23 @@ function Navigation() {
   const { data: user } = useWorkspaceSession();
   const sections: NavigationSection[] = [
     {
-      label: "v12.navLearning",
+      label: "v02.navTraining",
       links: [
         ["/dashboard", "v.dashboard", HomeIcon],
+        ["/problems", "v02.problems", CodeXmlIcon],
+        ["/submissions", "v02.submissions", ClipboardListIcon],
+        ["/training", "v02.training", HistoryIcon],
+        ["/learning-profile", "v02.learningProfile", RadarIcon],
+        [
+          "/learning-recommendations",
+          "v02.learningRecommendations",
+          CompassIcon,
+        ],
+      ],
+    },
+    {
+      label: "v02.navCodeforces",
+      links: [
         ["/profile", "v.profile", RadarIcon],
         ["/analysis", "v12.reports", HistoryIcon],
         ["/practice", "nav.practice", CodeXmlIcon],
@@ -140,7 +154,9 @@ function Navigation() {
                           section.label === "v12.navTeams" ||
                           section.label === "v12.navCoach"
                             ? "support"
-                            : href === "/profile" || href === "/analysis"
+                            : href === "/profile" ||
+                                href === "/analysis" ||
+                                href === "/learning-profile"
                               ? "insight"
                               : "info"
                         }

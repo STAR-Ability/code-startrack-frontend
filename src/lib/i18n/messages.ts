@@ -1,8 +1,16 @@
 import { v012Zh, v012En } from "./v012-messages";
 import { showcaseZh, showcaseEn } from "./showcase-messages";
 import { workspaceZh, workspaceEn } from "./workspace-messages";
+import { v02CommonZh, v02CommonEn } from "./v02-common-messages";
+import { v02SubmissionsZh, v02SubmissionsEn } from "./v02-submissions-messages";
+import { v02ProblemsZh, v02ProblemsEn } from "./v02-problems-messages";
+import { v02LearningZh, v02LearningEn } from "./v02-learning-messages";
 
 export const zhCN = {
+  ...v02ProblemsZh,
+  ...v02LearningZh,
+  ...v02SubmissionsZh,
+  ...v02CommonZh,
   ...v012Zh,
   ...workspaceZh,
   "ui.close": "关闭",
@@ -170,6 +178,10 @@ export const zhCN = {
 export type CopyKey = keyof typeof zhCN;
 
 export const en = {
+  ...v02ProblemsEn,
+  ...v02LearningEn,
+  ...v02SubmissionsEn,
+  ...v02CommonEn,
   ...v012En,
   ...workspaceEn,
   "ui.close": "Close",

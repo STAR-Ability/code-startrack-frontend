@@ -8,7 +8,8 @@ import { useJobLock } from "./use-job-lock";
 import { api } from "@/lib/api/endpoints";
 import { ApiError, isMissingResource } from "@/lib/api/errors";
 import { keys } from "@/lib/query/keys";
-import { isCurrentBinding } from "@/lib/query/session";
+import { isCurrentBinding, isCurrentUser } from "@/lib/query/session";
+import { invalidateV02LearningSources } from "@/lib/query/v02-hooks";
 import type {
   OjAccountDto,
   SyncJobDto,
@@ -81,6 +82,7 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
   useEffect(() => {
     if (
       !latestJob ||
+      !isCurrentUser(client, user.publicId) ||
       jobIsActive(latestJob) ||
       terminalSeen.current === latestJob.jobId
     )
@@ -91,6 +93,7 @@ export function SyncPanel({ account }: { account: OjAccountDto }) {
       predicate: (query) => query.queryKey[4] !== "job",
     });
     void client.invalidateQueries({ queryKey: keys.accounts(user.publicId) });
+    void invalidateV02LearningSources(client, user.publicId);
   }, [latestJob, client, user.publicId, id]); // account ownership is captured by this mounted panel
   const locked = useJobLock(user.publicId, id);
   const action = useMutation({

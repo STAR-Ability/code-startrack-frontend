@@ -114,12 +114,14 @@ export function WorkspacePage({
   title,
   children,
   requireAccount = true,
+  requireStudent = true,
   showSync = false,
   publicContent = false,
 }: {
   title: CopyKey;
   children: React.ReactNode;
   requireAccount?: boolean;
+  requireStudent?: boolean;
   showSync?: boolean;
   publicContent?: boolean;
 }) {
@@ -165,7 +167,10 @@ export function WorkspacePage({
       {publicContent ? (
         children
       ) : (
-        <PersonalDataGate requireAccount={requireAccount}>
+        <PersonalDataGate
+          requireAccount={requireAccount}
+          requireStudent={requireStudent}
+        >
           {children}
           {showSync && account && <SyncPanel account={account} />}
         </PersonalDataGate>

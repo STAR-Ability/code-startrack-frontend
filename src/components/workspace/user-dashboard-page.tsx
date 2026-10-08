@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { MetricPanel } from "./metric-panel";
 import type { UserAnalysisDto } from "@/lib/api/v012-schemas";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LearningOverview } from "./v02/learning-overview";
 function DashboardDirection({
   analysis,
   loading,
@@ -135,6 +136,10 @@ export function UserDashboardPage() {
   );
   return (
     <>
+      <LearningOverview />
+      <h2 className="text-xl font-semibold tracking-tight">
+        {t("v02.codeforcesProfile")}
+      </h2>
       <DashboardDirection
         analysis={analysis.data ?? null}
         loading={analysis.isFetching && !analysis.data}

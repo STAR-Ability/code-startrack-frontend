@@ -127,7 +127,7 @@ export function ProblemStatement({
               <h4 className="text-sm font-medium">
                 {t("v02.problem.sample", { number: String(index + 1) })}
               </h4>
-              <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+              <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
                 {(["input", "output"] as const).map((kind) => (
                   <div key={kind} className="min-w-0">
                     <p className="mb-2 text-xs text-muted-foreground">

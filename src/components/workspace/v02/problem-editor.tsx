@@ -188,13 +188,17 @@ export function ProblemEditor({
           description={t("v02.problem.noLanguagesDescription")}
         />
       )}
-      <form onSubmit={submit}>
-        <FieldGroup>
+      <form onSubmit={submit} className="min-w-0">
+        <FieldGroup className="min-w-0">
           <Field
+            className="min-w-0"
             data-disabled={mutation.isPending || refreshing}
             data-invalid={!!draft.language && !selected}
           >
-            <FieldLabel htmlFor={languageId}>
+            <FieldLabel
+              htmlFor={languageId}
+              className="max-w-full wrap-anywhere"
+            >
               {t("v02.problem.language")}
             </FieldLabel>
             <NativeSelect
@@ -204,7 +208,7 @@ export function ProblemEditor({
               onChange={(event) => changeLanguage(event.target.value)}
               aria-invalid={!!draft.language && !selected}
               aria-describedby={`${languageId}-description`}
-              className="w-full"
+              className="w-full min-w-0"
             >
               {!selected && (
                 <NativeSelectOption value={draft.language}>
@@ -248,7 +252,7 @@ export function ProblemEditor({
             error={sourceError}
             disabled={mutation.isPending || refreshing}
           />
-          <Field>
+          <Field className="min-w-0">
             {refreshed && (
               <p role="status" className="text-sm text-muted-foreground">
                 {t("v02.problem.versionRefreshed")}
@@ -267,6 +271,7 @@ export function ProblemEditor({
                       <Button
                         type="button"
                         variant="outline"
+                        wrap
                         onClick={() => {
                           mutation.reset();
                           refreshProblem();
@@ -280,6 +285,7 @@ export function ProblemEditor({
                       <Button
                         type="button"
                         variant="outline"
+                        wrap
                         onClick={refreshLanguages}
                         disabled={refreshing}
                       >

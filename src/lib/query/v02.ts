@@ -1,4 +1,5 @@
 import { ApiError } from "@/lib/api/errors";
+import { createIdempotencyKey } from "./idempotency-key";
 import type {
   ProblemRef,
   SubmissionView,
@@ -229,7 +230,7 @@ export class V02OperationKeys {
     const signature = JSON.stringify(canonical(variables)) ?? "null";
     const existing = this.operations.get(scope);
     if (existing && existing.signature === signature) return existing.key;
-    const key = crypto.randomUUID();
+    const key = createIdempotencyKey();
     this.operations.set(scope, { signature, key });
     return key;
   }

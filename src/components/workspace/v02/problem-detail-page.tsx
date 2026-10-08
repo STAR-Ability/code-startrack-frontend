@@ -83,7 +83,7 @@ function ProblemDetailContent({
     <div className="flex min-w-0 flex-col gap-4">
       <Link
         href="/problems"
-        className="self-start text-sm underline underline-offset-4"
+        className="max-w-full self-start text-sm wrap-anywhere underline underline-offset-4"
       >
         {t("v02.problem.back")}
       </Link>
@@ -96,7 +96,7 @@ function ProblemDetailContent({
         </Alert>
       )}
       {problem && (
-        <div className="grid min-w-0 items-start gap-6 xl:grid-cols-2">
+        <div className="grid min-w-0 grid-cols-1 items-start gap-6 xl:grid-cols-2">
           <ProblemStatement
             problem={problem}
             historical={activeVersion !== null}

@@ -6,6 +6,7 @@ import { api } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/errors";
 import { keys } from "@/lib/query/keys";
 import { isCurrentBinding } from "@/lib/query/session";
+import { createIdempotencyKey } from "@/lib/query/idempotency-key";
 import { type RecommendationMode } from "@/lib/api/schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { formatTimestamp } from "@/lib/i18n/locale";
@@ -125,7 +126,7 @@ export function RecommendationsPage({
       attempt.current.mode !== mode ||
       attempt.current.limit !== count
     )
-      attempt.current = { mode, limit: count, key: crypto.randomUUID() };
+      attempt.current = { mode, limit: count, key: createIdempotencyKey() };
     generate.mutate(attempt.current);
   }
   useSlowRequest(generate.isPending);

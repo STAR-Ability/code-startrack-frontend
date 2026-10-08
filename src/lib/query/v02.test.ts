@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api/errors";
 import { v02Submission, v02LearningProfile } from "@/lib/demo/v02-fixtures";
 import { fixtureUuid } from "@/lib/demo/fixtures";
+import { uuidSchema } from "@/lib/api/schemas";
 import {
   v02Keys,
   V02OperationKeys,
@@ -14,6 +15,10 @@ import {
   acceptAnalysis,
   acceptSubmission,
 } from "./v02";
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 describe("V0.2 independent task polling", () => {
   it("polls only stale latest profiles and backs off read failures", () => {
     const profile = v02LearningProfile();
@@ -144,6 +149,55 @@ describe("V0.2 independent task polling", () => {
   });
 });
 describe("private caches and uncertain mutation operations", () => {
+  it("creates secure v4 operation keys on HTTP origins without randomUUID and preserves uncertain retries", () => {
+    const browserCrypto = globalThis.crypto;
+    const getRandomValues = vi.fn((bytes: Uint8Array) =>
+      browserCrypto.getRandomValues(bytes),
+    );
+    vi.stubGlobal("crypto", { getRandomValues });
+    const store = new V02OperationKeys();
+    const body = { sourceCode: "int main() {}", languageId: "cpp17" };
+    const first = store.key("a", "submission", body);
+    expect(uuidSchema.parse(first)).toBe(first);
+    expect(first).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+    store.finish("a", "submission", body, new ApiError("TIMEOUT"));
+    expect(
+      store.key("a", "submission", {
+        languageId: "cpp17",
+        sourceCode: body.sourceCode,
+      }),
+    ).toBe(first);
+    expect(getRandomValues).toHaveBeenCalledTimes(1);
+    const edited = store.key("a", "submission", {
+      ...body,
+      sourceCode: "int main() { return 0; }",
+    });
+    const rebuild = store.key("a", "rebuild-profile", undefined);
+    const otherUser = store.key("b", "submission", body);
+    expect(new Set([first, edited, rebuild, otherUser]).size).toBe(4);
+    for (const value of [edited, rebuild, otherUser])
+      expect(uuidSchema.safeParse(value).success).toBe(true);
+    store.finish("a", "rebuild-profile", undefined);
+    expect(store.key("a", "rebuild-profile", undefined)).not.toBe(rebuild);
+  });
+  it("sets v4 and RFC variant bits in fallback entropy and prefers native randomUUID when available", () => {
+    const getRandomValues = vi.fn((bytes: Uint8Array) => bytes.fill(0xff));
+    vi.stubGlobal("crypto", { getRandomValues });
+    expect(new V02OperationKeys().key("a", "submission", {})).toBe(
+      "ffffffff-ffff-4fff-bfff-ffffffffffff",
+    );
+    expect(getRandomValues.mock.calls[0][0]).toHaveLength(16);
+    const randomUUID = vi.fn(() => fixtureUuid(1234));
+    getRandomValues.mockClear();
+    vi.stubGlobal("crypto", { randomUUID, getRandomValues });
+    expect(new V02OperationKeys().key("a", "submission", {})).toBe(
+      fixtureUuid(1234),
+    );
+    expect(randomUUID).toHaveBeenCalledTimes(1);
+    expect(getRandomValues).not.toHaveBeenCalled();
+  });
   it("supports bodyless writes and keeps their uncertain retry key", () => {
     const store = new V02OperationKeys();
     const first = store.key("a", "rebuild-profile", undefined);

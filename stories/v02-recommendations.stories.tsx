@@ -1,9 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { expect } from "storybook/test";
 import { WorkspaceSessionProvider } from "@/components/workspace/account-provider";
 import { LearningRecommendationPage } from "@/components/workspace/v02/learning-recommendation-page";
 import { LearningRecommendationView } from "@/components/workspace/v02/learning-recommendation-view";
 import { v02RecommendationBatch } from "@/lib/demo/v02-fixtures";
 import { StoryFrame, mobile } from "./helpers";
+
+const levelBatch = v02RecommendationBatch("ALL", "LEVEL");
+levelBatch.recommendations = levelBatch.recommendations
+  .filter((item) => item.problem.difficultyScale === "CF_RATING")
+  .map((item, index) => ({ ...item, rank: index + 1 }));
+levelBatch.candidateCount = levelBatch.recommendations.length;
+levelBatch.resultCount = levelBatch.recommendations.length;
 
 const meta = {
   title: "Workspace/V02 Recommendations",
@@ -33,6 +41,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => <LearningRecommendationPage />,
+  play: async ({ canvas }) => {
+    await expect(
+      await canvas.findByRole("heading", {
+        name: /^(?:推荐批次|Recommendation batch)$/,
+      }),
+    ).toBeVisible();
+  },
 };
 export const Mobile: Story = { ...Default, globals: mobile };
 export const English: Story = { ...Default, globals: { locale: "en" } };
@@ -47,7 +62,7 @@ export const External: Story = {
   args: { batch: v02RecommendationBatch("EXTERNAL") },
 };
 export const Level: Story = {
-  args: { batch: v02RecommendationBatch("ALL", "LEVEL") },
+  args: { batch: levelBatch },
 };
 export const Weakness: Story = {
   args: { batch: v02RecommendationBatch("ALL", "WEAKNESS") },

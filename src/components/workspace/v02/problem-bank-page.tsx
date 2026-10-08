@@ -81,11 +81,14 @@ export function ProblemBankPage() {
       </p>
       <form
         onSubmit={form.handleSubmit(applyFilters)}
-        className="rounded-xl border bg-card p-5"
+        className="min-w-0 rounded-xl border bg-card p-5"
       >
-        <FieldGroup className="grid items-end gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Field data-invalid={filterError === "keyword"}>
-            <FieldLabel htmlFor="problem-q">
+        <FieldGroup className="grid min-w-0 grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Field className="min-w-0" data-invalid={filterError === "keyword"}>
+            <FieldLabel
+              htmlFor="problem-q"
+              className="max-w-full wrap-anywhere"
+            >
               {t("v02.problem.search")}
             </FieldLabel>
             <Input
@@ -97,8 +100,11 @@ export function ProblemBankPage() {
               }
             />
           </Field>
-          <Field data-invalid={filterError === "tag"}>
-            <FieldLabel htmlFor="problem-tag">
+          <Field className="min-w-0" data-invalid={filterError === "tag"}>
+            <FieldLabel
+              htmlFor="problem-tag"
+              className="max-w-full wrap-anywhere"
+            >
               {t("v02.problem.tag")}
             </FieldLabel>
             <Input
@@ -111,8 +117,15 @@ export function ProblemBankPage() {
             />
           </Field>
           {(["minDifficulty", "maxDifficulty"] as const).map((field) => (
-            <Field key={field} data-invalid={filterError === "difficulty"}>
-              <FieldLabel htmlFor={`problem-${field}`}>
+            <Field
+              key={field}
+              className="min-w-0"
+              data-invalid={filterError === "difficulty"}
+            >
+              <FieldLabel
+                htmlFor={`problem-${field}`}
+                className="max-w-full wrap-anywhere"
+              >
                 {t(`v02.problem.${field}`)}
               </FieldLabel>
               <Input
@@ -129,7 +142,7 @@ export function ProblemBankPage() {
               />
             </Field>
           ))}
-          <Field className="md:col-span-2 xl:col-span-4">
+          <Field className="min-w-0 md:col-span-2 xl:col-span-4">
             <FieldDescription id="problem-filter-hint">
               {t("v02.problem.filterHint")}
             </FieldDescription>
@@ -142,14 +155,15 @@ export function ProblemBankPage() {
                 {t(errorMessages[filterError])}
               </p>
             )}
-            <div className="flex flex-wrap gap-2">
-              <Button type="submit">
+            <div className="flex min-w-0 flex-wrap gap-2">
+              <Button type="submit" wrap>
                 <SearchIcon data-icon="inline-start" aria-hidden="true" />
                 {t("v02.problem.filter")}
               </Button>
               <Button
                 type="button"
                 variant="outline"
+                wrap
                 onClick={() => {
                   form.reset(emptyProblemFilters);
                   applyFilters(emptyProblemFilters);
@@ -189,7 +203,7 @@ export function ProblemBankPage() {
                         </Badge>
                       ))}
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="min-w-0 text-xs wrap-anywhere text-muted-foreground">
                       #{problem.problemRef.problemId} · {problem.timeLimitMs} ms
                       · {problem.memoryLimitBytes} B
                     </p>

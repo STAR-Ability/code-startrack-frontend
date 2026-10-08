@@ -22,9 +22,11 @@ export function CodeEditor({
   const id = useId();
   const { t } = useLocale();
   return (
-    <Field data-invalid={!!error} data-disabled={disabled}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <FieldLabel htmlFor={id}>{t("v02.problem.sourceCode")}</FieldLabel>
+    <Field className="min-w-0" data-invalid={!!error} data-disabled={disabled}>
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+        <FieldLabel htmlFor={id} className="max-w-full wrap-anywhere">
+          {t("v02.problem.sourceCode")}
+        </FieldLabel>
         <code className="text-xs text-muted-foreground wrap-anywhere">
           {filename}
         </code>

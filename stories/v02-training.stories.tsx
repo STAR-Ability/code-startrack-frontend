@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Production training list and source/status/date filters using the shared offline state machine. PLANNED, IN_PROGRESS and COMPLETED come from actual backend facts, never link navigation or browser counting.",
+          "Production training list and source/status/date filters using public offline fixtures through the production data-access layer. Judge and synchronization transitions are exercised separately against the isolated HTTP backend.",
       },
     },
   },

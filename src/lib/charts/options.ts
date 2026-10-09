@@ -141,6 +141,32 @@ export function distributionOption(
         emphasis: { focus: "series" },
       },
     ],
+    ...(horizontal
+      ? {
+          media: [
+            {
+              query: { maxWidth: 360 },
+              option: {
+                yAxis: { axisLabel: { width: 90 } },
+                grid: { right: 34 },
+              },
+            },
+            {
+              query: { minWidth: 361, maxWidth: 540 },
+              option: {
+                yAxis: { axisLabel: { width: 110 } },
+                grid: { right: 42 },
+              },
+            },
+            {
+              option: {
+                yAxis: { axisLabel: { width: 160 } },
+                grid: { right: 42 },
+              },
+            },
+          ],
+        }
+      : {}),
   };
 }
 

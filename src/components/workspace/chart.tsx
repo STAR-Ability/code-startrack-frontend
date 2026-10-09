@@ -21,6 +21,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { useLocale } from "@/components/layout/locale-provider";
 import { loadChartEngine } from "@/lib/charts/engine";
+import { chartTooltip } from "@/lib/charts/tooltip";
 
 export function Chart({
   option,
@@ -56,11 +57,11 @@ export function Chart({
         )
     : [];
   useEffect(() => {
-    // Reset the model when media is present or removed: replaceMerge applies to
-    // partial media rules and clears their omitted series/radar indicators.
-    const resetMedia =
+    // Media rules can drop omitted series; ECharts also caches the tooltip renderer.
+    const resetModel =
       Boolean(latest.current.option.media?.length) ||
-      Boolean(option.media?.length);
+      Boolean(option.media?.length) ||
+      tooltipRenderModes(latest.current.option) !== tooltipRenderModes(option);
     latest.current = { option, label, palette, hiddenSeries, colorSlots };
     const chart = instance.current;
     if (!chart) return;
@@ -72,8 +73,9 @@ export function Chart({
         chartTheme(getComputedStyle(element.current!), palette),
         hiddenSeries,
         colorSlots,
+        element.current!,
       ),
-      resetMedia
+      resetModel
         ? { notMerge: true }
         : { replaceMerge: ["series", "xAxis", "yAxis", "radar", "grid"] },
     );
@@ -104,7 +106,14 @@ export function Chart({
         const observers: { resize?: ResizeObserver; theme?: MutationObserver } =
           {};
         const updateMotion = () =>
-          chart.setOption({ animation: !reducedMotion.matches });
+          chart.setOption({
+            animation: !reducedMotion.matches,
+            tooltip: chartTooltip(
+              latest.current.option,
+              reducedMotion.matches,
+              container,
+            ),
+          });
         // Install disposal before rendering so a failed first frame cannot leak an instance.
         cleanup = () => {
           reducedMotion.removeEventListener("change", updateMotion);
@@ -121,6 +130,7 @@ export function Chart({
             theme,
             current.hiddenSeries,
             current.colorSlots,
+            container,
           ),
         );
         reducedMotion.addEventListener("change", updateMotion);
@@ -279,6 +289,7 @@ function refreshTheme(
       theme,
       hiddenSeries,
       colorSlots,
+      container,
     ),
     {
       notMerge: true,
@@ -293,13 +304,8 @@ function displayOption(
   theme: ReturnType<typeof chartTheme>,
   hiddenSeries: string[],
   colorSlots: ChartColorSlots,
+  container: HTMLElement,
 ): EChartsOption {
-  const tooltip = Array.isArray(option.tooltip)
-    ? option.tooltip.map((item) => ({
-        ...item,
-        renderMode: "richText" as const,
-      }))
-    : { ...option.tooltip, renderMode: "richText" as const };
   return {
     ...chartPresentation(option, theme, colorSlots),
     ...(option.legend
@@ -324,6 +330,13 @@ function displayOption(
     animationEasing: "cubicOut",
     animationEasingUpdate: "cubicOut",
     aria: { enabled: true, label: { description: label } },
-    tooltip,
+    tooltip: chartTooltip(option, reducedMotion, container),
   };
+}
+
+function tooltipRenderModes(option: EChartsOption) {
+  const tooltip = chartTooltip(option);
+  return (Array.isArray(tooltip) ? tooltip : [tooltip])
+    .map((item) => item?.renderMode)
+    .join(":");
 }

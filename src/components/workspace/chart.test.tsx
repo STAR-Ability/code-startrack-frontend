@@ -1,4 +1,10 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import {
   afterEach,
   beforeAll,
@@ -109,7 +115,7 @@ async function loadChart() {
   });
 }
 
-async function useRealEcharts() {
+async function useRealEcharts(dom = false) {
   const actual = actualEcharts;
   const canvas = vi
     .spyOn(HTMLCanvasElement.prototype, "getContext")
@@ -117,10 +123,10 @@ async function useRealEcharts() {
       measureText: (text: string) => ({ width: text.length * 6 }),
     } as unknown as CanvasRenderingContext2D);
   let chart: ECharts | undefined;
-  echarts.init.mockImplementation((_container, theme) => {
-    chart = actual.init(null, theme, {
+  echarts.init.mockImplementation((container, theme) => {
+    chart = actual.init(dom ? container : null, theme, {
       renderer: "svg",
-      ssr: true,
+      ssr: !dom,
       width: 600,
       height: 320,
     });
@@ -136,6 +142,53 @@ async function useRealEcharts() {
 }
 
 describe("ECharts lifecycle", () => {
+  it("switches tooltip renderers without parsing custom text as HTML or losing native panels", async () => {
+    motion.matches = true;
+    const actual = await useRealEcharts(true);
+    const base = trendOption(["Monday"], [{ name: "Solved", values: [2] }]);
+    const markup = '<img src=x onerror="alert(1)"> custom text';
+    const custom = {
+      ...base,
+      tooltip: {
+        trigger: "item" as const,
+        formatter: () => markup,
+        showDelay: 0,
+      },
+    };
+    const { rerender, unmount, container } = render(
+      <Chart label="Activity" option={custom} />,
+    );
+    const show = () =>
+      actual
+        .current()
+        .dispatchAction({ type: "showTip", seriesIndex: 0, dataIndex: 0 });
+    try {
+      await loadChart();
+      expect(() => show()).not.toThrow();
+      expect(container.querySelector("img")).toBeNull();
+      rerender(<Chart label="Activity" option={base} />);
+      expect(() => show()).not.toThrow();
+      await waitFor(() =>
+        expect(
+          container.querySelector("[data-chart-tooltip]"),
+        ).toHaveTextContent("MondaySolved2"),
+      );
+      rerender(<Chart label="Activity" option={custom} />);
+      expect(() => show()).not.toThrow();
+      expect(container.querySelector("img")).toBeNull();
+      await waitFor(() =>
+        expect(container.querySelector("svg")?.textContent).toContain(markup),
+      );
+      onTheme([], {} as MutationObserver);
+      expect(() => show()).not.toThrow();
+      expect(container.querySelector("img")).toBeNull();
+    } finally {
+      unmount();
+      actual.restore();
+    }
+    expect(container.querySelector("[data-chart-tooltip]")).toBeNull();
+  });
+
   it("keeps actual line strokes, area fills and native legend colors aligned through reorder, removal and palette changes", async () => {
     const actual = await useRealEcharts();
     const a = { id: "a", name: "Account A", values: [3, 5] };
@@ -514,7 +567,10 @@ describe("ECharts lifecycle", () => {
     onMotion?.();
     expect(echarts.resize).toHaveBeenCalledOnce();
     expect(echarts.setTheme).toHaveBeenCalledOnce();
-    expect(echarts.setOption).toHaveBeenLastCalledWith({ animation: false });
+    expect(echarts.setOption).toHaveBeenLastCalledWith({
+      animation: false,
+      tooltip: expect.objectContaining({ transitionDuration: 0 }),
+    });
     expect(echarts.init).toHaveBeenCalledOnce();
     expect(echarts.dispose).not.toHaveBeenCalled();
     expect(screen.getByRole("img")).toHaveAttribute(

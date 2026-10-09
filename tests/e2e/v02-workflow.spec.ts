@@ -129,6 +129,23 @@ for (const locale of ["zh-CN", "en"] as const) {
     const submitted = envelope(submissionViewSchema).parse(
       await (await accepted).json(),
     ).data;
+    await expect(page).toHaveURL(/\/problems\/detail\?problemId=/);
+    const inlineResult = page.getByRole("tabpanel", {
+      name: c["v02.problem.results"],
+      exact: true,
+    });
+    await expect(
+      inlineResult.getByText(`AC · ${c["v02.verdict.AC"]}`, { exact: true }),
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(editor).toHaveText(source, { useInnerText: true });
+    expect(
+      (await upstreamCalls()).filter((call) =>
+        call.path.endsWith(`/${submitted.submissionId}/source`),
+      ),
+    ).toHaveLength(0);
+    await inlineResult
+      .getByRole("link", { name: c["v02.openSubmission"], exact: true })
+      .click();
     await expect(page).toHaveURL(
       new RegExp(
         `/submissions/detail\\?submissionId=${submitted.submissionId}`,
@@ -302,6 +319,12 @@ test("V0.2: changed problem version preserves editor source and starts a new ope
   await page
     .getByRole("button", { name: c["v02.problem.submit"], exact: true })
     .click();
+  await expect(page).toHaveURL(/\/problems\/detail\?problemId=/);
+  await expect(editor).toHaveText(source, { useInnerText: true });
+  await page
+    .getByRole("tabpanel", { name: c["v02.problem.results"], exact: true })
+    .getByRole("link", { name: c["v02.openSubmission"], exact: true })
+    .click();
   await expect(page).toHaveURL(/\/submissions\/detail\?submissionId=/);
   const writes = (await upstreamCalls()).filter(
     (call) => call.path === "/api/v1/submissions" && call.method === "POST",
@@ -344,6 +367,15 @@ test("V0.2: uncertain submission retry reuses its key and preserves exact code",
   await expect(notice).toBeHidden();
   await expect(editor).toHaveText(v02SourceCode, { useInnerText: true });
   await retry.click();
+  await expect(page).toHaveURL(/\/problems\/detail\?problemId=/);
+  await expect(editor).toHaveText(v02SourceCode, { useInnerText: true });
+  await page
+    .getByRole("tabpanel", {
+      name: copy("en")["v02.problem.results"],
+      exact: true,
+    })
+    .getByRole("link", { name: copy("en")["v02.openSubmission"], exact: true })
+    .click();
   await expect(page).toHaveURL(/\/submissions\/detail\?submissionId=/);
   const writes = (await upstreamCalls()).filter(
     (call) => call.path === "/api/v1/submissions" && call.method === "POST",

@@ -2,8 +2,8 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Tabs } from "@base-ui/react/tabs";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -36,12 +36,18 @@ import type {
   CreateSubmissionInput,
   LanguageCapabilities,
   PlatformProblemDetail,
+  SubmissionView,
 } from "@/lib/api/v02-schemas";
 import { useV02Mutation } from "@/lib/query/v02-hooks";
+import { acceptSubmission, deniedV02, v02Keys } from "@/lib/query/v02";
 import { isCurrentUser } from "@/lib/query/session";
 import { useWorkspaceSession } from "../account-provider";
 import { EmptyState, ErrorNotice, useSlowRequest } from "../feedback";
 import { CodeEditor, type CodeEditorHandle } from "./code-editor";
+import {
+  EditorSubmissionResult,
+  type EditorSubmissionAttempt,
+} from "./editor-submission-result";
 import { SampleValue } from "./problem-statement";
 import {
   problemDraftKey,
@@ -67,7 +73,6 @@ export function ProblemEditor({
   const { t } = useLocale();
   const { data: user } = useWorkspaceSession();
   const client = useQueryClient();
-  const router = useRouter();
   const languageId = useId();
   const sourceInput = useRef<CodeEditorHandle>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -77,6 +82,17 @@ export function ProblemEditor({
   const [consoleOpen, setConsoleOpen] = useState(true);
   const [consoleHeight, setConsoleHeight] = useState(140);
   const [sampleIndex, setSampleIndex] = useState(0);
+  const [consoleView, setConsoleView] = useState("samples");
+  const [acceptedAttempt, setAcceptedAttempt] =
+    useState<EditorSubmissionAttempt | null>(null);
+  const [requestNumber, setRequestNumber] = useState(0);
+  const latestRequest = useRef<{
+    publicId: string;
+    body: CreateSubmissionInput;
+    number: number;
+  } | null>(null);
+  if (acceptedAttempt && acceptedAttempt.publicId !== user?.publicId)
+    setAcceptedAttempt(null);
   const languages = problemLanguages(problem, capabilities.languages);
   const initialLanguage =
     languages.find((language) => language.languageId === "cpp17") ??
@@ -117,11 +133,40 @@ export function ProblemEditor({
 
   const mutation = useV02Mutation(
     "submission-create",
-    (body: CreateSubmissionInput, key) => v02.createSubmission(body, key),
-    (submission) => {
-      router.push(
-        `/submissions/detail?submissionId=${encodeURIComponent(submission.submissionId)}`,
+    async (body: CreateSubmissionInput, key) => {
+      try {
+        return await v02.createSubmission(body, key);
+      } catch (error) {
+        const request = latestRequest.current;
+        if (
+          deniedV02(error) &&
+          request?.body === body &&
+          isCurrentUser(client, request.publicId)
+        )
+          setAcceptedAttempt(null);
+        throw error;
+      }
+    },
+    (submission, body) => {
+      const request = latestRequest.current;
+      if (request?.body !== body || !isCurrentUser(client, request.publicId))
+        return;
+      client.setQueryData<SubmissionView>(
+        v02Keys.resource(request.publicId, "submission", {
+          submissionId: submission.submissionId,
+        }),
+        (previous) => acceptSubmission(previous, submission),
       );
+      setAcceptedAttempt({
+        publicId: request.publicId,
+        submissionId: submission.submissionId,
+        languageId: body.languageId,
+        problemVersionId: body.problemRef.problemVersionId,
+        sourceCode: body.sourceCode,
+        requestNumber: request.number,
+      });
+      setConsoleView("results");
+      setConsoleOpen(true);
     },
   );
   useSlowRequest(mutation.isPending);
@@ -167,13 +212,19 @@ export function ProblemEditor({
       sourceInput.current?.focus();
       return;
     }
-    if (blocked) return;
-    mutation.mutate({
+    if (blocked || !user || !isCurrentUser(client, user.publicId)) return;
+    const body: CreateSubmissionInput = {
       problemRef: problem.problemRef,
       languageId: draft.language,
       sourceCode: draft.source,
       ...(trainingRecordId ? { trainingRecordId } : {}),
-    });
+    };
+    const number = requestNumber + 1;
+    latestRequest.current = { publicId: user.publicId, body, number };
+    setRequestNumber(number);
+    setConsoleView("results");
+    setConsoleOpen(true);
+    mutation.mutate(body);
   }
 
   function changeLanguage(next: string) {
@@ -222,7 +273,7 @@ export function ProblemEditor({
     const observer = new ResizeObserver(measure);
     observer.observe(form);
     return () => observer.disconnect();
-  }, [mutation.error, mutation.isPending, refreshed, selected]);
+  }, [mutation.error, mutation.isPending, refreshed, selected, consoleView]);
 
   if (!student)
     return (
@@ -399,7 +450,13 @@ export function ProblemEditor({
           error={sourceError}
           disabled={mutation.isPending || refreshing}
         />
-        <section
+        <Tabs.Root
+          value={consoleView}
+          onValueChange={(value) => {
+            if (value === "samples" || value === "results")
+              setConsoleView(value);
+          }}
+          render={<section />}
           className="editor-console"
           aria-labelledby={`${languageId}-console-title`}
         >
@@ -471,12 +528,43 @@ export function ProblemEditor({
             />
           )}
           <div className="console-header">
-            <h3 id={`${languageId}-console-title`}>
-              <TerminalIcon className="size-4 text-info" aria-hidden="true" />
+            <h3 id={`${languageId}-console-title`} className="sr-only">
               {t("v02.problem.console")}
             </h3>
+            <Tabs.List
+              aria-label={t("v02.problem.console")}
+              className="flex min-w-0 flex-wrap items-center gap-1"
+            >
+              <Tabs.Tab
+                value="samples"
+                render={
+                  <Button
+                    type="button"
+                    size="xs"
+                    wrap
+                    variant={consoleView === "samples" ? "secondary" : "ghost"}
+                  />
+                }
+              >
+                <TerminalIcon aria-hidden="true" />
+                {t("v02.problem.samples")}
+              </Tabs.Tab>
+              <Tabs.Tab
+                value="results"
+                render={
+                  <Button
+                    type="button"
+                    size="xs"
+                    wrap
+                    variant={consoleView === "results" ? "secondary" : "ghost"}
+                  />
+                }
+              >
+                {t("v02.problem.results")}
+              </Tabs.Tab>
+            </Tabs.List>
             <div className="flex items-center gap-2">
-              {problem.samples.length > 1 && (
+              {consoleView === "samples" && problem.samples.length > 1 && (
                 <NativeSelect
                   aria-label={t("v02.problem.samples")}
                   size="sm"
@@ -521,33 +609,55 @@ export function ProblemEditor({
             className="console-body"
             style={{ height: Math.min(consoleHeight, consoleLimit) }}
           >
-            {sample ? (
-              <div className="sample-pair">
-                <SampleValue
-                  value={sample.input}
-                  kind="input"
-                  label={`${t("v02.problem.console")} · ${t("v02.problem.sampleInput")}`}
-                />
-                <SampleValue
-                  value={sample.output}
-                  kind="output"
-                  label={`${t("v02.problem.console")} · ${t("v02.problem.expected")}`}
-                />
+            <Tabs.Panel value="samples" keepMounted>
+              {sample ? (
+                <div className="sample-pair">
+                  <SampleValue
+                    value={sample.input}
+                    kind="input"
+                    label={`${t("v02.problem.console")} · ${t("v02.problem.sampleInput")}`}
+                  />
+                  <SampleValue
+                    value={sample.output}
+                    kind="output"
+                    label={`${t("v02.problem.console")} · ${t("v02.problem.expected")}`}
+                  />
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {t("v02.problem.noSamples")}
+                </p>
+              )}
+              <div className="console-output">
+                <span>{t("v02.problem.actual")}</span>
+                <Badge variant="secondary">{t("v02.problem.notRun")}</Badge>
               </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {t("v02.problem.noSamples")}
+              <p className="mt-2 text-xs text-muted-foreground">
+                {t("v02.problem.resultHint")}
               </p>
-            )}
-            <div className="console-output">
-              <span>{t("v02.problem.actual")}</span>
-              <Badge variant="secondary">{t("v02.problem.notRun")}</Badge>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {t("v02.problem.resultHint")}
-            </p>
+            </Tabs.Panel>
+            <Tabs.Panel value="results" keepMounted>
+              <EditorSubmissionResult
+                attempt={
+                  acceptedAttempt?.publicId === user?.publicId
+                    ? acceptedAttempt
+                    : null
+                }
+                pending={mutation.isPending}
+                previous={
+                  !!acceptedAttempt &&
+                  acceptedAttempt.requestNumber !== requestNumber
+                }
+                draftChanged={
+                  !!acceptedAttempt &&
+                  (acceptedAttempt.sourceCode !== draft.source ||
+                    acceptedAttempt.languageId !== draft.language ||
+                    acceptedAttempt.problemVersionId !== draft.version)
+                }
+              />
+            </Tabs.Panel>
           </div>
-        </section>
+        </Tabs.Root>
         {(refreshed || mutation.error) && (
           <div className="editor-feedback">
             {refreshed && (

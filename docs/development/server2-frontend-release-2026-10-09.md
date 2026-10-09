@@ -6,26 +6,53 @@ inspection and browser evidence acquired on 2026-10-09 from approximately
 08:30 UTC onward;
 historical receipts from other hosts do not establish server2 acceptance.
 
-**Latest health, login and current-session logout: PASS; complete integration and release: BLOCKED.**
-At 10:33 UTC, server2 health recovered to HTTP 200 and Docker healthy; the
-10:58 UTC read-only audit confirms that state. Direct and replacement-tunnel
-health reads at 11:33, 11:34 and 11:49 UTC also returned 200. The
-designated test account subsequently logged in successfully through the actual
-frontend, with `ADMIN` and `STUDENT` roles. Authenticated problem catalog and
-judge-language reads still return HTTP 500 `INTERNAL_ERROR` on the tenth export
-at 11:50 UTC; successful personal
-learning reads currently contain empty or null data. The tenth export verifies
-logout 204, `/me`401 and session-cookie removal; local acceptance processes are
-closed. Production ingress remains unconfigured. Earlier health failures below
-are retained historical evidence.
+**Task: INCOMPLETE and active. The f411 checkpoint passes required CI;
+new bottom submission results and the complete authorized route review remain
+under implementation and verification. Real judge-flow integration and production
+release remain BLOCKED.**
 
-This is a pre-release snapshot after conclusive eleventh local acceptance.
-The final documentation push starts a new exact-head CI run; terminal required
-`quality` and `storybook` results on
+The continuation below is a **precommit / pre-CI snapshot**. The next
+implementation milestone has not been committed or validated by new exact-head
+CI. Both complete local suites and final frozen source/export inventory pass;
+broad capture/image acceptance remains pending with a confirmed coach-page defect.
+
+Exact commit `f411559bf0b9f386437ea2bc0b24ee352e59c2fb` passes both PR run
+`37933436222` and push run `37933430503`: each has 522 units in 60 files,
+356 E2E and 494 Storybook cases, with zero failed, flaky, skipped or retried
+cases. Current uncommitted bottom-results code supersedes that source; it does
+not inherit those results. The corrected thirteenth `pnpm check` exits zero:
+lint, formatting, types, 537 units in 61 files and production build pass. The
+initial check exits 2 because four ignored raw evidence copies were included
+by the existing TypeScript glob; renaming those copies preserves their bytes
+and hashes, without changing production code or strict configuration.
+The confirmed twelfth English Results tab clipping at 320px/200% is corrected:
+focused regression finishes 4 PASS / 0 FAIL, and independent default-scroll
+geometry/images verify both locales. Thirteenth full Storybook is terminal
+494 PASS / 0 FAIL, exit 0, in 11.2 minutes. Full E2E is terminal 368 PASS / 0 FAIL,
+exit 0, in 18.1 minutes. Final combined source/export/suite inventory validation
+passes on the unchanged frozen followup source; neither log has failure, flaky,
+skipped or retry markers. Frozen 14-cell Results capture and agent
+image inspection pass within the Results area. A scoped bilingual editor probe
+also passes: ordinary focus reveals source code before and after Results; the
+earlier crops are explained by internal workspace scrolling. The 332-cell
+authorized-route capture is running without terminal acceptance. Actual pixel
+review confirms a clipped unread badge on the English coach page at 320px/200%;
+Stage 5 correction remains pending after the frozen capture. Older failures
+retain their candidate scope.
+Required checks on
 [PR #42](https://github.com/STAR-Ability/code-startrack-frontend/pull/42)
-are authoritative after this snapshot. No protected merge or deployment is
-authorized while the real-integration and production-destination gates remain
-blocked.
+must cover the next frozen, pushed source.
+
+Fresh server2 health at 13:29 UTC is HTTP 200 and Docker healthy, on the unchanged
+backend revision. The f411 frontend's ordinary login at 13:45 UTC succeeds with
+primary role `ADMIN` and memberships `ADMIN`, `STUDENT`; authenticated catalog
+and judge-language reads still return 500 `INTERNAL_ERROR`. Current-session
+logout at 13:55 UTC returns 204, then `/me`401 and session-cookie absence.
+Local browser/frontend/tunnel cleanup completes at 13:57 UTC. No frontend
+container or configured frontend domain/proxy is present in the fresh ingress
+inspection. Historical personal empty/null reads remain valid read results;
+they do not establish failure of untested generation POSTs. Earlier snapshots
+and failures below retain their original artifact scope.
 
 ## Initial 08:30 backend and local connection
 
@@ -396,7 +423,7 @@ real editor/problem-to-submission acceptance still cannot proceed while catalog
 and languages return 500. No additional business or session operation is used
 to manufacture a successful flow.
 
-## Frontend implementation and local acceptance
+## Historical frontend implementation and eleventh local acceptance
 
 The six baseline application milestones end at
 `995a4e291cfc3109e82be854c1f233bc0c323223`; they were separately reviewed,
@@ -645,6 +672,333 @@ Final corrected-input and combined browser evidence is in
 Ignored local artifacts are review evidence in this
 workspace; they are not published repository artifacts or a production release.
 
+## Continuation: inline submission results and authorized route review
+
+The completion audit at
+`test-results/visual-upgrade-20261009/completion-audit/audit.json` rechecks the
+original objective rather than treating successful CI as task completion. It
+identifies concrete unfinished frontend work: supported aggregate judge results
+were shown after navigation to the submission-detail page, but not in the
+requested bottom Results console. It also identifies missing current-task
+authorized coach content and route/locale/state coverage. These remain
+actionable frontend work; the overall task is incomplete and active.
+
+### Exact f411 CI checkpoint
+
+| Checkpoint                             | Status  | Scoped result                                                                                                                          |
+| -------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| PR run `37933436222`                   | PASS    | Exact f411: lint, formatting, types, build, 522 units/60 files, 356 E2E and 494 Storybook; zero failures, flakes, skips or retries     |
+| Push run `37933430503`                 | PASS    | Same exact f411 counts and terminal success, independently checked from complete logs                                                  |
+| Twelfth inline-results `pnpm check`    | PASS    | Candidate source only: lint, formatting, types, 537 units/61 files and production build; exit 0, zero end-source mismatches            |
+| Twelfth inline-results Storybook build | PASS    | Candidate static build exits zero; complete current-source suite remains pending                                                       |
+| Twelfth initial focused E2E            | FAIL    | Terminal 42 PASS / 6 FAIL, 5.1m; all six failures assume automatic rather than installed manual keyboard activation                    |
+| Twelfth corrected Results E2E          | PASS    | Terminal 12 PASS / 0 FAIL, 1.9m; changed test input, unchanged production source/export; excludes tab-label containment acceptance     |
+| Twelfth independent tab-label review   | FAIL    | Historical real English 320px/200% clipping; valid before-fix regression 2 PASS / 2 FAIL, 40.3s                                        |
+| Thirteenth initial `pnpm check`        | FAIL    | Exit 2: four ignored raw `.ts` evidence copies included by tsconfig; byte-preserving archive rename, strict settings unchanged         |
+| Thirteenth corrected `pnpm check`      | PASS    | Lint, formatting, types, 537 units/61 files in 79.47s and production build; zero end-source mismatches                                 |
+| Thirteenth focused tab-label E2E       | PASS    | Terminal 4 PASS / 0 FAIL, 41.5s; ordinary focus before full bounds, no horizontal ancestor scrolling; production/export unchanged      |
+| Thirteenth default-scroll tab review   | PASS    | Both locales 2/2, 320px/200%; complete labels fit, geometry/images inspected; scope is the two tab labels                              |
+| Thirteenth Storybook build             | PASS    | Static build exit 0                                                                                                                    |
+| Thirteenth full Storybook suite        | PASS    | Terminal 494 PASS / 0 FAIL, exit 0, 11.2m; frozen final source/export/suite inventory PASS                                             |
+| Thirteenth full E2E suite              | PASS    | Terminal 368 PASS / 0 FAIL, exit 0, 18.1m; both complete suite logs have no failure/flaky/skipped/retry markers                        |
+| Final frozen suite inventory           | PASS    | All 365 source / 225 production / 295 export files unchanged; zero added/removed/hash source/export mismatches                         |
+| Frozen Results capture/image review    | PASS    | 14/14 capture/geometry cells, stable source/export and agent pixel review; no irreversible Results clipping in the scoped evidence     |
+| Scoped bilingual editor probe          | PASS    | 320px/200% source focus usable before/after Results and resizer End; stable 120px canvas, root English images inspected                |
+| Current exact-head CI                  | PENDING | Frozen local complete suites PASS; implementation milestone is precommit and has no new exact-head CI yet                              |
+| Complete authorized route review       | PENDING | 332-cell frozen capture running; actual coach English 320px/200% unread-badge clipping confirmed, Stage 5 correction pending           |
+| Protected merge/image/deployment       | BLOCKED | Successful f411 CI does not resolve current-source verification, actual catalog/language failures or the absent production destination |
+
+The terminal evidence is
+`test-results/visual-upgrade-20261009/ci-f411559/verification-summary.json`,
+with [PR CI](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37933436222)
+and [push CI](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37933430503).
+The required checks succeed at f411; PR #42 remains draft. The earlier eleventh
+snapshot's pending CI rows are historical preparation records, superseded by
+these terminal f411 results. They do not validate the newer uncommitted source.
+
+### Supported bottom Results implementation
+
+The continuation changes accepted submissions to remain in the coding
+workspace and select its bottom Results tab, with an explicit link to the full
+submission-detail page. The new `EditorSubmissionResult` uses the existing
+private, validated submission query/polling boundary and aggregate result
+components. Its intended states include queued/judging, completed verdict and
+metrics, compiler feedback, structured judge-service failure, pending/error
+reads and ordinary retry. Run, custom-test management and per-test actual output
+remain unavailable under the documented API contract.
+
+Result ownership remains tied to the current user and accepted submission.
+The submitted source/language/version attribution stays in temporary component
+memory; subsequent draft edits are labeled separately. Latest-request checks
+prevent an older completion from selecting or seeding another attempt. Denied
+POST/GET and session changes clear or mask private result metadata and links.
+Compiler text uses React text escaping. The source review records reuse of
+existing APIs/hooks, without source/analysis reads or a new persistent source
+store in this inline component.
+
+The bounded review at
+`test-results/visual-upgrade-20261009/completion-audit/bottom-results-security-review.json`
+is **PASS for its recorded uncommitted source hashes only**. It inspects ordering,
+denied reads/writes, stale-session behavior, source attribution and aggregate
+data boundaries. It did not run tests, build or browser checks. New regression
+sources cover queued-to-completed feedback, compiler/error rendering, denied
+cached results, late reads/completions and user changes. The new full unit run
+passes 537 cases in 61 files at the twelfth candidate. Its corrected focused E2E
+passes within the scope below but does not certify full tab-label containment;
+the independently discovered clipping and thirteenth correction are recorded
+separately below. Complete Results and route acceptance remain pending.
+
+The historical twelfth production export contains 295 files, digest
+`2bb0fcd5859518070f984fe3a3475e3e4d435ee4cdbab52f5a44baebab959a81`,
+with zero source mismatches at the terminal check. The initial 48-case focused
+E2E run finishes with **42 PASS / 6 FAIL**, exit 1, in 5.1 minutes. All six failures
+assume automatic activation after Arrow/Home focus; installed Base UI
+`Tabs.List` defaults to `activateOnFocus=false` and requires Enter. Four narrow
+cases had not yet reached their geometry assertions. These activation failures
+alone do not establish a product defect. The original terminal outcome and
+failure artifacts remain in `twelfth-initial-focused-summary.json` and
+`twelfth-initial-tab-activation-failures/`.
+
+The correction changes only `tests/e2e/editor-results.spec.ts`, adds Enter after
+keyboard focus and retains lifecycle, security, source-attribution, geometry,
+no-extra-POST/source/analysis and explicit-detail assertions.
+`twelfth-test-followup-manifest.json` records test-input source digest
+`74fb5ef27d9292d320d396b76d4b699bbb278a206cd9ba0fac2479403755e38e`,
+unchanged production-source digest
+`79751f8da4b9a762d522ad0991fb9e495e8f122fdeea4ff21e336747bc2e11f6`
+and the unchanged export digest above. The corrected rerun is terminal
+**12 PASS / 0 FAIL**, exit 0, in 1.9 minutes, recorded in
+`twelfth-results-corrected-summary.json`. It covers inline diagnostics, polling,
+denial, previous-result behavior, keyboard access and console/source metrics.
+Those passing geometry checks do not cover complete tab-label containment.
+
+Independent screenshot and DOM evidence subsequently confirms an actual
+English tab-label clipping defect at 320px and 200% root text, without CSS
+overrides. The header's right edge is 279px; the Public samples text reaches
+291.91px and Results text 302.63px, crossing clipping ancestors while
+`scrollLeft=0`. Evidence is in
+`twelfth-systematic-route-review/tab-clipping-priority-run-2/en.json` and its
+associated captures/provenance. This confirmation supersedes the earlier
+corrected-summary wording that clipping was only a potential issue awaiting
+measurement. The valid before-fix regression in
+`twelfth-tab-valid-before-summary.json` finishes **2 PASS / 2 FAIL**, exit 1,
+in 40.3 seconds: Chinese desktop/mobile passes and English desktop/mobile fails
+actual horizontal clipping. An earlier overly strict vertical-visibility run
+is preserved separately in `twelfth-tab-regression-before-vertical-summary.json`:
+all four fail its vertical assertion, while the two English cases additionally
+show the actual horizontal defect. Permitting intentional vertical scrolling
+does not remove the horizontal/button/header/clipping-ancestor checks.
+Twelfth checks certify their recorded candidate only.
+
+### Thirteenth correction and scoped acceptance
+
+Both console tab buttons now support wrapping and automatic height. The first
+thirteenth `pnpm check` exits **2** because four root-owned ignored raw evidence
+copies still had `.ts` extensions and were included by the existing TypeScript
+glob; their relocated relative imports could not resolve. The receipt
+`thirteenth-archive-snapshot-correction.json` and original
+`thirteenth-check.log` preserve the failure. Only those archived copies were
+renamed to `.snapshot.txt`; their bytes and SHA256 hashes remain identical.
+No production code was changed by this archive correction, and TypeScript
+strictness/configuration remains unchanged.
+
+The corrected `pnpm check` is terminal **PASS**, exit 0, including lint,
+formatting, types, **537 units / 61 files in 79.47 seconds** and production build.
+`thirteenth-source-manifest.json` records 365 source files, source digest
+`0e6fc4d3690683777f4ed2143748045b6715bf25a1338887b2bbca4a2648bfa8`,
+225 production paths, production-source digest
+`5ec63f7fc7957f2c5c6d31811c45817ea68c1ddbf70c178179398c4a8901214d`,
+and 295 export files with digest
+`6e28e5e9f357b56e9a9eee759f93b61e6a462f18709403587c596f7c285a07d5`.
+There are zero end-source mismatches. Terminal build evidence is retained in
+`thirteenth-check-corrected.log`. Static Storybook build also exits 0, recorded
+in `thirteenth-storybook-build.log`.
+
+The first after-fix four-case tab regression finishes **2 PASS / 2 FAIL**,
+exit 1, in 41.0 seconds. Its horizontal containment checks pass; the two English
+failures require unfocused tabs to fit the outer vertical viewport before
+ordinary workspace scrolling. The original outcome and failure artifacts are
+preserved in `thirteenth-tab-after-unfocused-summary.json` and
+`thirteenth-tab-after-unfocused-vertical/`. The subsequent test correction uses
+ordinary focus to bring each label vertically into view before measuring full
+text, retaining button/header/permanent vertical-clip and all horizontal bounds,
+and explicitly rejecting horizontal ancestor scrolling. It changes only
+`tests/e2e/editor-results.spec.ts`. The test-followup and E2E-input manifests
+record source digest
+`208dc6fdb0531fc35849691db8f99272166a0deed22246bc5cd059ec203a933a`
+and the unchanged production-source/export digests above.
+
+The corrected focused rerun finishes **4 PASS / 0 FAIL**, exit 0, in
+41.5 seconds, recorded in `thirteenth-tab-focused-after-summary.json`. Both
+locales run in desktop/mobile projects at 320px/200%; complete label lines fit
+the button/header/clipping ancestors without horizontal ancestor scrolling.
+Code canvas, controls, metrics, exact private draft and explicit detail navigation
+remain covered. Separate default-scroll geometry and image review in
+`thirteenth-systematic-route-review/tab-clipping-priority/` passes **2/2**
+locale cases, with stable source/export and no overrides. English labels wrap
+onto two readable lines without clipping or overlap; the root task has also
+inspected the complete images. These receipts resolve the tab-label defect
+within their stated scope, not the complete Results state or route review.
+
+The full thirteenth Storybook suite is terminal **494 PASS / 0 FAIL**, exit 0,
+in **11.2 minutes**. `thirteenth-storybook-terminal.json` records its input
+manifest, source/production/export digests and complete log
+`thirteenth-storybook-full.log`, SHA256
+`c74a597f5b328f1f3e59ebe896c534633a9ad6fec5c052ee05b39b83a66c1dbb`.
+The full E2E suite is also terminal **368 PASS / 0 FAIL**, exit 0, in
+**18.1 minutes**. Its complete `thirteenth-e2e-full.log` has SHA256
+`006c00c9f5e924102732bf6826c6964f54578fab287fe7eed24392782b0c9dc7`.
+`thirteenth-final-suite-validation.json` is **PASS** for all 365 source inputs,
+225 production inputs and 295 export files. The frozen followup source digest
+remains `208dc6fdb0531fc35849691db8f99272166a0deed22246bc5cd059ec203a933a`,
+production digest remains
+`5ec63f7fc7957f2c5c6d31811c45817ea68c1ddbf70c178179398c4a8901214d`,
+and export digest remains
+`6e28e5e9f357b56e9a9eee759f93b61e6a462f18709403587c596f7c285a07d5`.
+Complete added/removed/hash end checks have zero source/export mismatches;
+the original compiled manifest is preserved. Both terminal suite logs have zero
+failure, flaky, skipped or retry markers. These complete local suites validate
+the recorded frozen inputs and unchanged compiled production/export; they do
+not establish new exact Git-head CI or broad rendered acceptance.
+Earlier actual Results review had
+14 passing geometry cells, but its end check encountered full-source drift;
+that fatal provenance failure is preserved and prevents accepting the run as
+current-source completion.
+
+The new frozen-input Results run in
+`thirteenth-systematic-route-review/inline-results-run-2/` completes **14/14**
+capture/geometry cells, with stable source/export, all contexts closed and no
+overrides. Agent pixel review covers all six AC/WA and eight CE/IE cells through
+the actual contact sheets and original raster images. The independent receipts
+`human-image-review-ac-wa.json` and `human-image-review-ce-ie.json` pass the
+bounded Results readability and supplied scroll-range inspection; their
+filenames do not establish separate human review. No irreversible Results
+clipping is reported. Narrow English metrics and the small result viewport
+increase reading effort. Original English editor context crops at 320px/200%
+initially showed no CodeMirror lines before the footer; the separate scoped
+source-focus probe below resolves that observation. This 14-cell review remains
+Results-area evidence rather than complete full-page acceptance.
+
+The bilingual 320px/200% editor-usability probe in
+`thirteenth-systematic-route-review/editor-usability-priority-run-2/` is terminal
+**PASS**, exit 0. Source and export remain stable. In both locales the source
+field is approximately 627px high and its CodeMirror canvas/scroller is 120px;
+default view has 22 visible text rectangles and source focus exposes 25. Those
+25 are visible when source is refocused after Results, after the console
+resizer's End action and with the console closed. Those later stages do not
+measure an unrefocused Results-focused viewport. The earlier crops are explained by the workspace
+form's ordinary internal scroll (`scrollTop=109`), not an inaccessible input
+surface. Root inspection of `en-focused-page.png` and
+`en-after-results-page.png`, recorded in `root-image-review.json`, shows all
+four sample code lines and a caret within the canvas before and after Results.
+No source correction was needed for this observation. The probe performs
+isolated synthetic resets and one ordinary synthetic submission per locale;
+it makes no live business writes. Its scope resolves source-entry reachability
+in these tested states, without establishing real judge or full-route acceptance.
+
+`thirteenth-systematic-route-review/priority-image-acceptance.json` consolidates
+the terminal **14/14 Results capture and actual image-review PASS**, the bilingual
+source-focus probe, tab-label images and their exact input/artifact references.
+This is the completed bounded Results/editor milestone; broader route and full
+suite acceptance remain separate.
+
+The 332-cell authorized route capture is running after independent helper
+source review, without a terminal accepted outcome. Actual pixel inspection
+finds a real English `/coach` unread-badge clipping defect at 320px/200% text:
+the card clips the badge. Root independently opens
+`thirteenth-systematic-route-review/root-coach-unread-crop.png` and confirms
+the defect. The frozen capture must retain this failure; separate Stage 5
+source correction and new artifact-bound regression/image acceptance remain
+pending. Complete local suites and scoped Results passes do not resolve that
+visual defect. No new commit, protected merge, production image or deployment
+is claimed by this precommit snapshot.
+
+### Planned route and state acceptance
+
+`test-results/visual-upgrade-20261009/completion-audit/next-visual-route-map.json`
+maps all 37 routes to components, real fixture IDs, appropriate anonymous/student/
+coach identities, expected content and role gates. The requested baseline is
+both `zh-CN` and `en` at 1440, 1280, 768 and 390px. Affected 320px/200% text,
+keyboard, reduced-motion, loading/error/empty and ownership/privacy cases add
+targeted inspection to that baseline. The next frozen-artifact execution targets
+332 authorized route cells after the separate 14-cell Results review. Results
+capture and bounded image inspection are recorded above; broad capture is
+running without terminal acceptance. Authorized coach pages must show actual
+owned-team/dashboard/form content; a localized heading on a denial screen is
+insufficient.
+
+The preparation review is
+`test-results/visual-upgrade-20261009/completion-audit/global-route-preparation/review.json`.
+It preserves the old 37-route inventory while replacing its execution and
+assertion logic: the earlier broad sweep had English desktop/mobile captures,
+an additional twelve-route locale/width matrix, and denied coach captures.
+That historical evidence is not a completed 296-cell authorized review of the
+current source. The new review must bind each cell to frozen source/export and
+actual served HTML/CSS, verify identity and populated route landmarks, preserve
+failures/canceled requests, and close its owned contexts/services. The isolated
+synthetic fixture supplies these states; it cannot establish real server2
+business acceptance. This section records preparation, not completed captures.
+
+`completion-audit/final-broad-helper-independent-review.json` is **PASS for
+read-only source review of its exact helper hashes**. It verifies 296 baseline
+cells plus 36 additional narrow cells, frozen input/export/served-asset lineage,
+serialized authorized identities, populated runtime markers, fresh-output and
+failed-evidence retention, and owned context/service cleanup. It authorizes the
+already scoped isolated synthetic capture to proceed; the reviewer ran no
+tests, build, browser or servers. Helper review does not establish execution,
+rendered visual quality, chart correctness or original-objective completion.
+
+### Refreshed actual server2 evidence at f411
+
+The fresh read-only server receipt is
+`test-results/server2-release-20261009/continuation-1/server2-readiness.json`.
+At `13:29:59Z`, health is HTTP 200 in 34 ms, Docker `healthy` with failing
+streak zero. Backend revision remains
+`318b84170860b6e4ca6931712554474a531acfcb`, with the same observed `10:26:49Z`
+start time. No frontend image container is listed. OpenResty
+`1Panel-openresty-FxeV` retains default 8080/8443 sites, empty `conf.d` and no
+frontend domain/proxy; `sites` and `/opt/projects` remain absent. The separate
+Safeline tengine configuration has a default server on 65443 and no named
+frontend route in the sanitized directives. Prior frontend/ingress blockers
+have not changed. Registry availability was not rechecked in this inspection.
+
+The f411 frontend on the permitted `http://127.0.0.1:8081` Origin completes
+ordinary login at `13:45:00Z`, enters `/dashboard` and performs four protected
+reads. A previously expired CAPTCHA was rejected before the refreshed challenge
+succeeded; that first attempt is not an invalid-credential finding.
+
+| Actual read                 | Status  | Scoped response                                                         |
+| --------------------------- | ------- | ----------------------------------------------------------------------- |
+| `/api/v1/me`                | PASS    | 200; primary role `ADMIN`                                               |
+| `/api/v1/me/roles`          | PASS    | 200; memberships `ADMIN`, `STUDENT`                                     |
+| `/api/v1/judge-languages`   | BLOCKED | 500 `INTERNAL_ERROR`; request ID `c2ca91f3-be91-42b7-8e44-178432276e8a` |
+| `/api/v1/platform-problems` | BLOCKED | 500 `INTERNAL_ERROR`; request ID `a0d9e112-1a4e-4ecf-b1b9-d2f263cd7d43` |
+
+All four responses retain `no-store` and no mock header. These two actual 500
+responses block catalog/language acceptance and complete real judge-flow
+verification. No submission, profile rebuild or recommendation-generation
+business POST was exercised. Historical successful empty/null personal GETs do
+not prove those untested POSTs unavailable or failing; generation and populated
+learning-payload acceptance remain **NOT RUN**. Empty payloads also do not
+resolve the uppercase/lowercase populated `ProblemRef.platform` discrepancy.
+
+Current-session logout at `13:55:57Z` returns 204, navigates to `/login`, removes
+the session cookie and is followed by `/me`401 `SESSION_EXPIRED`. Logout-all is
+not called. At `13:57:07Z`, the local frontend exits zero, the tunnel is stopped
+with Ctrl+C, the browser closes and the listener check is empty. Sanitized
+receipts in `continuation-1/` are `final-head-authenticated-read-receipt.json`,
+`logout-and-probe-receipt.json` and `local-cleanup.json`. They retain statuses,
+role codes and request IDs without credentials, cookie values or authentication
+bodies. Expected anonymous 401s, backend 500s and a preload warning remain
+recorded. This limited f411 check does not repeat or relabel the tenth export's
+twenty broader real-browser captures, and does not validate the newer inline
+Results implementation.
+
+No protected merge, new production image, frontend deployment or production
+acceptance is claimed. The continuation must finish the supported frontend
+work, freeze/build/review it, verify its new exact-head CI, and retain the actual
+integration and production-destination gates before proceeding to release.
+
 ## Evidence and unresolved gates
 
 Ignored local receipts are under `test-results/server2-release-20261009/`:
@@ -665,15 +1019,46 @@ authenticated customer data.
   identity/role reads, empty personal learning/submission/training responses,
   bilingual desktop/mobile empty/error rendering, current-session logout and
   local testing-process cleanup.
-- **NOT RUN:** Other authenticated role/ownership combinations, business
-  writes, candidate publication, production deployment and production verification.
-- **BLOCKED:** Authenticated catalog/language HTTP 500 responses, populated V0.2
-  payload compatibility and full problem-to-submission acceptance, plus an
+- **PASS:** Exact f411 PR and push CI, each with 522 units, 356 E2E and 494
+  Storybook cases; this checkpoint excludes current uncommitted inline results.
+- **PASS:** Twelfth candidate inline-results `pnpm check`, including lint, formatting,
+  types, 537 units/61 files and production build; static Storybook build also exits zero.
+  Corrected Results E2E finishes 12 PASS / 0 FAIL on recorded changed test input
+  and unchanged production/export; its scope does not include tab-label containment.
+- **FAIL:** Preserved twelfth initial focused run, 42 PASS / 6 FAIL due to manual
+  tab-activation assumptions. Separately confirmed actual English tab-label
+  clipping at 320px/200%, with valid before-fix 2 PASS / 2 FAIL. The initial
+  thirteenth typecheck/archive failure and after-fix vertical-visibility test
+  failures retain their original receipts; they do not describe production defects.
+- **PASS:** Corrected thirteenth `pnpm check`, 537 units/61 files in 79.47s,
+  production build and static Storybook build. Focused tab-label regression
+  finishes 4 PASS / 0 FAIL; independent default-scroll bilingual labels pass
+  2/2 geometry/image cases. These are scoped to recorded production/export
+  and declared test-only followup.
+- **PASS:** Thirteenth full Storybook terminal 494 PASS / 0 FAIL, exit 0, 11.2m,
+  and full E2E terminal 368 PASS / 0 FAIL, exit 0, 18.1m. Final frozen
+  source/export/suite validation passes all 365/225/295 inputs with zero
+  source/export mismatches and no failed/flaky/skipped/retry log markers.
+  New frozen Results capture 14/14 and bounded agent pixel inspection pass,
+  with stable source/export and closed contexts. Scoped bilingual source-entry
+  usability passes before/after Results and resizer End, with root English
+  image inspection resolving the earlier crop observation. Independent broad-capture
+  helper review passes its source-only scope; it does not certify captures.
+- **FAIL:** Actual English coach-page unread badge is clipped by its card at
+  320px/200%, independently confirmed in root pixel inspection. Stage 5 source
+  correction and new regression/image acceptance remain pending after the frozen capture.
+- **PENDING:** 332-cell authorized route capture/image acceptance and next
+  exact-head CI for the implementation milestone. Earlier Results
+  geometry passes do not overcome their preserved fatal end-source drift.
+- **NOT RUN:** Other real role/ownership combinations,
+  submission/profile/recommendation business POSTs, populated learning-payload
+  acceptance, candidate publication, deployment and production verification.
+- **BLOCKED:** Authenticated catalog/language HTTP 500 responses and complete
+  problem-to-submission acceptance, plus an
   established server2 production frontend destination.
 
-Frontend implementation, conclusive compiled browser review and scoped local
-regressions pass. The eleventh full source check passes 522 units plus lint,
-formatting, types and build; focused E2E passes 22 and Storybook passes six.
-Complete final-head 356-case E2E and 494-case Storybook results remain pending
-at this pre-release snapshot and must be checked on PR #42. Complete real-flow
-integration and protected production release remain blocked by the gates above.
+Historical eleventh local acceptance and later exact f411 complete CI pass in
+their stated scopes. The task remains incomplete, with concrete bottom-results
+implementation and authorized route review active. Current source and future
+release must obtain their own verification; successful earlier CI does not
+remove these frontend requirements or resolve the real integration/ingress gates.

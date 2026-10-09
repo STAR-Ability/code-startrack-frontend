@@ -123,6 +123,11 @@ export const v02ProblemsZh = {
   "v02.problem.cursor": "第 {line} 行，第 {column} 列",
   "v02.problem.draftMemory": "本次会话草稿",
   "v02.problem.console": "测试与结果",
+  "v02.problem.results": "提交结果",
+  "v02.problem.noSubmissionResult": "提交代码后，判题状态与结果会显示在这里。",
+  "v02.problem.draftChanged":
+    "当前源码、语言或题目版本已变化；结果仍对应这次提交。",
+  "v02.problem.previousResult": "上次提交结果",
   "v02.problem.collapseConsole": "收起测试面板",
   "v02.problem.expandConsole": "展开测试面板",
   "v02.problem.expected": "预期输出",
@@ -287,6 +292,12 @@ export const v02ProblemsEn: Record<keyof typeof v02ProblemsZh, string> = {
   "v02.problem.cursor": "Ln {line}, Col {column}",
   "v02.problem.draftMemory": "Draft in this session",
   "v02.problem.console": "Tests & results",
+  "v02.problem.results": "Submission results",
+  "v02.problem.noSubmissionResult":
+    "Submit your code to see judging status and results here.",
+  "v02.problem.draftChanged":
+    "The code, language or problem version has changed. This result belongs to the submitted version.",
+  "v02.problem.previousResult": "Previous submission result",
   "v02.problem.collapseConsole": "Collapse test panel",
   "v02.problem.expandConsole": "Expand test panel",
   "v02.problem.expected": "Expected output",

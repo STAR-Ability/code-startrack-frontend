@@ -25,12 +25,12 @@ The task attachment is the current scope. The initial worktree is clean on dev a
 
 ## Acceptance Criteria
 
-- [ ] Fixed, clearly visible background geometry differs by page category and preserves readable content.
-- [ ] All major route families and reusable controls have coherent improved composition and feedback.
-- [ ] Important numerical information precedes secondary charts and details.
-- [ ] Coding workspace has adjustable accessible panes, mature syntax editor, language/settings controls and structured samples/results.
-- [ ] Unsupported running/custom tests remain clearly unavailable; supported submissions preserve real API and draft behavior.
-- [ ] ECharts are readable, coordinated, responsive, accessible and accurately represent values.
+- [x] Fixed, clearly visible background geometry differs by page category and preserves readable content.
+- [x] All major route families and reusable controls have coherent improved composition and feedback.
+- [x] Important numerical information precedes secondary charts and details.
+- [x] Coding workspace has adjustable accessible panes, mature syntax editor, language/settings controls and structured samples/results.
+- [x] Unsupported running/custom tests remain clearly unavailable; supported submissions preserve real API and draft behavior.
+- [x] ECharts are readable, coordinated, responsive, accessible and accurately represent values.
 - [ ] Multi-resolution, bilingual, keyboard and reduced-motion visual evidence is inspected and high-impact defects revised.
 - [ ] Real server2 authentication, permissions, profiles, recommendations, problems and submissions pass with designated identities.
 - [ ] Lint, formatting, types, units, Storybook, E2E, build and exact-image gates pass.
@@ -93,7 +93,7 @@ Validation: full local/CI suite, protected merge, exact-image acceptance, produc
 
 ## Risks
 
-- Real authenticated verification needs designated credentials/session; anonymous 401 does not prove payload compatibility.
+- Designated test-account login passes; catalog/language HTTP 500 responses and empty learning data prevent complete real-flow acceptance.
 - Server2 advertised enums may disagree with the approved contract; runtime payloads must resolve that conflict.
 - No initial frontend container is evidenced on server2; inspect ingress and confirm destination before provisioning.
 - Shared fixture and build outputs require serialized resets and stopping preview/dev before relevant full tests.
@@ -109,7 +109,7 @@ Keep scoped milestone commits; preserve unrelated work and private settings. Use
 - [x] Stage 2
 - [x] Stage 3
 - [x] Stage 4
-- [ ] Stage 5
+- [x] Stage 5
 - [ ] Stage 6
 - [ ] Stage 7
 
@@ -137,3 +137,23 @@ Keep scoped milestone commits; preserve unrelated work and private settings. Use
 - The editor remains under final correction: fifth-export focused checks have 19 passes and one synthetic contenteditable fill failure. Genuine keyboard diagnosis separately reveals a real rapid compiler-switch document latch and a zero-height editor canvas at 320px/200% text. Both are being fixed with behavioral coverage before marking Stage 3 or overall Stage 5 complete. Exact rich/plain/failure source, ordinary resized actions, no-editor focus and normal responsive geometry already pass independently.
 
 - Stage 3 passes on the sixth export: all 24 focused desktop/mobile browser cases and 13 editor units pass, including genuine keyboard edits, compiler-private draft isolation, preferences, visible/clickable code at 320px/200% and the final caret in a 90-line plain document. A compiler change mounts its own document to cancel the prior typing latch; undo history resets while outer preferences remain. Wrapped chrome grows inside the scrollable form and retains a 120px minimum canvas. Real deferred-chunk failure, maximum console, COACH/disabled focus and exact private source pass in actual browsers. The syntax palette's lowest measured contrast is 6.94:1. Desktop/mobile/fallback screenshots are inspected. Full lint/format/types, 518 units and production/Storybook builds pass; all original failures and corrected-test evidence remain preserved. Overall independent final audit and full suites continue under Stages 5 and 7.
+
+- The sixth-source full Storybook suite passes all 486 cases. Both exact-`995a4e2` push and PR CI runs pass 518 units, 352 E2E and 486 Storybook cases. Local full E2E nevertheless ends with 351 passes and one mobile delayed-radar failure: an eight-second persistent loading toast covers the locale header. A normal immediate rerun passes because the notice never appears; adding an explicit visible-notice wait deterministically reproduces the original defect on the old export. The response remains held until after an ordinary locale click, and no assertion or overall timeout is weakened. The seventh-build fix uses the official bottom-anchored toast composition with matching stack, bridge and entry/exit transforms, retaining pointer, close, action, hover and swipe behavior. Full rebuilt verification and final browser inspection are pending; original trace/logs and prototype evidence are preserved.
+
+- Seventh and eighth bottom-toast exports pass complete Storybook suites, and the eighth export passes `pnpm check` and both delayed-radar cases. Exact-eighth browser review still finds the loading notice covers the locale button at 320px/200% text. The ninth correction bounds notice height, wraps long actions, uses the official single-visible-notice limit without discarding the queue, and removes circular content-height sizing. Fixture diagnostics that mixed changing source with eighth CSS are explicitly provisional; final acceptance requires a frozen source/build pair.
+
+- The ninth candidate keeps Close outside the scrollable message/action region, prioritizes mobile navigation before the complete Mock notice, and makes application/Storybook provider limits consistent. Immutable prototypes pass ordinary locale clicks at 320px/667px and 900px height with 200% text in both locales, long-action Tab/Enter, touch scrolling and queue promotion. Base UI synchronously tries to focus a promoted toast before React removes `inert`; a guarded frame-after-dismissal retry preserves its handlers and original focus anchor for Escape and keyboard Close. Real browser regression coverage and compiled acceptance are required before completing Stage 5.
+
+- Real frontend CAPTCHA/login passes with the user-designated test identity, with ADMIN primary role and ADMIN/STUDENT membership. At 10:58 UTC server2 health is HTTP 200 and Docker healthy. Authenticated catalog and judge-language reads repeatedly return HTTP 500; personal read endpoints return valid empty/null data. No business data or backend/judge service was changed. Complete integration, populated contract acceptance and production frontend ingress remain open gates.
+
+- The ninth full Storybook suite passes all 494 cases, including eight new queue/long-notice regressions. The frozen tenth export passes `pnpm check` (518 units /59 files), final Storybook build and the eight affected cases, ten actual capability-layout cells and four actual delayed-profile/header cells with matching served CSS. Notification correction `8af72bc` is pushed and remotely verified. The complete tenth E2E run is historical: desktop uncertain-submit retry is intercepted by the visible error notice; its test follow-up happened during that run and is explicitly recorded. The exact `8af72bc` PR and push CI runs each end with 351 E2E passes and one failed retry case, while each Storybook suite passes all 494 cases. Final frozen-source CI remains required.
+
+- Real tenth-export identity/role reads pass with ADMIN/STUDENT; catalog and judge-language reads remain HTTP 500, while learning/training/submission/account reads return valid empty/null data. Twenty bilingual desktop/mobile observations preserve truthful errors and empty states, with no runtime errors or business writes; canceled local route probes are retained. Nineteen screenshots are settled, while one desktop training screenshot has an entrance-transition caveat. Current-session UI logout returns 204, then `/me` returns 401 and the session cookie is absent. Browser, real frontend and SSH tunnel are closed. A newly observed shared public footer CTA wraps English letters at 320px/200%; its local layout correction and eleventh compiled verification are pending before Stage 5 completes.
+
+- The tenth full E2E run ends with 349 passes and three failures (16.5 minutes): two error-notice interceptions require ordinary dismissal before Retry, while mobile rapid compiler switching reveals actual lost source after a roughly 3 ms switch. Five immediate diagnostic repetitions pass, but the original trace and deterministic parent-cache regression prove the race; it is not dismissed as flaky. Stage 3 is reopened until synchronous guarded draft saving and preserved version-refresh behavior pass the rebuilt regression. The shared public header also remains too tall and sticky at 320px/200% text; mobile layout/flow is being corrected alongside the footer before the single eleventh source freeze.
+
+- Stage 3 is complete again on the eleventh compiled export: synchronous user/problem/version/compiler cache writes preserve exact source before React language changes, while guarded passive migration retains version-refresh semantics and live session ownership. Four new regression cases pass; `pnpm check` passes lint, formatting, types, 522 units across 60 files and the production build. The corrected focused browser run passes all 22 cases in 59.5 seconds, including all 12 genuine-editor cases, four bilingual footer cases, four 404/503 session recoveries and two uncertain-submission retries. Editor milestone `475142fac97710360ad0eddc8cd1f0c46fd394e1` and recovery coverage `b4574f8c1d32ec58b3571ba2efb6d32b8dcf138d` are separately pushed and remotely verified.
+
+- Initial eleventh focused verification retains 16 passes and six test-selector failures: Base UI intentionally hides the collapsed, unfocused Close from role queries while keeping the labeled control visible. Only the two regression locators change to translated exact-label queries; ordinary clicks, hidden-notice checks, recovery, source and idempotency assertions remain. Both runs have immutable inputs, and original traces are preserved. Corrected test-input digest `a270177a253743bc64657b4ecdd8fab637782d9378c41f7a65cecd21770cec49` retains compiled production digest `509d0e28f95c811e3ecaee3df589e21f2358794e35c32a3f86c46bef7b5fa745` and export digest `1612ee956a5a3950fd77fb2c1a11533a600fe04131aa8887c516da882383a58f`. Eleventh Storybook build and six affected queue/long-notification cases pass. Complete final-head 356-case E2E and 494-case Storybook verification remain required at this snapshot; terminal required checks are authoritative on PR #42.
+
+- Stage 5 rendered acceptance passes all 12 combined eleventh-export public cells with exact root font size and three stable header frames, both locales, mobile/tablet/desktop and 200% text. Header flow, native menu keyboard navigation, complete capability labels and footer words, focus and ordinary CTA navigation pass with matching disk/served HTML and CSS. Both desktop 200% headers measure 247px. Browser contexts close; no runtime, console, HTTP or non-cancellation request failures or fixture business writes occur. All 84 canceled local route HEAD probes remain recorded. The first provisional raw measurements were overwritten, so only the conclusive rerun supports final geometry acceptance; this evidence limit is recorded without reconstructing artifacts. Representative mobile and desktop screenshots are visually inspected. Stages 6 and 7 remain blocked by real catalog/language HTTP 500, unresolved populated contract evidence and unconfigured production ingress; no merge, production image or deployment is performed.

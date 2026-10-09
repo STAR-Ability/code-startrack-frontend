@@ -58,21 +58,21 @@ CI runs are not acceptance of this candidate.
 | Full unit suite                    | PASS: 507 tests across 57 files in final `pnpm check`; 33 scoped chart tests also pass                                                                                                   |
 | Production export                  | PASS: final stable-layout production export (37 product routes; 40 generated static pages)                                                                                               |
 | Storybook build                    | PASS against final source                                                                                                                                                                |
-| Storybook browser suite            | PASS locally: 486 tests; b88aaee push CI: 486 passed; PR CI: 485 passed + 1 flaky, retry passed. Precision correction has a separate focused replay below                                |
-| Full E2E                           | PASS: full local 334-test application replay, 6 focused tests after the date-locator correction and 334 tests in each b88aaee CI run                                                     |
+| Storybook browser suite            | PASS locally: 486 tests. Both 3251c32 CI runs pass all 486 directly after the precision correction; the earlier b88aaee PR flake remains documented below                                |
+| Full E2E                           | PASS: full local 334-test application replay, 6 focused tests after the date-locator correction and 334 tests in each b88aaee and 3251c32 CI run                                         |
 | Rendered route matrix              | PASS: 222 route observations, 24 member-view checks and 54 final affected-route recaptures with 174 SVGs, in two locales and desktop/tablet/mobile                                       |
 | Responsive chart review            | PASS: 72 shared visual checks, 13 chart cases and four final locale/theme/reduced-motion/native-keyboard interaction cases                                                               |
 | Keyboard/source review             | PASS in both locales including 320px at 200% text; no external requests, business writes or console errors                                                                               |
 | Text contrast                      | PASS for sampled light semantic foreground tokens against white, own soft surface and canvas; minimum 4.73:1. This is not a full WCAG audit                                              |
 | Loading layout                     | PASS: 8 real delayed-engine browser cases, 24 persistent frames / 56 legend buttons, 0px measured displacement and successful mode switches before readiness                             |
 | Docker                             | PASS: exact local image `sha256:70f4840c2264fbd945b575d793938fcf2ee73407e8aa780f79d8c2647870e228`; all 223 inputs equal source commit `765b55e` (qualified fixture transport documented) |
-| Real transport                     | PASS: health, live/saved OpenAPI parity, 48 protected anonymous reads and 26 adapter/proxy checks; CAPTCHA server/schema success excludes browser Origin                                 |
+| Real transport                     | PASS on startrack-prod: health, live/saved OpenAPI parity, 48 protected anonymous reads and 26 adapter/proxy checks; CAPTCHA server/schema success excludes browser Origin               |
 | Real authenticated roles/workflows | BLOCKED: no designated existing credentials or session supplied                                                                                                                          |
-| Real browser authentication origin | BLOCKED: local preview Origin is rejected by the deployed backend; do not infer browser CAPTCHA success from a Node request without Origin                                               |
-| V0.2 real API success              | UNVERIFIED: additive endpoint families absent from advertised live OpenAPI; anonymous 401s do not prove route support                                                                    |
-| Git/PR/CI                          | dev pushed; PR #42 remains draft. Both b88aaee quality/Storybook jobs succeeded; latest exact-head terminal results are recorded in the PR. Original failures remain documented          |
+| Real browser authentication origin | BLOCKED: startrack-prod rejects the local preview Origin; server2 matching frontend route remains unverified. Origin-free Node success is not browser CAPTCHA acceptance                 |
+| V0.2 real API success              | UNVERIFIED: absent from startrack-prod OpenAPI; server2 now advertises all 27 documented operations. Neither proves authenticated runtime success; anonymous 401s do not prove support   |
+| Git/PR/CI                          | dev pushed; PR #42 remains draft. Both 3251c32 quality/Storybook jobs succeeded without retry; latest exact-head terminal results are recorded in the PR. Original failures remain       |
 | Main merge/image publication       | NOT RUN; release gates remain unmet                                                                                                                                                      |
-| server2 deployment                 | BLOCKED: no existing frontend deployment or backend route; requested topology clarification pending                                                                                      |
+| server2 deployment                 | BLOCKED: backend now listens on 8081, but no existing frontend deployment or approved frontend/backend ingress is evidenced; requested topology clarification pending                    |
 
 ## E2E correction evidence
 
@@ -185,6 +185,14 @@ The earlier CI logs and receipts are preserved in
 this correction is maintained in PR #42, avoiding a documentation-only commit
 being represented as verified by an earlier run.
 
+The corrected `3251c32` subsequently passed both complete CI runs:
+[PR 37880000403](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37880000403)
+and [push 37879996871](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37879996871).
+Each reports 507 unit tests across 57 files, 334 E2E tests and 486 Storybook tests,
+with no retries or flaky summary. Later changes reconcile only the fresh server
+and advertised-contract evidence below; exact final documentation-head CI results
+remain in PR #42.
+
 ## Release boundaries
 
 The existing healthy production frontend is on server1 (`startrack-prod`), while
@@ -192,6 +200,24 @@ The existing healthy production frontend is on server1 (`startrack-prod`), while
 frontend ingress. The historical rollback instructions cannot be silently applied
 to server2. Deployment requires an explicit target and, for a new server2 setup,
 its domain and approved backend route.
+
+A fresh read-only snapshot at 2026-10-09 03:41:55–03:41:57 UTC found that server2
+now runs healthy backend revision `318b84170860b6e4ca6931712554474a531acfcb`
+on host-network port 8081. Its OpenAPI has 112 paths, 126 primary operations and
+199 component schemas, advertising all 27 documented V0.2 method/path pairs. The original
+97 operation definitions remain unchanged; two additional internal event
+operations were inspected only as schema and were never requested. The designated
+startrack-prod tunnel still reaches revision `e47cbc1`, with 85 paths, 97 operations
+and 140 schemas and no advertised V0.2 families. Earlier server2 statements about
+an absent backend listener are historical. This new backend inventory does not
+establish an approved frontend ingress, matching browser Origin, authenticated
+roles or successful V0.2 runtime/schema acceptance. Its `ProblemRef.platform`
+schema advertises uppercase `STARTRACK` / `CODEFORCES`, conflicting with the
+designated contract and frontend's lowercase `startrack` / `codeforces`.
+Required-property, status and nullability metadata also have gaps. These are
+advertised-contract discrepancies; no authenticated payload establishes whether
+they reflect runtime serialization. The frontend retains the designated contract
+and runtime validation rather than inventing a resolution.
 
 Main branch protection requires a PR and fresh `quality` and `storybook` checks.
 No bypass is permitted. Version 0.13.3 is already published, so 0.14.0 is reserved

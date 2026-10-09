@@ -52,11 +52,13 @@ inspection returns 401. This does not prevent the existing publication workflow
 from using its own `GITHUB_TOKEN` with `packages: write`. Registry access on a new
 host must be verified without printing credential files or tokens.
 
-## Requested deployment target: server2
+## Initial deployment-target snapshot: server2
 
-The task names `server2` as the frontend deployment target. Its current state
-contradicts the historical deployment guide, which describes `startrack-prod`.
-The two SSH aliases resolve to separate hosts:
+The task names `server2` as the frontend deployment target. The initial inspection
+found a different topology from the historical deployment guide, which describes
+`startrack-prod`. This table preserves that initial snapshot; its absent-backend
+statement is superseded by the timestamped reinspection below. The two SSH aliases
+resolve to separate hosts:
 
 | Item                             | server2 inspection                                                                              |
 | -------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -68,7 +70,7 @@ The two SSH aliases resolve to separate hosts:
 | Free disk                        | approximately 112 GiB on the root filesystem                                                    |
 | Frontend container/image/project | None found in complete Docker container/image and Compose inventories                           |
 | Frontend listener                | No port 3000 listener                                                                           |
-| Backend listener                 | No port 8081 listener                                                                           |
+| Backend listener                 | No port 8081 listener at the initial inspection                                                 |
 | Frontend checkout                | None found in a bounded scan of standard roots; restricted judge directory was excluded         |
 | Existing ingress                 | `1Panel-openresty-FxeV`, host network; SafeLine project also exists                             |
 | Existing website configuration   | `/opt/1panel/www/conf.d` is empty; `/opt/1panel/www/sites` does not exist                       |
@@ -81,13 +83,59 @@ container storage, certificates and the judge deployment directory. No judge
 service was inspected beyond its name in a host inventory, tested, changed or
 restarted. Existing algorithm, ingress, SafeLine and other services were untouched.
 
-**BLOCKED: updating an existing frontend deployment on server2.** There is no
-existing frontend there, no matching backend runtime destination, no established
-frontend ingress and no frontend rollback baseline. Copying the old production
-Compose file would route APIs to server2's nonexistent host port 8081. Publishing
-a new port or creating an ingress would invent a topology. Resolve the requested
-target and approved backend/ingress route before a server2 rollout. Do not silently
-substitute server1 for the explicitly requested server2.
+At that initial inspection there was no existing frontend, matching backend
+runtime destination, frontend ingress or frontend rollback baseline. Copying the
+old production Compose file would have targeted the then-absent host port 8081.
+The fresh inspection below establishes that a backend now exists; those
+absent-runtime conclusions must not be repeated as current facts. The continuing
+gap is the absent frontend deployment and unverified public frontend domain and
+ingress route. Do not silently substitute server1 for the explicitly requested
+server2.
+
+## Fresh server2 snapshot — 2026-10-09 03:44:38 UTC
+
+A separate read-only reinspection found material infrastructure change. This is
+independent evidence from the initial snapshot; no frontend agent deployed or
+changed the new backend.
+
+| Item                                   | Fresh verified value                                                                                                        |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Host                                   | `lavm-r9f519u1z2` / SSH alias `server2`                                                                                     |
+| Inspection UTC instant                 | `2026-10-09T03:44:38.715251+00:00`                                                                                          |
+| Backend container                      | `startrack-app`, running and healthy                                                                                        |
+| Backend image                          | `ghcr.io/star-ability/code-startrack-backend:sha-318b841`                                                                   |
+| Backend OCI revision                   | `318b84170860b6e4ca6931712554474a531acfcb`                                                                                  |
+| Backend creation UTC instant           | `2026-10-09T02:22:52.633126541Z`                                                                                            |
+| Backend networking                     | host network; actual `*:8081` listener                                                                                      |
+| Backend Compose configuration          | `/opt/startrack/docker-compose.yml`, project `startrack`                                                                    |
+| Frontend containers / images / project | None found in complete Docker/Compose inventories                                                                           |
+| Frontend port                          | No 3000 listener                                                                                                            |
+| Frontend source                        | No frontend-named path or Git checkout found in the bounded standard-root scan                                              |
+| Website configuration                  | `/opt/1panel/www/conf.d` remains empty; `/opt/1panel/www/sites` remains absent                                              |
+| Domain/ingress evidence                | OpenResty/SafeLine configuration inspection found only default `_` / `127.0.0.1` server names, with no frontend proxy route |
+
+The backend image metadata and health state do not prove API compatibility,
+authentication, supported roles, browser Origin or V0.2 business workflows. Those
+require separate backend verification. The local backend listener is now real;
+the old claim that server2 has no backend destination is historical. It does not
+establish an approved public frontend domain or authenticated browser route.
+
+**BLOCKED: existing-frontend rollout on server2.** No existing frontend deployment
+or frontend rollback baseline was found. No configured public frontend domain or
+ingress route was evidenced. A new server2 frontend setup still needs its intended
+domain, ingress and verified frontend-to-backend/browser-Origin route established;
+server1's existing public deployment must not be silently substituted. Existing
+ingress, WAF, services and configuration remain untouched.
+
+The raw current receipt is ignored at
+`test-results/release-inspection/server2-current-20261009.json`, with its read-only
+collection script and stderr log alongside it. Historical evidence is preserved
+separately as `initial-server2-snapshot-from-bf528dd.md` and
+`initial-server2-snapshot-metadata.json`. The original document records an
+inspection date, not a precise UTC instant; its source commit is not presented as
+the observation time. No backend HTTP/API/authentication request, private
+environment read, database operation or judge-service test was performed by this
+infrastructure reinspection.
 
 ## Existing production frontend: startrack-prod / server1
 

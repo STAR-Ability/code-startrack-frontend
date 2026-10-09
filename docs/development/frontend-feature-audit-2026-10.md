@@ -88,10 +88,12 @@ placeholder without an invented execution endpoint or generated explanation.
 | Authenticated real-backend role/workflow reads                 | BLOCKED in current evidence      | No designated credentials/session were supplied to the read-only integration audit                                                                                                                                                    |
 
 The separate [real backend verification report](real-backend-verification-2026-10.md)
-records current read-only transport/contract evidence. The deployed OpenAPI matches
-the saved legacy contract (85 paths and 97 primary operations); it does not advertise
-the additive V0.2 problem/submission/combined-learning endpoints. Anonymous security
-responses cannot prove those endpoints exist or that authenticated workflows work.
+records host-specific read-only transport/contract evidence. The designated
+startrack-prod OpenAPI matches the saved legacy contract (85 paths and 97 primary
+operations), without the additive V0.2 endpoints. A later server2 inventory
+advertises all 27 designated V0.2 method/path pairs, with unresolved enum and
+annotation discrepancies recorded in that report. Advertised paths and anonymous
+security responses do not establish authenticated runtime/schema acceptance.
 Synthetic tests prove frontend behavior only. Availability and authenticated API
 support must be verified before claiming a complete release.
 

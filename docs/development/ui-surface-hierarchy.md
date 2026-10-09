@@ -6,36 +6,34 @@ the shared tokens in `src/app/globals.css`; Storybook imports that same styleshe
 
 ## Viewport background and scrolling content
 
-The public, workspace and authentication shells own their decorative backgrounds.
-Their pseudo-elements use `position: fixed` and viewport bounds, so light, grids,
-dots and the public orbit stay visually stable while document content scrolls.
-Reading cards, supporting section surfaces and local illustrations remain in normal
-content flow.
+RootLayout renders one `aria-hidden` fixed SVG background behind the application.
+Its viewport bounds stay stationary while reading cards, section surfaces and
+local illustrations follow normal content flow. Public, overview, insight,
+training, collaboration, account and authentication routes each select a distinct
+composition from the same orbital geometry.
 
-The shells combine a fixed gray-blue wash, a fine orthogonal grid and clipped
-concentric arcs. The repeated orbit connects the background to the brand mark
-without adding moving scenery or page-specific illustrations. It remains visible
-between modules and through the quieter supporting surfaces. Shared surface
-tokens use the current card color, so their
-light and dark values remain consistent without page-specific color overrides:
+The artwork combines larger concentric circles, weighted arcs, a clustered
+architectural grid, translucent rounded polygons, complementary accents and soft
+glows. Cobalt, slate, lavender, teal, amber and restrained coral supply depth in
+the gutters. Near-opaque reading surfaces keep text and charts legible.
 
 | Token                | Opacity / responsibility                                        |
 | -------------------- | --------------------------------------------------------------- |
 | `surface-reading`    | 98% card color; primary text, forms, recommendations and charts |
-| `surface-panel`      | 94% card color; focused metrics and workspace context           |
-| `surface-supporting` | 88% card color; history, sources and secondary information      |
+| `surface-panel`      | 97% card color; focused metrics and workspace context           |
+| `surface-supporting` | 94% card color; history, sources and secondary information      |
 | `surface-border`     | 92% border color; boundaries between surface layers             |
 
-These surfaces use alpha composition without backdrop blur. Keep text on a
-near-white reading layer when stronger contrast is needed. Do not apply opacity
-to entire components: labels and controls must retain their full contrast.
+These surfaces use alpha composition without backdrop blur. Do not apply opacity
+to entire components: labels and controls retain full contrast. The body uses
+`isolation: isolate`, the negative background layer paints above its canvas, and
+transparent route shells expose the artwork. `pointer-events: none` and hidden
+SVG semantics keep decoration out of navigation and interaction.
 
-Each shell uses `isolation: isolate`; its base paints below the negative decorative
-layer and its content paints above it. `pointer-events: none` keeps decoration out
-of pointer interaction. Keep transforms, filters and containment off these shell
-ancestors: they can change the containing block of a fixed descendant. Apply local
-motion to controls or illustrations instead. The viewport decorations use no
-scroll listeners, animation, backdrop blur or permanent layer-promotion hints.
+Keep transforms, filters and containment off the background's ancestors because
+they can change its fixed containing block. Only local SVG children are rotated.
+The viewport layer uses no scrolling listeners, animation, backdrop blur or
+permanent promotion hints. Light and dark surface colors use the shared tokens.
 
 The practice intro orbit is a static detail of its card. Card and control motion
 continues to follow the shared reduced-motion rules.

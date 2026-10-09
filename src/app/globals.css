@@ -83,10 +83,11 @@
   --insight-soft: #f4f1fa;
   --support: #22756f;
   --support-soft: #edf6f5;
-  --canvas: #edf2f8;
+  --canvas: #eef2f7;
+  --geometry-coral: #c57c72;
   --surface-reading: color-mix(in srgb, var(--card) 98%, transparent);
-  --surface-panel: color-mix(in srgb, var(--card) 94%, transparent);
-  --surface-supporting: color-mix(in srgb, var(--card) 88%, transparent);
+  --surface-panel: color-mix(in srgb, var(--card) 97%, transparent);
+  --surface-supporting: color-mix(in srgb, var(--card) 94%, transparent);
   --surface-border: color-mix(in srgb, var(--border) 92%, transparent);
   --workspace-info: color-mix(in srgb, var(--info) 12%, var(--background));
   --workspace-insight: color-mix(
@@ -96,10 +97,10 @@
   );
   --workspace-support: color-mix(in srgb, var(--support) 9%, var(--background));
   --surface-shadow:
-    0 1px 2px rgb(27 46 77 / 4%), 0 8px 28px -16px rgb(27 46 77 / 16%),
+    0 2px 4px -2px rgb(27 46 77 / 6%), 0 12px 32px -16px rgb(27 46 77 / 20%),
     inset 0 1px 0 rgb(255 255 255 / 80%);
   --raised-shadow:
-    0 2px 5px rgb(27 46 77 / 5%), 0 20px 42px -20px rgb(27 46 77 / 24%),
+    0 3px 8px -4px rgb(27 46 77 / 10%), 0 24px 48px -20px rgb(27 46 77 / 24%),
     inset 0 1px 0 rgb(255 255 255 / 80%);
   --link: var(--info);
   --background: #ffffff;
@@ -150,6 +151,7 @@
   --support: #87cec6;
   --support-soft: #1d3433;
   --canvas: #16181d;
+  --geometry-coral: #d99a90;
   --surface-shadow:
     0 1px 2px rgb(0 0 0 / 20%), 0 8px 28px -16px rgb(0 0 0 / 40%);
   --raised-shadow:
@@ -198,7 +200,9 @@
     overflow-wrap: anywhere;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-canvas text-foreground;
+    position: relative;
+    isolation: isolate;
   }
   html {
     @apply font-sans;
@@ -209,76 +213,256 @@
   }
 }
 
-/* Surface hierarchy: white content, neutral canvas, quiet geometric context. */
+/* The fixed artwork supplies context; near-opaque content surfaces stay readable. */
 @layer components {
   .brand-surface,
   .workspace-surface,
   .auth-shell {
     position: relative;
-    isolation: isolate;
-    background: var(--canvas);
+    background: transparent;
   }
-  /* Isolation keeps the fixed decoration above the shell base and below content.
-     Keep transforms and containment on local components, never these shells. */
-  .brand-surface::before,
-  .brand-surface::after,
-  .workspace-surface::before,
-  .workspace-surface::after,
-  .auth-shell::before,
-  .auth-shell::after {
-    content: "";
+  .geometric-background {
+    --geometry-primary: var(--info);
+    --geometry-secondary: var(--insight);
+    --geometry-complement: var(--geometry-coral);
     position: fixed;
     inset: 0;
     z-index: -1;
+    overflow: hidden;
     pointer-events: none;
+    background: linear-gradient(125deg, var(--background), var(--canvas) 62%);
   }
-  .brand-surface::before {
-    background:
-      radial-gradient(
-        ellipse 70rem 46rem at 88% 6%,
-        var(--workspace-info),
-        transparent 75%
-      ),
-      linear-gradient(135deg, var(--background) 20%, var(--canvas));
+  .geometry-glow {
+    position: absolute;
+    width: 60rem;
+    height: 60rem;
+    border-radius: 50%;
   }
-  .brand-surface::after,
-  .workspace-surface::after,
-  .auth-shell::after {
-    --orbit-stroke: color-mix(in srgb, var(--info) 13%, transparent);
-    background:
-      radial-gradient(
-        circle at 104% 7%,
-        transparent 16rem,
-        var(--orbit-stroke) 16rem calc(16rem + 1px),
-        transparent calc(16rem + 1px) 21rem,
-        var(--orbit-stroke) 21rem calc(21rem + 1px),
-        transparent calc(21rem + 1px) 26rem,
-        var(--orbit-stroke) 26rem calc(26rem + 1px),
-        transparent calc(26rem + 1px) 31rem,
-        var(--orbit-stroke) 31rem calc(31rem + 1px),
-        transparent calc(31rem + 1px)
-      ),
-      radial-gradient(
-        circle at -8% 100%,
-        transparent 12rem,
-        var(--orbit-stroke) 12rem calc(12rem + 1px),
-        transparent calc(12rem + 1px) 17rem,
-        var(--orbit-stroke) 17rem calc(17rem + 1px),
-        transparent calc(17rem + 1px) 22rem,
-        var(--orbit-stroke) 22rem calc(22rem + 1px),
-        transparent calc(22rem + 1px)
-      ),
-      repeating-linear-gradient(
-        0deg,
-        transparent 0 79px,
-        color-mix(in srgb, var(--info) 4%, transparent) 79px 80px
-      ),
-      repeating-linear-gradient(
-        90deg,
-        transparent 0 79px,
-        color-mix(in srgb, var(--info) 4%, transparent) 79px 80px
-      );
-    mask-image: linear-gradient(black, rgb(0 0 0 / 28%) 75%, black);
+  .geometry-glow-primary {
+    top: -32rem;
+    right: -16rem;
+    background: radial-gradient(
+      ellipse,
+      color-mix(in srgb, var(--geometry-primary) 14%, transparent),
+      transparent 70%
+    );
+  }
+  .geometry-glow-complement {
+    bottom: -38rem;
+    left: -18rem;
+    background: radial-gradient(
+      ellipse,
+      color-mix(in srgb, var(--geometry-secondary) 12%, transparent),
+      transparent 70%
+    );
+  }
+  .geometry-orbits {
+    position: absolute;
+    top: -19rem;
+    right: -14rem;
+    width: 54rem;
+    height: 54rem;
+    stroke: color-mix(in srgb, var(--geometry-primary) 24%, transparent);
+    stroke-width: 1.2;
+  }
+  .geometry-orbit-core {
+    fill: color-mix(in srgb, var(--geometry-primary) 5%, transparent);
+    stroke-width: 1.5;
+  }
+  .geometry-orbit-emphasis {
+    stroke: color-mix(in srgb, var(--geometry-primary) 30%, transparent);
+    stroke-width: 10;
+    stroke-linecap: round;
+  }
+  .geometry-orbit-secondary {
+    stroke: color-mix(in srgb, var(--geometry-secondary) 26%, transparent);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .geometry-node {
+    fill: color-mix(in srgb, var(--geometry-primary) 48%, var(--card));
+    stroke: var(--card);
+    stroke-width: 3;
+  }
+  .geometry-node-secondary {
+    fill: var(--geometry-complement);
+    stroke: var(--card);
+    stroke-width: 2;
+  }
+  .geometry-structure {
+    position: absolute;
+    top: 7rem;
+    right: -8rem;
+    width: 36rem;
+    height: 42rem;
+    mask-image: linear-gradient(100deg, transparent 4%, black 48%);
+  }
+  .geometry-grid {
+    stroke: color-mix(in srgb, var(--geometry-primary) 13%, transparent);
+    stroke-width: 0.8;
+  }
+  .geometry-grid-frame {
+    fill: color-mix(in srgb, var(--geometry-primary) 3%, transparent);
+    stroke: color-mix(in srgb, var(--geometry-primary) 15%, transparent);
+    stroke-width: 1.2;
+  }
+  .geometry-grid-cross {
+    stroke: color-mix(in srgb, var(--geometry-primary) 34%, transparent);
+    stroke-width: 1.5;
+  }
+  .geometry-shape {
+    position: absolute;
+    bottom: -15rem;
+    left: -10rem;
+    width: 38rem;
+    height: 38rem;
+    transform: rotate(-18deg);
+  }
+  .geometry-shape-fill {
+    fill: color-mix(in srgb, var(--geometry-secondary) 7%, transparent);
+    stroke: color-mix(in srgb, var(--geometry-secondary) 18%, transparent);
+    stroke-width: 1;
+  }
+  .geometry-shape-inset {
+    fill: color-mix(in srgb, var(--geometry-secondary) 4%, transparent);
+    stroke: color-mix(in srgb, var(--geometry-secondary) 15%, transparent);
+    stroke-width: 24;
+  }
+  .geometry-shape-detail {
+    stroke: color-mix(in srgb, var(--geometry-secondary) 17%, transparent);
+    stroke-width: 1;
+  }
+  .geometry-accent {
+    position: absolute;
+    bottom: 6rem;
+    right: -4rem;
+    width: 14rem;
+    height: 14rem;
+    stroke: color-mix(in srgb, var(--geometry-complement) 30%, transparent);
+    stroke-width: 1;
+  }
+  .geometry-accent-center {
+    fill: color-mix(in srgb, var(--geometry-complement) 12%, transparent);
+  }
+  .geometric-background[data-category="public"] {
+    --geometry-secondary: var(--support);
+  }
+  .geometric-background[data-category="public"] .geometry-orbits {
+    top: -10rem;
+    right: -16rem;
+    width: 64rem;
+    height: 64rem;
+  }
+  .geometric-background[data-category="public"] .geometry-structure {
+    top: 12rem;
+    right: -5rem;
+    transform: rotate(-12deg);
+  }
+  .geometric-background[data-category="public"] .geometry-shape {
+    left: -14rem;
+    bottom: -18rem;
+    width: 46rem;
+    height: 46rem;
+  }
+  .geometric-background[data-category="insight"] {
+    --geometry-primary: var(--insight);
+    --geometry-secondary: var(--info);
+    --geometry-complement: var(--support);
+  }
+  .geometric-background[data-category="insight"] .geometry-orbits {
+    top: -12rem;
+    right: -22rem;
+    transform: rotate(-35deg);
+  }
+  .geometric-background[data-category="insight"] .geometry-shape {
+    left: auto;
+    right: -14rem;
+    bottom: -18rem;
+    transform: rotate(35deg);
+  }
+  .geometric-background[data-category="insight"] .geometry-structure {
+    top: 5rem;
+    right: -12rem;
+    transform: rotate(15deg);
+  }
+  .geometric-background[data-category="training"] {
+    --geometry-secondary: var(--support);
+    --geometry-complement: var(--warning);
+  }
+  .geometric-background[data-category="training"] .geometry-orbits {
+    top: auto;
+    bottom: -28rem;
+    right: -16rem;
+    transform: rotate(65deg);
+  }
+  .geometric-background[data-category="training"] .geometry-shape {
+    bottom: auto;
+    top: -11rem;
+    left: auto;
+    right: -15rem;
+    transform: rotate(16deg);
+  }
+  .geometric-background[data-category="training"] .geometry-structure {
+    top: -1rem;
+    right: -10rem;
+  }
+  .geometric-background[data-category="collaboration"] {
+    --geometry-primary: var(--support);
+    --geometry-secondary: var(--info);
+    --geometry-complement: var(--warning);
+  }
+  .geometric-background[data-category="collaboration"] .geometry-orbits {
+    top: -28rem;
+    right: -15rem;
+    width: 60rem;
+    height: 60rem;
+  }
+  .geometric-background[data-category="collaboration"] .geometry-structure {
+    top: auto;
+    bottom: -8rem;
+    transform: rotate(-12deg);
+  }
+  .geometric-background[data-category="collaboration"] .geometry-shape {
+    left: auto;
+    right: -20rem;
+    bottom: -4rem;
+    transform: rotate(-35deg);
+  }
+  .geometric-background:is([data-category="account"], [data-category="auth"]) {
+    --geometry-primary: var(--info);
+    --geometry-secondary: var(--support);
+    --geometry-complement: var(--insight);
+  }
+  .geometric-background[data-category="account"] .geometry-orbits {
+    top: -23rem;
+    right: -21rem;
+  }
+  .geometric-background[data-category="account"] .geometry-structure {
+    top: auto;
+    bottom: -6rem;
+  }
+  .geometric-background[data-category="auth"] .geometry-orbits {
+    right: auto;
+    left: -26rem;
+    top: 2rem;
+    transform: rotate(30deg);
+  }
+  .geometric-background[data-category="auth"] .geometry-shape {
+    left: auto;
+    right: -12rem;
+    bottom: -12rem;
+    transform: rotate(35deg);
+  }
+  .geometric-background[data-category="auth"] .geometry-structure {
+    top: -10rem;
+    right: -9rem;
+    transform: rotate(-18deg);
+  }
+  .geometric-background[data-category="auth"] .geometry-accent {
+    right: 45%;
+    bottom: -7rem;
+    width: 20rem;
+    height: 20rem;
   }
   .brand-hero {
     position: relative;
@@ -286,28 +470,10 @@
   .section-wash {
     background: linear-gradient(
       135deg,
-      color-mix(in srgb, var(--background) 82%, transparent),
+      color-mix(in srgb, var(--background) 85%, transparent),
       color-mix(in srgb, var(--canvas) 92%, transparent)
     );
     border-block: 1px solid var(--surface-border);
-  }
-  .workspace-surface::before {
-    background:
-      radial-gradient(
-        ellipse 58rem 42rem at 100% 2%,
-        var(--workspace-info),
-        transparent 76%
-      ),
-      radial-gradient(
-        ellipse 54rem 40rem at 4% 100%,
-        color-mix(in srgb, var(--info) 5%, var(--canvas)),
-        transparent 74%
-      ),
-      linear-gradient(
-        145deg,
-        color-mix(in srgb, var(--background) 65%, var(--canvas)),
-        var(--canvas) 70%
-      );
   }
   .workspace-layout [data-slot="sidebar-gap"],
   .workspace-layout [data-slot="sidebar-container"] {
@@ -343,31 +509,69 @@
   .metric-strip > div {
     --metric-accent: var(--muted-foreground);
     --metric-tint: var(--canvas);
-    @apply relative flex min-w-0 flex-col justify-between gap-3 overflow-hidden rounded-xl border p-4;
-    border-color: color-mix(in srgb, var(--metric-accent) 14%, var(--border));
+    @apply relative isolate flex min-w-0 flex-col justify-between gap-5 overflow-hidden rounded-xl border p-4 sm:p-5;
+    border-color: color-mix(in srgb, var(--metric-accent) 22%, var(--border));
     background: linear-gradient(
       135deg,
-      color-mix(in srgb, var(--metric-tint) 75%, var(--card)),
-      var(--card)
+      color-mix(in srgb, var(--metric-accent) 7%, var(--card)),
+      color-mix(in srgb, var(--metric-tint) 72%, var(--card)) 65%,
+      var(--card) 100%
     );
-    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--card) 90%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--card) 90%, transparent),
+      0 4px 12px -10px color-mix(in srgb, var(--metric-accent) 35%, transparent);
+  }
+  .metric-strip > div::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    right: -2.75rem;
+    bottom: -3.5rem;
+    width: 9rem;
+    height: 9rem;
+    border: 1rem solid color-mix(in srgb, var(--metric-accent) 4%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--metric-accent) 12%, transparent);
+    outline-offset: 1rem;
+    border-radius: 50%;
+    pointer-events: none;
   }
   .metric-strip > div::after {
     content: "";
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    width: 0.35rem;
-    height: 0.35rem;
-    border: 1px solid var(--metric-accent);
-    opacity: 0.55;
+    inset: 1rem auto 1rem 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: color-mix(in srgb, var(--metric-accent) 62%, transparent);
     pointer-events: none;
   }
   .metric-strip dt {
-    @apply pr-4 text-xs leading-relaxed text-muted-foreground;
+    @apply text-xs leading-relaxed text-muted-foreground;
   }
   .metric-strip dd {
-    @apply font-heading text-3xl leading-none font-semibold tracking-tight wrap-anywhere tabular-nums;
+    @apply font-heading leading-none font-semibold tracking-tight wrap-anywhere tabular-nums;
+    font-size: clamp(2rem, 2.8vw, 2.75rem);
+    letter-spacing: -0.045em;
+  }
+  .metric-label-row {
+    @apply flex min-w-0 items-start justify-between gap-3;
+  }
+  .metric-label-row > svg {
+    @apply size-4 shrink-0;
+    color: var(--metric-accent);
+  }
+  .metric-strip > [data-metric-priority="primary"] {
+    border-color: color-mix(in srgb, var(--metric-accent) 30%, var(--border));
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--metric-accent) 11%, var(--card)),
+      color-mix(in srgb, var(--metric-tint) 80%, var(--card))
+    );
+  }
+  .metric-panel-heading [data-slot="card-title"] {
+    @apply text-sm leading-relaxed font-semibold tracking-wide text-foreground;
+  }
+  .metric-panel-heading [data-slot="card-description"] {
+    @apply text-xs;
   }
   .metric-strip > [data-value-type="string"] dd {
     @apply font-sans text-base leading-snug;
@@ -719,15 +923,6 @@
 
 /* Authentication and shared request feedback stay within the Nova tokens. */
 @layer components {
-  .auth-shell::before {
-    background:
-      radial-gradient(
-        ellipse 70rem 50rem at 0% 30%,
-        var(--workspace-info),
-        transparent 68%
-      ),
-      linear-gradient(145deg, var(--background), var(--canvas));
-  }
   .auth-story-title {
     font-size: clamp(2.25rem, 3.4vw, 3.25rem);
     font-weight: 600;
@@ -1378,8 +1573,8 @@
     --card-tint: transparent;
     background-image: linear-gradient(
       165deg,
-      transparent 65%,
-      color-mix(in srgb, var(--canvas) 32%, transparent)
+      transparent 50%,
+      color-mix(in srgb, var(--canvas) 42%, transparent)
     );
   }
   [data-metric-panel] {
@@ -1397,15 +1592,17 @@
     border-radius: inherit;
     background: radial-gradient(
       circle at 100% 0%,
-      transparent 8rem,
-      color-mix(in srgb, var(--card-tint) 40%, transparent) 8rem 10rem,
-      color-mix(in srgb, var(--card-accent) 7%, transparent) 10rem
+      color-mix(in srgb, var(--card-tint) 38%, transparent) 5.5rem,
+      color-mix(in srgb, var(--card-accent) 11%, transparent) 5.5rem
+        calc(5.5rem + 1px),
+      transparent calc(5.5rem + 1px) 8rem,
+      color-mix(in srgb, var(--card-accent) 7%, transparent) 8rem
+        calc(8rem + 1px),
+      color-mix(in srgb, var(--card-tint) 42%, transparent) calc(8rem + 1px)
+        10rem,
+      color-mix(in srgb, var(--card-accent) 9%, transparent) 10rem
         calc(10rem + 1px),
-      color-mix(in srgb, var(--card-tint) 24%, transparent) calc(10rem + 1px)
-        12rem,
-      color-mix(in srgb, var(--card-accent) 5%, transparent) 12rem
-        calc(12rem + 1px),
-      transparent calc(12rem + 1px)
+      transparent calc(10rem + 1px)
     );
     pointer-events: none;
   }
@@ -1476,6 +1673,16 @@
     width: 1.5rem;
     height: 1px;
     background: currentColor;
+  }
+  .workspace-page-header .workspace-eyebrow::before {
+    content: none;
+  }
+  .workspace-page-icon {
+    background-image: linear-gradient(
+      145deg,
+      var(--card),
+      color-mix(in srgb, var(--info-soft) 85%, var(--card))
+    );
   }
   .workspace-title {
     font-size: clamp(1.875rem, 2.75vw, 2.5rem);
@@ -1633,7 +1840,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-@container metric-panel (min-width: 36rem) {
+@container metric-panel (min-width: 44rem) {
   .metric-strip[data-metric-count="4"] {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
@@ -1642,10 +1849,41 @@
   .workspace-main {
     padding-block: 1.5rem 2rem;
   }
-  .brand-surface::after,
-  .workspace-surface::after,
-  .auth-shell::after {
-    opacity: 0.65;
+  .geometry-orbits {
+    width: 40rem;
+    height: 40rem;
+    right: -22rem;
+  }
+  .geometric-background[data-category="public"] .geometry-orbits {
+    width: 44rem;
+    height: 44rem;
+    top: -8rem;
+    right: -34rem;
+  }
+  .geometric-background[data-category="public"] .geometry-shape {
+    width: 34rem;
+    height: 34rem;
+    left: -23rem;
+    bottom: -20rem;
+  }
+  .geometry-structure {
+    width: 26rem;
+    height: 30rem;
+    right: -17rem;
+    opacity: 0.7;
+  }
+  .geometry-shape {
+    width: 30rem;
+    height: 30rem;
+    opacity: 0.75;
+  }
+  .geometry-accent {
+    width: 10rem;
+    height: 10rem;
+    right: -6rem;
+  }
+  .geometric-background[data-category="auth"] .geometry-orbits {
+    left: -31rem;
   }
 }
 @container recommendation (min-width: 40rem) {

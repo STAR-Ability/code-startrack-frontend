@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "@/components/layout/locale-provider";
 import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { DetailsDisclosure } from "@/components/ui/details-disclosure";
+import { CodeXmlIcon } from "lucide-react";
 import { formatTimestamp } from "@/lib/i18n/locale";
 import { idSchema } from "@/lib/api/schemas";
 import { v02 } from "@/lib/api/v02";
@@ -73,26 +76,26 @@ function SubmissionDetailResults({
   const { t, locale } = useLocale();
   return (
     <>
-      <header className="flex min-w-0 flex-col gap-3">
-        <h2 className="text-xl font-medium wrap-anywhere">
+      <header className="flex min-w-0 flex-wrap items-center justify-between gap-4">
+        <h2 className="text-2xl font-semibold tracking-tight wrap-anywhere">
           {submission.problem.title ?? submission.problem.problemRef.problemId}
         </h2>
-        <dl className="grid gap-3 text-sm sm:grid-cols-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-3 text-xs text-muted-foreground">
+          <Badge wrap variant="outline">
+            <CodeXmlIcon aria-hidden="true" />
+            {submission.languageId}
+          </Badge>
+          <time dateTime={submission.submittedAt}>
+            {formatTimestamp(submission.submittedAt, locale)}
+          </time>
+        </div>
+      </header>
+      <SubmissionJudge submission={submission} />
+      <DetailsDisclosure title={t("v02.submissionDetail")}>
+        <dl className="metric-details">
           <div>
             <dt className="text-muted-foreground">{t("v02.submissionId")}</dt>
             <dd className="font-mono break-all">{submission.submissionId}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">{t("v.language")}</dt>
-            <dd>{submission.languageId}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">{t("v.lastSubmitted")}</dt>
-            <dd>
-              <time dateTime={submission.submittedAt}>
-                {formatTimestamp(submission.submittedAt, locale)}
-              </time>
-            </dd>
           </div>
           <div>
             <dt className="text-muted-foreground">{t("v02.frozenVersion")}</dt>
@@ -102,8 +105,7 @@ function SubmissionDetailResults({
             </dd>
           </div>
         </dl>
-      </header>
-      <SubmissionJudge submission={submission} />
+      </DetailsDisclosure>
       <SubmissionAnalysis submission={submission} />
       <SubmissionSourceReveal
         key={submission.submissionId}

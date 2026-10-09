@@ -4,6 +4,7 @@ import { ShieldCheckIcon, ArrowLeftIcon } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -125,20 +126,26 @@ export function SecurityChangePage({ kind }: { kind: "password" | "email" }) {
         <ShieldCheckIcon aria-hidden="true" />
         <AlertTitle>{t("security.identity")}</AlertTitle>
         <AlertDescription>
-          <p className="wrap-anywhere">
-            {t("security.identityNote", { email: user.email })}
-          </p>
-          <Badge variant="outline">
-            {t(
-              user.emailVerified ? "security.verified" : "security.unverified",
-            )}
-          </Badge>
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+            <p className="wrap-anywhere">
+              {t("security.identityNote", { email: user.email })}
+            </p>
+            <Badge variant="outline">
+              {t(
+                user.emailVerified
+                  ? "security.verified"
+                  : "security.unverified",
+              )}
+            </Badge>
+          </div>
+          <Separator className="my-3" />
+          <div className="flex min-w-0 flex-col gap-1">
+            <h3 className="font-medium text-foreground">
+              {t("security.riskTitle")}
+            </h3>
+            <p className="text-xs leading-relaxed">{t("security.riskNote")}</p>
+          </div>
         </AlertDescription>
-      </Alert>
-      <Alert>
-        <ShieldCheckIcon aria-hidden="true" />
-        <AlertTitle>{t("security.riskTitle")}</AlertTitle>
-        <AlertDescription>{t("security.riskNote")}</AlertDescription>
       </Alert>
       {kind === "password" ? (
         <Card size="sm" interaction="none">

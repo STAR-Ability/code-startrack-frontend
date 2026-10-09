@@ -20,6 +20,7 @@ export const v02LearningZh = {
   "v02.dateFilterNote":
     "按最后提交时间筛选；有日期条件时，不包含尚未提交的计划。",
   "v02.dateRangeError": "结束日期必须晚于开始日期。",
+  "v02.dateRange": "日期范围",
   "v02.applyFilters": "应用筛选",
   "v02.trainingEmpty": "暂无符合条件的训练记录",
   "v02.trainingEmptyNote": "从题库或推荐中选择一道题开始训练。",
@@ -157,6 +158,7 @@ export const v02LearningEn: Record<keyof typeof v02LearningZh, string> = {
   "v02.dateFilterNote":
     "Filters the last submission time. Date filters exclude plans without submissions.",
   "v02.dateRangeError": "The end date must be later than the start date.",
+  "v02.dateRange": "Date range",
   "v02.applyFilters": "Apply filters",
   "v02.trainingEmpty": "No matching training records",
   "v02.trainingEmptyNote":

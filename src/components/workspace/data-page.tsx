@@ -206,7 +206,11 @@ function Problems() {
                 )}
               </Badge>
             </div>
-            <Button variant="outline" onClick={() => setProblem(item.problem)}>
+            <Button
+              variant="outline"
+              wrap
+              onClick={() => setProblem(item.problem)}
+            >
               {t("v.problemSubmissions")}
             </Button>
           </div>

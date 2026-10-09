@@ -284,7 +284,7 @@ test("V0.2: changed problem version preserves editor source and starts a new ope
   await expect(
     page.getByText(c["v02.problem.versionConflict"], { exact: true }),
   ).toBeVisible();
-  await expect(editor).toHaveValue(source);
+  await expect(editor).toHaveText(source, { useInnerText: true });
   expect(
     (await upstreamCalls()).filter(
       (call) => call.path === "/api/v1/submissions" && call.method === "POST",
@@ -298,7 +298,7 @@ test("V0.2: changed problem version preserves editor source and starts a new ope
   await expect(
     page.getByText(c["v02.problem.versionRefreshed"], { exact: true }),
   ).toBeVisible();
-  await expect(editor).toHaveValue(source);
+  await expect(editor).toHaveText(source, { useInnerText: true });
   await page
     .getByRole("button", { name: c["v02.problem.submit"], exact: true })
     .click();
@@ -685,6 +685,7 @@ test("V0.2: training filters send source/status and inclusive/exclusive UTC boun
   await page
     .getByLabel("Training status", { exact: true })
     .selectOption("COMPLETED");
+  await page.getByRole("button", { name: "Date range", exact: true }).click();
   await page
     .getByLabel("Submission start (UTC, inclusive)", { exact: true })
     .fill("2026-01-01");

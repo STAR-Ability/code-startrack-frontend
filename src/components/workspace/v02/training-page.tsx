@@ -3,7 +3,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { ArrowRightIcon, CheckCheckIcon, ListFilterIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  CalendarDaysIcon,
+  CheckCheckIcon,
+  ChevronDownIcon,
+  ListFilterIcon,
+} from "lucide-react";
 import { v02 } from "@/lib/api/v02";
 import {
   problemSources,
@@ -25,6 +31,11 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   NativeSelect,
   NativeSelectOption,
@@ -51,6 +62,7 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
     initial.success ? initial.data : {},
   );
   const [page, setPage] = useState(1);
+  const [dateRangeOpen, setDateRangeOpen] = useState(false);
   const form = useForm<FilterForm>({
     defaultValues: {
       source: filters.source ?? "",
@@ -82,6 +94,7 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
             });
             if (!parsed.success) {
               form.setError("to", { message: t("v02.dateRangeError") });
+              setDateRangeOpen(true);
               return;
             }
             form.clearErrors();
@@ -89,7 +102,7 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
             setFilters(parsed.data);
           })}
         >
-          <FieldGroup className="grid min-w-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <FieldGroup className="grid min-w-0 grid-cols-1 sm:grid-cols-2">
             <Field className="min-w-0">
               <FieldLabel htmlFor="training-source">
                 {t("v02.problemSource")}
@@ -128,40 +141,67 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
                 ))}
               </NativeSelect>
             </Field>
-            <Field className="min-w-0">
-              <FieldLabel htmlFor="training-from">{t("v02.from")}</FieldLabel>
-              <Input
-                id="training-from"
-                type="date"
-                {...form.register("from")}
-              />
-            </Field>
-            <Field
-              className="min-w-0"
-              data-invalid={!!form.formState.errors.to}
-            >
-              <FieldLabel htmlFor="training-to">{t("v02.to")}</FieldLabel>
-              <Input
-                id="training-to"
-                type="date"
-                aria-invalid={!!form.formState.errors.to}
-                {...form.register("to")}
-              />
-              <FieldError>{form.formState.errors.to?.message}</FieldError>
-            </Field>
-            <FieldDescription className="sm:col-span-2 lg:col-span-4">
-              {t("v02.dateFilterNote")}
-            </FieldDescription>
           </FieldGroup>
-          <Button
-            wrap
-            type="submit"
+          <Collapsible
+            open={dateRangeOpen}
+            onOpenChange={setDateRangeOpen}
             className="mt-4"
-            disabled={query.isFetching}
           >
-            <ListFilterIcon data-icon="inline-start" aria-hidden="true" />
-            {t("v02.applyFilters")}
-          </Button>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <CollapsibleTrigger
+                render={
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    wrap
+                    className="group/date-range -ml-2"
+                  />
+                }
+              >
+                <CalendarDaysIcon data-icon="inline-start" aria-hidden="true" />
+                {t("v02.dateRange")}
+                <ChevronDownIcon
+                  data-icon="inline-end"
+                  aria-hidden="true"
+                  className="transition-transform group-data-panel-open/date-range:rotate-180 motion-reduce:transition-none"
+                />
+              </CollapsibleTrigger>
+              <Button wrap type="submit" disabled={query.isFetching}>
+                <ListFilterIcon data-icon="inline-start" aria-hidden="true" />
+                {t("v02.applyFilters")}
+              </Button>
+            </div>
+            <CollapsibleContent keepMounted>
+              <FieldGroup className="grid min-w-0 grid-cols-1 gap-4 pt-4 sm:grid-cols-2">
+                <Field className="min-w-0">
+                  <FieldLabel htmlFor="training-from">
+                    {t("v02.from")}
+                  </FieldLabel>
+                  <Input
+                    id="training-from"
+                    type="date"
+                    {...form.register("from")}
+                  />
+                </Field>
+                <Field
+                  className="min-w-0"
+                  data-invalid={!!form.formState.errors.to}
+                >
+                  <FieldLabel htmlFor="training-to">{t("v02.to")}</FieldLabel>
+                  <Input
+                    id="training-to"
+                    type="date"
+                    aria-invalid={!!form.formState.errors.to}
+                    {...form.register("to")}
+                  />
+                  <FieldError>{form.formState.errors.to?.message}</FieldError>
+                </Field>
+                <FieldDescription className="sm:col-span-2">
+                  {t("v02.dateFilterNote")}
+                </FieldDescription>
+              </FieldGroup>
+            </CollapsibleContent>
+          </Collapsible>
         </form>
         <QueryFeedback query={query} />
         {query.data?.data.map((record) => (

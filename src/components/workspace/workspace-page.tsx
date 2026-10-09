@@ -182,8 +182,10 @@ export function WorkspacePage({
               {t(title)}
             </h1>
             {account && requireAccount && (
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">{account.username}</Badge>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <Badge variant="outline" wrap>
+                  {account.username}
+                </Badge>
                 {account.bindStatus !== "ACTIVE" && (
                   <Badge variant="secondary" wrap>
                     {t(

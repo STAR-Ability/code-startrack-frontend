@@ -1,6 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import {
+  CheckCheckIcon,
+  CircleCheckIcon,
+  CircleXIcon,
+  CpuIcon,
+  MemoryStickIcon,
+} from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -33,8 +40,10 @@ export function TaskErrorView({ error }: { error: TaskError }) {
 
 export function SubmissionJudgeStatus({
   submission,
+  prominent = false,
 }: {
   submission: SubmissionView;
+  prominent?: boolean;
 }) {
   const { t } = useLocale();
   const result = submission.judgeResult;
@@ -54,9 +63,18 @@ export function SubmissionJudgeStatus({
               ? "success"
               : result.verdict === "IE"
                 ? "warning"
-                : "outline"
+                : "destructive"
+          }
+          className={
+            prominent ? "px-3 py-1.5 text-base font-semibold" : undefined
           }
         >
+          {prominent &&
+            (result.verdict === "AC" ? (
+              <CircleCheckIcon aria-hidden="true" />
+            ) : (
+              <CircleXIcon aria-hidden="true" />
+            ))}
           {result.verdict} · {t(`v02.verdict.${result.verdict}`)}
         </Badge>
       )}
@@ -85,9 +103,13 @@ export function SubmissionJudge({
           value,
         );
   return (
-    <Panel title="v02.judgeResult">
+    <Panel
+      title="v02.judgeResult"
+      variant="analysis"
+      tone={result?.verdict === "AC" ? "support" : "info"}
+    >
       <div role="status" aria-live="polite">
-        <SubmissionJudgeStatus submission={submission} />
+        <SubmissionJudgeStatus submission={submission} prominent />
       </div>
       {pending && <p>{t("v02.judgePendingNote")}</p>}
       {recovery && <p>{t("v02.judgeRecoveryNote")}</p>}
@@ -107,31 +129,65 @@ export function SubmissionJudge({
       {submission.judgeError && <TaskErrorView error={submission.judgeError} />}
       {result && (
         <>
-          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div>
-              <dt className="text-muted-foreground">{t("v02.timeUsage")}</dt>
-              <dd>
+          <dl className="metric-strip" data-metric-count="3">
+            <div
+              data-tone="info"
+              data-value-type={result.timeMs === null ? "unknown" : "number"}
+            >
+              <dt className="metric-label-row">
+                {t("v02.timeUsage")}
+                <CpuIcon className="size-4 shrink-0" aria-hidden="true" />
+              </dt>
+              <dd className="metric-value">
                 {result.timeMs === null
                   ? t("v.unavailable")
                   : `${number(result.timeMs)} ms`}
               </dd>
             </div>
-            <div>
-              <dt className="text-muted-foreground">{t("v02.memoryUsage")}</dt>
-              <dd>
+            <div
+              data-tone="support"
+              data-value-type={
+                result.memoryBytes === null ? "unknown" : "string"
+              }
+            >
+              <dt className="metric-label-row">
+                {t("v02.memoryUsage")}
+                <MemoryStickIcon
+                  className="size-4 shrink-0"
+                  aria-hidden="true"
+                />
+              </dt>
+              <dd
+                className={
+                  result.memoryBytes === null
+                    ? "metric-value"
+                    : "metric-value text-xl! leading-snug!"
+                }
+              >
                 {result.memoryBytes === null
                   ? t("v.unavailable")
                   : `${number(result.memoryBytes / 1048576)} MiB (${number(result.memoryBytes)} B)`}
               </dd>
             </div>
-            <div>
-              <dt className="text-muted-foreground">{t("v02.testsPassed")}</dt>
-              <dd>
+            <div
+              data-tone={result.verdict === "AC" ? "success" : "warning"}
+              data-value-type="number"
+            >
+              <dt className="metric-label-row">
+                {t("v02.testsPassed")}
+                <CheckCheckIcon
+                  className="size-4 shrink-0"
+                  aria-hidden="true"
+                />
+              </dt>
+              <dd className="metric-value">
                 {number(result.passedTestCount)} /{" "}
                 {number(result.totalTestCount)}
               </dd>
             </div>
-            <div>
+          </dl>
+          <dl className="metric-details">
+            <div data-value-type={result.score === null ? "unknown" : "number"}>
               <dt className="text-muted-foreground">{t("v02.score")}</dt>
               <dd>{number(result.score)}</dd>
             </div>

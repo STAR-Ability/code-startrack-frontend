@@ -1,9 +1,83 @@
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import type { UserDto } from "../../src/lib/api/schemas";
 import type { TeamMemberDto } from "../../src/lib/api/v012-schemas";
 import { test, expect, configureUpstream, upstreamCalls } from "./fixtures";
 test.beforeEach(() => configureUpstream());
 for (const locale of ["zh-CN", "en"]) {
+  test(`${locale}: formatted KPI values stay readable at 200% text on a narrow screen`, async ({
+    page,
+    context,
+  }) => {
+    await context.addCookies([
+      {
+        name: "codestartrack_locale",
+        value: locale,
+        url: "http://127.0.0.1:3100",
+      },
+    ]);
+    await page.setViewportSize({ width: 320, height: 900 });
+    for (const route of ["/dashboard", "/learning-profile"]) {
+      await page.goto(route);
+      const values = page.locator(
+        '.metric-strip > [data-value-type="number"] dd',
+      );
+      // A populated rating exercises the original multi-line numeral defect.
+      await expect(
+        values.filter({ hasText: /^\d{1,3},\d{3}$/ }).first(),
+      ).toBeVisible();
+      await expect(
+        page.locator(".metric-strip [data-slot=skeleton]"),
+      ).toHaveCount(0);
+      await page.evaluate(() => {
+        document.documentElement.style.fontSize = "200%";
+      });
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => getComputedStyle(document.documentElement).fontSize,
+          ),
+        )
+        .toBe("32px");
+      await expect
+        .poll(() =>
+          values.evaluateAll((elements) => {
+            const numericValues = elements.filter((element) => {
+              const value = element.textContent?.trim() ?? "";
+              // Zero is evidence; do not filter numeric values by truthiness.
+              return /^-?\d[\d,.]*$/.test(value) && value.length <= 8;
+            });
+            return (
+              numericValues.length > 0 &&
+              numericValues.every((element) => {
+                const range = document.createRange();
+                range.selectNodeContents(element);
+                const fragments = [...range.getClientRects()];
+                const bounds = element.parentElement!.getBoundingClientRect();
+                return (
+                  fragments.length === 1 &&
+                  fragments.every(
+                    (fragment) =>
+                      fragment.left >= bounds.left - 1 &&
+                      fragment.right <= bounds.right + 1 &&
+                      fragment.top >= bounds.top - 1 &&
+                      fragment.bottom <= bounds.bottom + 1,
+                  )
+                );
+              })
+            );
+          }),
+        )
+        .toBe(true);
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => document.documentElement.scrollWidth <= window.innerWidth,
+          ),
+        )
+        .toBe(true);
+    }
+  });
+
   test(`${locale}: keyboard entry, workspace and forms fit narrow screens and text zoom`, async ({
     page,
     context,
@@ -47,7 +121,15 @@ for (const locale of ["zh-CN", "en"]) {
           }),
         ).toBeEnabled();
       }
-      await narrow(page);
+      await narrow(
+        page,
+        route === "/data"
+          ? page.getByRole("button", {
+              name: locale === "en" ? "Problem submissions" : "题目提交记录",
+              exact: true,
+            })
+          : undefined,
+      );
     }
     await page.screenshot({
       path: info.outputPath(`login-${locale}.png`),
@@ -146,7 +228,7 @@ for (const locale of ["zh-CN", "en"]) {
     ).toHaveLength(0);
   });
 }
-async function narrow(page: Page) {
+async function narrow(page: Page, actions?: Locator) {
   await page.setViewportSize({ width: 320, height: 800 });
   for (const scale of ["100%", "200%"]) {
     await page.evaluate((value) => {
@@ -157,6 +239,33 @@ async function narrow(page: Page) {
         page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
       )
       .toBe(true);
+    if (actions) {
+      await expect(actions.first()).toBeVisible();
+      expect(
+        await actions.evaluateAll((elements) =>
+          elements.every((element) => {
+            const item = element.getBoundingClientRect();
+            const frame = element
+              .closest('[data-slot="card-content"]')!
+              .getBoundingClientRect();
+            const range = document.createRange();
+            range.selectNodeContents(element);
+            return (
+              item.left >= frame.left - 1 &&
+              item.right <= frame.right + 1 &&
+              Array.from(range.getClientRects()).every(
+                (text) =>
+                  text.left >= item.left - 1 &&
+                  text.right <= item.right + 1 &&
+                  text.top >= item.top - 1 &&
+                  text.bottom <= item.bottom + 1,
+              )
+            );
+          }),
+        ),
+        "Problem action labels remain fully visible within their panel",
+      ).toBe(true);
+    }
     const active = page.locator('.mobile-navigation [aria-current="page"]');
     if (await active.count()) {
       await expect

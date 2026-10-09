@@ -12,7 +12,7 @@ import {
   radarOption,
 } from "@/lib/charts/options";
 import { ApiError } from "@/lib/api/errors";
-import { expect, fn, userEvent, within } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { StoryFrame, mobile } from "./helpers";
 
 const activity = trendOption(
@@ -78,6 +78,7 @@ export const KeyboardLegend: Story = {
       name: "Solved",
       pressed: true,
     });
+    await waitFor(() => expect(solved).toBeEnabled());
     solved.focus();
     await userEvent.keyboard("{Enter}");
     await expect(solved).toHaveAttribute("aria-pressed", "false");

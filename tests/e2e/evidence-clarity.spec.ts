@@ -25,7 +25,12 @@ test("absent profile evidence has no zero scores, while a real zero snapshot ret
   await expect(
     main.getByRole("img", { name: "六维能力 · 0–100", exact: true }),
   ).toBeVisible();
-  await expect(main.getByText(/^0\s*\/\s*100$/)).toHaveCount(6);
+  await expect(
+    main
+      .locator("[data-analysis-ability]")
+      .getByRole("definition")
+      .filter({ hasText: /^0\s*\/\s*100$/ }),
+  ).toHaveCount(6);
   await expect(
     main.locator("[data-metric-panel] dd").filter({ hasText: /^0$/ }).first(),
   ).toBeVisible();

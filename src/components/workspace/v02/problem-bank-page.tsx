@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import {
   ArrowRightIcon,
+  ChevronDownIcon,
   BookOpenIcon,
   SearchIcon,
   SlidersHorizontalIcon,
@@ -19,6 +20,12 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import "./problem-workspace.css";
 import { EmptyState, Pagination, QueryFeedback } from "../feedback";
 import { v02 } from "@/lib/api/v02";
 import { useV02Query } from "@/lib/query/v02-hooks";
@@ -56,6 +63,7 @@ export function ProblemBankPage() {
     maxDifficulty: undefined,
   });
   const [page, setPage] = useState(1);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [filterError, setFilterError] =
     useState<ReturnType<typeof parseProblemFilters>["error"]>();
   const form = useForm<ProblemFilterValues>({
@@ -73,6 +81,7 @@ export function ProblemBankPage() {
   function applyFilters(values: ProblemFilterValues) {
     const parsed = parseProblemFilters(values);
     setFilterError(parsed.error);
+    if (parsed.error && parsed.error !== "keyword") setAdvancedOpen(true);
     if (parsed.filters) {
       setFilters(parsed.filters);
       setPage(1);
@@ -81,126 +90,194 @@ export function ProblemBankPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <p className="flex max-w-3xl items-start gap-3 text-sm leading-relaxed text-muted-foreground">
-        <BookOpenIcon
-          className="mt-0.5 size-5 shrink-0 text-info"
-          aria-hidden="true"
-        />
-        {t("v02.problem.bankDescription")}
-      </p>
+      <div className="problem-library-banner">
+        <div className="flex min-w-0 flex-col gap-3">
+          <p className="flex items-center gap-2 text-xs font-semibold text-info">
+            <BookOpenIcon className="size-4" aria-hidden="true" />
+            {t("v02.problem.catalog")}
+          </p>
+          <h2 className="hidden text-xl font-semibold tracking-tight sm:block sm:text-2xl">
+            {t("v02.problem.catalogHint")}
+          </h2>
+          <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+            {t("v02.problem.bankDescription")}
+          </p>
+        </div>
+        {query.data && (
+          <div className="flex shrink-0 items-baseline gap-2 sm:flex-col sm:items-start sm:gap-1">
+            <span className="text-xl font-semibold tracking-tight tabular-nums sm:text-4xl">
+              {query.data.meta.total}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {t("v02.problem.problemCount", {
+                count: String(query.data.meta.total),
+              })}
+            </span>
+          </div>
+        )}
+      </div>
       <form
         onSubmit={form.handleSubmit(applyFilters)}
-        className="min-w-0 rounded-2xl border border-surface-border bg-surface-supporting p-5 sm:p-6"
+        className="min-w-0 rounded-xl border border-surface-border bg-surface-reading p-4 sm:p-5"
       >
-        <p className="mb-5 flex items-center gap-2 text-sm font-semibold">
-          <SlidersHorizontalIcon
-            className="size-4 text-info"
-            aria-hidden="true"
-          />
-          {t("v02.problem.filter")}
-        </p>
-        <FieldGroup className="grid min-w-0 grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <Field className="min-w-0" data-invalid={filterError === "keyword"}>
-            <FieldLabel
-              htmlFor="problem-q"
-              className="max-w-full wrap-anywhere"
-            >
-              {t("v02.problem.search")}
-            </FieldLabel>
-            <Input
-              id="problem-q"
-              {...form.register("q")}
-              aria-invalid={filterError === "keyword"}
-              aria-describedby={
-                filterError === "keyword" ? "problem-filter-error" : undefined
-              }
-            />
-          </Field>
-          <Field className="min-w-0" data-invalid={filterError === "tag"}>
-            <FieldLabel
-              htmlFor="problem-tag"
-              className="max-w-full wrap-anywhere"
-            >
-              {t("v02.problem.tag")}
-            </FieldLabel>
-            <Input
-              id="problem-tag"
-              {...form.register("tag")}
-              aria-invalid={filterError === "tag"}
-              aria-describedby={
-                filterError === "tag" ? "problem-filter-error" : undefined
-              }
-            />
-          </Field>
-          {(["minDifficulty", "maxDifficulty"] as const).map((field) => (
+        <FieldGroup className="flex min-w-0 flex-col gap-3">
+          <div className="flex min-w-0 flex-wrap items-end gap-3">
             <Field
-              key={field}
-              className="min-w-0"
-              data-invalid={filterError === "difficulty"}
+              className="min-w-0 flex-1 basis-full sm:basis-0"
+              data-invalid={filterError === "keyword"}
             >
-              <FieldLabel
-                htmlFor={`problem-${field}`}
-                className="max-w-full wrap-anywhere"
-              >
-                {t(`v02.problem.${field}`)}
+              <FieldLabel htmlFor="problem-q">
+                {t("v02.problem.search")}
               </FieldLabel>
               <Input
-                id={`problem-${field}`}
-                type="text"
-                inputMode="numeric"
-                {...form.register(field)}
-                aria-invalid={filterError === "difficulty"}
+                id="problem-q"
+                {...form.register("q")}
+                aria-invalid={filterError === "keyword"}
                 aria-describedby={
-                  filterError === "difficulty"
-                    ? "problem-filter-error"
-                    : "problem-filter-hint"
+                  filterError === "keyword" ? "problem-filter-error" : undefined
                 }
               />
             </Field>
-          ))}
-          <Field className="min-w-0 md:col-span-2 xl:col-span-4">
-            <FieldDescription id="problem-filter-hint">
-              {t("v02.problem.filterHint")}
-            </FieldDescription>
-            {filterError && (
-              <p
-                role="alert"
-                id="problem-filter-error"
-                className="text-sm text-destructive"
-              >
-                {t(errorMessages[filterError])}
-              </p>
-            )}
-            <div className="flex min-w-0 flex-wrap gap-2">
-              <Button type="submit" wrap>
-                <SearchIcon data-icon="inline-start" aria-hidden="true" />
-                {t("v02.problem.filter")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                wrap
-                onClick={() => {
-                  form.reset(emptyProblemFilters);
-                  applyFilters(emptyProblemFilters);
-                }}
-              >
-                {t("v02.problem.resetFilters")}
-              </Button>
-            </div>
-          </Field>
+            <Button type="submit" wrap>
+              <SearchIcon data-icon="inline-start" aria-hidden="true" />
+              {t("v02.problem.filter")}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              wrap
+              onClick={() => {
+                form.reset(emptyProblemFilters);
+                applyFilters(emptyProblemFilters);
+              }}
+            >
+              {t("v02.problem.resetFilters")}
+            </Button>
+          </div>
+          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+            <CollapsibleTrigger
+              render={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="group/filter"
+                />
+              }
+            >
+              <SlidersHorizontalIcon
+                data-icon="inline-start"
+                aria-hidden="true"
+              />
+              {t("v02.problem.advancedFilters")}
+              <ChevronDownIcon
+                data-icon="inline-end"
+                aria-hidden="true"
+                className="transition-transform group-data-panel-open/filter:rotate-180 motion-reduce:transition-none"
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent keepMounted>
+              <FieldGroup className="grid min-w-0 grid-cols-1 gap-4 pt-4 sm:grid-cols-3">
+                <Field data-invalid={filterError === "tag"}>
+                  <FieldLabel htmlFor="problem-tag">
+                    {t("v02.problem.tag")}
+                  </FieldLabel>
+                  <Input
+                    id="problem-tag"
+                    {...form.register("tag")}
+                    aria-invalid={filterError === "tag"}
+                    aria-describedby={
+                      filterError === "tag" ? "problem-filter-error" : undefined
+                    }
+                  />
+                </Field>
+                {(["minDifficulty", "maxDifficulty"] as const).map((field) => (
+                  <Field
+                    key={field}
+                    data-invalid={filterError === "difficulty"}
+                  >
+                    <FieldLabel htmlFor={`problem-${field}`}>
+                      {t(`v02.problem.${field}`)}
+                    </FieldLabel>
+                    <Input
+                      id={`problem-${field}`}
+                      type="text"
+                      inputMode="numeric"
+                      {...form.register(field)}
+                      aria-invalid={filterError === "difficulty"}
+                      aria-describedby={
+                        filterError === "difficulty"
+                          ? "problem-filter-error"
+                          : "problem-filter-hint"
+                      }
+                    />
+                  </Field>
+                ))}
+                <Field className="sm:col-span-3">
+                  <FieldDescription id="problem-filter-hint">
+                    {t("v02.problem.filterHint")}
+                  </FieldDescription>
+                </Field>
+              </FieldGroup>
+            </CollapsibleContent>
+          </Collapsible>
+          {filterError && (
+            <p
+              role="alert"
+              id="problem-filter-error"
+              className="text-sm text-destructive"
+            >
+              {t(errorMessages[filterError])}
+            </p>
+          )}
         </FieldGroup>
       </form>
+      {(filters.q ||
+        filters.tag ||
+        filters.minDifficulty ||
+        filters.maxDifficulty) && (
+        <div
+          className="flex flex-wrap items-center gap-2"
+          aria-label={t("v02.problem.activeFilters")}
+        >
+          <span className="text-xs text-muted-foreground">
+            {t("v02.problem.activeFilters")}
+          </span>
+          {filters.q && (
+            <Badge variant="secondary" wrap>
+              {t("v02.problem.search")}: {filters.q}
+            </Badge>
+          )}
+          {filters.tag && (
+            <Badge variant="secondary" wrap>
+              {t("v02.problem.tag")}: {filters.tag}
+            </Badge>
+          )}
+          {filters.minDifficulty && (
+            <Badge variant="secondary">
+              {t("v02.problem.minDifficulty")}: {filters.minDifficulty}
+            </Badge>
+          )}
+          {filters.maxDifficulty && (
+            <Badge variant="secondary">
+              {t("v02.problem.maxDifficulty")}: {filters.maxDifficulty}
+            </Badge>
+          )}
+        </div>
+      )}
       <QueryFeedback query={query} />
       {query.data && (
         <>
           {query.data.data.length ? (
-            <ul className="flex min-w-0 flex-col divide-y divide-surface-border rounded-2xl border border-surface-border bg-surface-reading">
-              {query.data.data.map((problem) => (
+            <ul className="problem-library-list divide-y divide-surface-border">
+              {query.data.data.map((problem, index) => (
                 <li
                   key={`${problem.problemRef.problemId}:${problem.problemRef.problemVersionId}`}
-                  className="flex min-w-0 flex-col gap-4 p-5 transition-colors hover:bg-info-soft/30 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+                  className="problem-library-row"
                 >
+                  <span className="problem-row-index" aria-hidden="true">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
                   <div className="flex min-w-0 flex-col gap-2">
                     <Link
                       href={problemHref(

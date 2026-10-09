@@ -2,6 +2,8 @@
 
 **码练星轨 (codeStartrack) V0.2** adds platform problems, online editing, asynchronous judging, independent static analysis, training records, combined learning profiles and mixed recommendations. It retains evolving algorithm compatibility, existing charts and collaboration workspaces. It preserves confirmed settings after failed refreshes and uses keyboard-safe team confirmations. It retains multi-account data, frozen reports, coach tools, privacy and notifications. It uses Next.js App Router, Tailwind, shadcn Base UI / Nova, Lucide and bilingual Chinese/English UI.
 
+The fixed geometric background uses a distinct composition for each route family. Dashboards lead with numerical summaries before recommendations and detailed evidence. The problem workspace combines an adjustable statement pane, locally bundled CodeMirror 6, language/settings controls, sample input and expected output, and the supported submission lifecycle. It offers an accessible plain text fallback; online Run and custom execution remain explicitly unavailable because the current public API does not provide them.
+
 The public landing page and `/demo` use local illustrations and synthetic fixtures. Workspace shells, including `/practice`, are browsable without login. Personal data and actions require a backend Session and the `STUDENT` role; the platform problem bank is readable by any authenticated role. Platform training does not require a CF binding. Visitors see login prompts within private panels. Empty responses preserve card/list structure; failed reads show safe placeholders, a visible error and retry without blocking navigation:
 
 | Route                                           | Purpose                                                                                 |

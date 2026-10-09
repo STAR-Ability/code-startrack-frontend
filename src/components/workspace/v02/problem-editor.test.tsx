@@ -52,6 +52,9 @@ function editor(problem: PlatformProblemDetail = v02Problems[0]) {
     </QueryClientProvider>
   );
   const result = render(tree(problem));
+  fireEvent.click(
+    screen.getByRole("button", { name: "Use plain text editor" }),
+  );
   return {
     ...result,
     client,

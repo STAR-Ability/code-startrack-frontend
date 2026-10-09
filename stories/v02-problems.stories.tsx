@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { expect, userEvent } from "storybook/test";
+import { expect, userEvent, waitFor } from "storybook/test";
 import { CodeEditor } from "@/components/workspace/v02/code-editor";
 import { ProblemStatement } from "@/components/workspace/v02/problem-statement";
 import { v02Problems, v02SourceCode } from "@/lib/demo/v02-fixtures";
@@ -82,11 +82,24 @@ export const EditUnmodifiedSource: Story = {
   globals: { locale: "en" },
   render: () => <Editor />,
   play: async ({ canvas }) => {
-    const editor = canvas.getByRole("textbox", { name: "Source code" });
+    const source = "  // UTF-8: 中\nint main() { return 0; }  ";
+    const editor = await canvas.findByRole("textbox", { name: "Source code" });
+    await expect(editor).toHaveAttribute("contenteditable", "true");
     await userEvent.clear(editor);
-    await userEvent.type(editor, "  // UTF-8: 中\nint main() {{ return 0; }  ");
-    await expect(editor).toHaveValue(
-      "  // UTF-8: 中\nint main() { return 0; }  ",
+    await userEvent.paste(source);
+    await waitFor(() => expect(editor.innerText).toBe(source));
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Use plain text editor" }),
     );
+    const plain = await canvas.findByRole("textbox", { name: "Source code" });
+    await expect(plain).toHaveValue(source);
+    await userEvent.click(
+      canvas.getByRole("button", { name: "Use code editor" }),
+    );
+    const restored = await canvas.findByRole("textbox", {
+      name: "Source code",
+    });
+    await expect(restored).toHaveAttribute("contenteditable", "true");
+    await waitFor(() => expect(restored.innerText).toBe(source));
   },
 };

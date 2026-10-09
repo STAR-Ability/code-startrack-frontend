@@ -11,6 +11,62 @@ beforeEach(() => {
 });
 
 describe("problem statement page accessibility", () => {
+  it("omits only a leading Markdown heading that exactly repeats the problem title", () => {
+    const problem = {
+      ...v02Problems[0],
+      statement: {
+        ...v02Problems[0].statement,
+        content: `# ${v02Problems[0].title}\n\nTask instructions.\n\n## ${v02Problems[0].title}`,
+      },
+    };
+    const { rerender } = render(
+      <LocaleProvider initialLocale="en">
+        <ProblemStatement problem={problem} />
+      </LocaleProvider>,
+    );
+    expect(
+      screen.getAllByRole("heading", { name: problem.title! }),
+    ).toHaveLength(2);
+    expect(screen.getByText("Task instructions.")).toBeInTheDocument();
+    rerender(
+      <LocaleProvider initialLocale="en">
+        <ProblemStatement
+          problem={{
+            ...problem,
+            statement: {
+              ...problem.statement,
+              content: "# A separate heading",
+            },
+          }}
+        />
+      </LocaleProvider>,
+    );
+    expect(
+      screen.getByRole("heading", { name: "A separate heading" }),
+    ).toBeInTheDocument();
+  });
+
+  it("preserves an indented code line containing the problem title", () => {
+    const problem = {
+      ...v02Problems[0],
+      statement: {
+        ...v02Problems[0].statement,
+        content: `    # ${v02Problems[0].title}\n\nInstructions remain visible.`,
+      },
+    };
+    render(
+      <LocaleProvider initialLocale="en">
+        <ProblemStatement problem={problem} />
+      </LocaleProvider>,
+    );
+    expect(
+      screen.getByRole("region", { name: "Complete statement · Code block" }),
+    ).toHaveTextContent(`# ${problem.title}`);
+    expect(
+      screen.getByText("Instructions remain visible."),
+    ).toBeInTheDocument();
+  });
+
   it("retains a single page h1 and nests all Markdown headings beneath its statement section", () => {
     const problem = {
       ...v02Problems[0],

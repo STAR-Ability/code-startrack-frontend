@@ -9,6 +9,7 @@ import { v02Languages, v02Problems } from "@/lib/demo/v02-fixtures";
 import { keys } from "@/lib/query/keys";
 import { ProblemDetailPage } from "./problem-detail-page";
 
+const account = vi.hoisted(() => ({ coach: false }));
 vi.mock("next/navigation", async () => {
   const { v02Problems } = await import("@/lib/demo/v02-fixtures");
   return {
@@ -23,11 +24,18 @@ vi.mock("next/navigation", async () => {
 });
 vi.mock("../account-provider", async () => {
   const { demoUser } = await import("@/lib/demo/fixtures");
-  return { useWorkspaceSession: () => ({ data: demoUser }) };
+  return {
+    useWorkspaceSession: () => ({
+      data: account.coach
+        ? { ...demoUser, roles: ["COACH"], primaryRole: "COACH" }
+        : demoUser,
+    }),
+  };
 });
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  account.coach = false;
   document.cookie = "codestartrack_locale=en; Path=/";
 });
 
@@ -56,6 +64,9 @@ it("keeps source through a failed version refresh, then permits explicit submiss
       </LocaleProvider>
     </QueryClientProvider>,
   );
+  fireEvent.click(
+    await screen.findByRole("button", { name: "Use plain text editor" }),
+  );
   const source = "  int main() { return 0; }\n\n";
   fireEvent.change(
     await screen.findByRole("textbox", { name: "Source code" }),
@@ -76,6 +87,14 @@ it("keeps source through a failed version refresh, then permits explicit submiss
   expect(
     screen.getByRole("button", { name: "Submit for judging" }),
   ).toBeDisabled();
+  const separator = screen.getByRole("separator", {
+    name: "Resize problem and editor panels",
+  });
+  separator.focus();
+  fireEvent.keyDown(separator, { key: "Enter" });
+  expect(
+    screen.getByRole("button", { name: "Show problem statement" }),
+  ).toHaveFocus();
   fireEvent.click(screen.getByRole("button", { name: "Retry" }));
   await waitFor(() =>
     expect(
@@ -89,4 +108,32 @@ it("keeps source through a failed version refresh, then permits explicit submiss
     screen.getByText(/The statement and language capabilities were refreshed/),
   ).toBeInTheDocument();
   expect(submit).not.toHaveBeenCalled();
+});
+
+it("moves focus to the surviving layout control when a coach has no source editor", async () => {
+  account.coach = true;
+  vi.spyOn(v02, "languages").mockResolvedValue(v02Languages);
+  vi.spyOn(v02, "problemVersion").mockResolvedValue(v02Problems[0]);
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
+  });
+  client.setQueryData(keys.session, demoUser);
+  render(
+    <QueryClientProvider client={client}>
+      <LocaleProvider initialLocale="en">
+        <ProblemDetailPage />
+      </LocaleProvider>
+    </QueryClientProvider>,
+  );
+  const separator = await screen.findByRole("separator", {
+    name: "Resize problem and editor panels",
+  });
+  await waitFor(() =>
+    expect(screen.queryByRole("textbox", { name: "Source code" })).toBeNull(),
+  );
+  separator.focus();
+  fireEvent.keyDown(separator, { key: "Enter" });
+  expect(
+    screen.getByRole("button", { name: "Show problem statement" }),
+  ).toHaveFocus();
 });

@@ -107,7 +107,7 @@ Keep scoped milestone commits; preserve unrelated work and private settings. Use
 
 - [x] Stage 1
 - [x] Stage 2
-- [ ] Stage 3
+- [x] Stage 3
 - [x] Stage 4
 - [ ] Stage 5
 - [ ] Stage 6
@@ -135,3 +135,5 @@ Keep scoped milestone commits; preserve unrelated work and private settings. Use
 - Stage 5 shared feedback and controls are ready: team/task depth, empty/skeleton feedback, invalid forms, dialog/table feedback, settings navigation, verdict-first submission results and collapsible training dates are implemented. Existing Badge/Button wrapping fixes the measured /data account/action failures. The fifth compiled export passes six bilingual 320px/200% checks with 54 one-line numerical values, including zero and formatted ratings; empty icons, delayed loading, hover/focus surfaces and keyboard dialog dismissal pass. No browser errors, failed HTTP requests, external traffic or fixture mutations were observed. Full source lint/format/types/build and 518 units pass. Source and independent review pass for these shared changes.
 
 - The editor remains under final correction: fifth-export focused checks have 19 passes and one synthetic contenteditable fill failure. Genuine keyboard diagnosis separately reveals a real rapid compiler-switch document latch and a zero-height editor canvas at 320px/200% text. Both are being fixed with behavioral coverage before marking Stage 3 or overall Stage 5 complete. Exact rich/plain/failure source, ordinary resized actions, no-editor focus and normal responsive geometry already pass independently.
+
+- Stage 3 passes on the sixth export: all 24 focused desktop/mobile browser cases and 13 editor units pass, including genuine keyboard edits, compiler-private draft isolation, preferences, visible/clickable code at 320px/200% and the final caret in a 90-line plain document. A compiler change mounts its own document to cancel the prior typing latch; undo history resets while outer preferences remain. Wrapped chrome grows inside the scrollable form and retains a 120px minimum canvas. Real deferred-chunk failure, maximum console, COACH/disabled focus and exact private source pass in actual browsers. The syntax palette's lowest measured contrast is 6.94:1. Desktop/mobile/fallback screenshots are inspected. Full lint/format/types, 518 units and production/Storybook builds pass; all original failures and corrected-test evidence remain preserved. Overall independent final audit and full suites continue under Stages 5 and 7.

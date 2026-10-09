@@ -323,9 +323,11 @@ test("V0.2: uncertain submission retry reuses its key and preserves exact code",
   ]);
   await configureUpstream({ v02LoseResponse: true });
   await page.goto(detail);
-  await page
-    .getByRole("textbox", { name: "Source code", exact: true })
-    .fill(v02SourceCode);
+  const editor = page.getByRole("textbox", {
+    name: "Source code",
+    exact: true,
+  });
+  await editor.fill(v02SourceCode);
   await page
     .getByRole("button", { name: "Submit for judging", exact: true })
     .click();
@@ -334,6 +336,13 @@ test("V0.2: uncertain submission retry reuses its key and preserves exact code",
     exact: true,
   });
   await expect(retry).toBeEnabled();
+  const notice = page.locator('[data-slot="toast"][data-type="error"]');
+  await expect(notice).toBeVisible();
+  await notice
+    .getByLabel(translate("en", "ui.dismiss"), { exact: true })
+    .click();
+  await expect(notice).toBeHidden();
+  await expect(editor).toHaveText(v02SourceCode, { useInnerText: true });
   await retry.click();
   await expect(page).toHaveURL(/\/submissions\/detail\?submissionId=/);
   const writes = (await upstreamCalls()).filter(
@@ -344,6 +353,10 @@ test("V0.2: uncertain submission retry reuses its key and preserves exact code",
     writes[1].headers["idempotency-key"],
   );
   expect(writes[0].body).toEqual(writes[1].body);
+  expect(writes.map((call) => call.body?.sourceCode)).toEqual([
+    v02SourceCode,
+    v02SourceCode,
+  ]);
 });
 
 test("V0.2: blank and UTF-8 oversized editor source are accessible and never submitted", async ({

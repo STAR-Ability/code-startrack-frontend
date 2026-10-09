@@ -95,7 +95,10 @@ test("failed lists preserve filters, error recovery, pagination and unrelated st
     ["/rating-changes", "比赛与 Rating（当前页）"],
   ]) {
     await configureUpstream({ errorResource: resource }, true);
-    await page.getByRole("button", { name: tab, exact: true }).click();
+    await page
+      .getByRole("group", { name: "个人数据", exact: true })
+      .getByRole("button", { name: tab, exact: true })
+      .click();
     const panel = page
       .locator(resource === "/submissions" ? "section" : '[data-slot="card"]')
       .filter({ has: page.getByRole("heading", { name: tab, exact: true }) });

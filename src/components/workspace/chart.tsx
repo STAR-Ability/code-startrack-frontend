@@ -196,7 +196,7 @@ export function Chart({
           </div>
         )}
       </div>
-      {renderState === "ready" && legendSeries.length > 0 && (
+      {legendSeries.length > 0 && (
         <div className="chart-legend" role="group" aria-label={label}>
           {legendSeries.map(({ item, index }) => {
             const name = String(item.name);
@@ -209,6 +209,7 @@ export function Chart({
                 size="sm"
                 wrap
                 className="chart-legend-item"
+                disabled={renderState !== "ready"}
                 aria-pressed={!hiddenSeries.includes(key)}
                 style={
                   {

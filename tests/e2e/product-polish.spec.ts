@@ -208,13 +208,18 @@ for (const locale of ["zh-CN", "en"] as const) {
         new URL(response.url()).pathname,
       ),
     );
-    await page
+    const submissionsTab = page
       .getByRole("main")
+      .getByRole("group", {
+        name: translate(locale, "v.data"),
+        exact: true,
+      })
       .getByRole("button", {
         name: translate(locale, "v.submissions"),
         exact: true,
-      })
-      .click();
+      });
+    await submissionsTab.click();
+    await expect(submissionsTab).toHaveAttribute("aria-pressed", "true");
     const submissions = (
       (await (await loadedSubmissions).json()) as { data: SubmissionDto[] }
     ).data;

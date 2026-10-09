@@ -272,6 +272,87 @@ describe("ECharts lifecycle", () => {
     expect(echarts.dispose).toHaveBeenCalledOnce();
   });
 
+  it("keeps complete legend nodes present through deferred loading, failure and retry", async () => {
+    let rejectInitialLoad!: (reason: Error) => void;
+    let resolveRetry!: (engine: typeof import("echarts")) => void;
+    engineLoader.load
+      .mockImplementationOnce(
+        () =>
+          new Promise<typeof import("echarts")>((_resolve, reject) => {
+            rejectInitialLoad = reject;
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise<typeof import("echarts")>((resolve) => {
+            resolveRetry = resolve;
+          }),
+      );
+    const submissionsName = "Submissions across all linked training accounts";
+    const solvedName = "Accepted solutions across all linked training accounts";
+    const option = (value: number) =>
+      trendOption(
+        ["Monday"],
+        [
+          { id: "submissions", name: submissionsName, values: [value] },
+          { id: "solved", name: solvedName, values: [2] },
+        ],
+      );
+    const { rerender } = render(<Chart label="Training" option={option(4)} />);
+    const legend = screen.getByRole("group", { name: "Training" });
+    const submissions = screen.getByRole("button", { name: submissionsName });
+    const solved = screen.getByRole("button", { name: solvedName });
+    const expectSameLegend = (disabled: boolean) => {
+      expect(screen.getByRole("group", { name: "Training" })).toBe(legend);
+      expect(screen.getByRole("button", { name: submissionsName })).toBe(
+        submissions,
+      );
+      expect(screen.getByRole("button", { name: solvedName })).toBe(solved);
+      expect(submissions).toHaveProperty("disabled", disabled);
+      expect(solved).toHaveProperty("disabled", disabled);
+    };
+    expectSameLegend(true);
+    expect(echarts.init).not.toHaveBeenCalled();
+    fireEvent.click(solved);
+    expect(solved).toHaveAttribute("aria-pressed", "true");
+
+    await act(async () => {
+      rejectInitialLoad(new Error("Synthetic deferred chunk failure"));
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The chart is unavailable",
+    );
+    expectSameLegend(true);
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(screen.getByRole("img", { name: "Training" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
+    rerender(<Chart label="Training" option={option(9)} />);
+    expectSameLegend(true);
+    expect(echarts.init).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveRetry(await import("echarts"));
+    });
+    expectSameLegend(false);
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(echarts.setOption).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        legend: expect.objectContaining({
+          selected: { [submissionsName]: true, [solvedName]: true },
+        }),
+        series: [
+          expect.objectContaining({ id: "submissions", data: [9] }),
+          expect.objectContaining({ id: "solved", data: [2] }),
+        ],
+      }),
+    );
+    fireEvent.click(solved);
+    expect(solved).toHaveAttribute("aria-pressed", "false");
+  });
+
   it("disposes a chart whose first frame fails before offering retry", async () => {
     echarts.setOption.mockImplementationOnce(() => {
       throw new Error("Synthetic first-frame failure");

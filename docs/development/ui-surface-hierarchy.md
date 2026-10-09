@@ -12,17 +12,19 @@ dots and the public orbit stay visually stable while document content scrolls.
 Reading cards, supporting section surfaces and local illustrations remain in normal
 content flow.
 
-The workspace background combines fixed pale blue, violet and teal washes over
-the neutral canvas. It remains visible between modules and through the quieter
-supporting surfaces. Shared surface tokens use the current card color, so their
+The shells combine a fixed gray-blue wash, a fine orthogonal grid and clipped
+concentric arcs. The repeated orbit connects the background to the brand mark
+without adding moving scenery or page-specific illustrations. It remains visible
+between modules and through the quieter supporting surfaces. Shared surface
+tokens use the current card color, so their
 light and dark values remain consistent without page-specific color overrides:
 
 | Token                | Opacity / responsibility                                        |
 | -------------------- | --------------------------------------------------------------- |
-| `surface-reading`    | 96% card color; primary text, forms, recommendations and charts |
-| `surface-panel`      | 86% card color; focused metrics and workspace context           |
-| `surface-supporting` | 76% card color; history, sources and secondary information      |
-| `surface-border`     | 80% border color; quieter boundaries between surface layers     |
+| `surface-reading`    | 98% card color; primary text, forms, recommendations and charts |
+| `surface-panel`      | 94% card color; focused metrics and workspace context           |
+| `surface-supporting` | 88% card color; history, sources and secondary information      |
+| `surface-border`     | 92% border color; boundaries between surface layers             |
 
 These surfaces use alpha composition without backdrop blur. Keep text on a
 near-white reading layer when stronger contrast is needed. Do not apply opacity
@@ -76,6 +78,19 @@ reserve `lift` for actionable discovery surfaces. Keep the established CardHeade
 CardTitle, CardDescription, CardContent and CardFooter composition. Extend Panel
 through its Card props instead of creating a separate general-purpose card.
 
+Selected metric, analysis and recommendation panels carry a clipped orbital
+corner accent behind their content. Ordinary reading surfaces use a quiet neutral
+wash. Shared two-layer shadows and a lighter upper edge separate all surfaces
+from the canvas. Larger inset spacing and stronger titles provide hierarchy
+before decoration. Cards retain isolation locally; the viewport background
+shells never acquire transforms or containment.
+
+MetricPanel uses tabular Geist numerals, semantic tints and a larger value than
+its explanatory label. Four-value panels use container queries: two columns in
+split desktop panels and four when a full-width panel has enough room. Narrow
+or enlarged-text layouts fall back to the content-aware metric minimum. A
+missing value remains text with a neutral tone.
+
 ## Page responsibilities
 
 - Dashboard: current activity, concise ability direction and entry points to
@@ -95,8 +110,12 @@ through its Card props instead of creating a separate general-purpose card.
 Keep ECharts and the existing CSS-backed palettes. Activity uses blue for
 submissions, green for solved problems and amber for pending results. Attempted
 versus solved distributions use neutral and green; ability uses insight.
-Theme-resolved tooltips, scrollable legends, SVG rendering, responsive resize and
-reduced-motion support remain centralized in the shared chart layer.
+Theme-resolved tooltips, wrapping keyboard-accessible legends, SVG rendering,
+responsive resize and reduced-motion support remain centralized in the shared
+chart layer. Restrained same-hue fills supplement strong data strokes; symbols
+and dashed lines supplement color. Radar axes show supplied scores, and dense
+horizontal distributions grow with category count. Engine loading failures show
+localized retry without replacing the owner's complete text data.
 
 Use the existing DetailsDisclosure for secondary evidence. Its panel variant
 provides a wrapping, keyboard-accessible trigger. Chart disclosures opt out of

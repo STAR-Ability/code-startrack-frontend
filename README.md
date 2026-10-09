@@ -86,7 +86,7 @@ BACKEND_BASE_URL= pnpm build
 BACKEND_BASE_URL=http://backend:8081 pnpm start
 ```
 
-Next.js emits static files to `out/`. The local Node HTTP server serves those files and proxies the same API prefix. Production Docker runs nginx on port 80, proxies `/api/v1/**` without stripping the path or Origin and uses a 30-second upstream read timeout. Deep links resolve exported route HTML before the `index.html` fallback. `/healthz` checks frontend liveness without contacting the backend. Other `/api/` paths return 404.
+Next.js emits static files to `out/`. The local Node HTTP server serves those files and proxies the same API prefix. Production Docker runs nginx on port 80, proxies `/api/v1/**` without stripping the path or Origin and uses a 30-second upstream read timeout. Deep links resolve exported route HTML before payload directories; known trailing-slash pages redirect with HTTP 308 while preserving query parameters. Unknown pages and missing assets return HTTP 404, using exported `404.html` when available. `/healthz` checks frontend liveness without contacting the backend. Other `/api/` paths return 404.
 
 ```bash
 docker compose up --build -d

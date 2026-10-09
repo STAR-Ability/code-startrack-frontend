@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { useState } from "react";
 import { fn } from "storybook/test";
 import {
   EmptyState,
@@ -7,6 +8,8 @@ import {
 } from "@/components/workspace/feedback";
 import { ApiError } from "@/lib/api/errors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 import { StoryFrame, mobile } from "./helpers";
 
 const meta = {
@@ -71,3 +74,56 @@ export const Forbidden: Story = {
   ),
 };
 export const Mobile: Story = { globals: mobile };
+
+function ToastQueueDemo() {
+  const [actionComplete, setActionComplete] = useState(false);
+
+  return (
+    <>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          wrap
+          onClick={() => {
+            for (let index = 1; index <= 3; index++) {
+              toast.add({
+                title: `Notification ${index}`,
+                description: "This notification stays open until dismissed.",
+                type: "info",
+                timeout: 0,
+              });
+            }
+          }}
+        >
+          Add three notifications
+        </Button>
+        <Button
+          variant="outline"
+          wrap
+          onClick={() => {
+            setActionComplete(false);
+            toast.add({
+              title: "Long notification",
+              description:
+                "Review the complete notification before confirming. The original page remains available while this message is open. ".repeat(
+                  8,
+                ),
+              type: "info",
+              timeout: 0,
+              actionProps: {
+                children: "Confirm notification",
+                onClick: () => setActionComplete(true),
+              },
+            });
+          }}
+        >
+          Add a long notification
+        </Button>
+      </div>
+      {actionComplete && (
+        <p role="status">Notification action completed locally.</p>
+      )}
+    </>
+  );
+}
+
+export const ToastQueue: Story = { render: () => <ToastQueueDemo /> };

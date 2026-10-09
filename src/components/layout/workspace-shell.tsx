@@ -286,7 +286,6 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
       >
         <WorkspaceSidebar />
         <div className="workspace-surface flex min-w-0 flex-1 flex-col">
-          <MockNotice />
           <header className="workspace-mobile-header flex flex-wrap items-center justify-between gap-2 border-b bg-background/90 px-3 py-2 md:hidden">
             <div className="flex min-w-0 items-center gap-2">
               <SidebarTrigger aria-label={t("ui.mobileNavigation")} />
@@ -296,6 +295,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
               <LocaleSwitch />
             </div>
           </header>
+          <MockNotice />
           <AccountSwitcher />
           {children}
         </div>

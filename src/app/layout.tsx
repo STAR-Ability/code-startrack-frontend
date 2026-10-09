@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <GeometricBackground />
         <LocaleProvider initialLocale={locale}>
           <TooltipProvider delay={350}>
-            <Toaster limit={3}>
+            <Toaster>
               <TrainingQueryProvider>{children}</TrainingQueryProvider>
             </Toaster>
           </TooltipProvider>

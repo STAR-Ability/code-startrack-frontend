@@ -90,6 +90,134 @@ test("dialog traps focus, scrolls and returns focus after Escape", async ({
   await expect(trigger).toBeFocused();
 });
 
+for (const dismissal of ["Escape", "keyboard close"] as const) {
+  test(`toast queue promotes one notification and restores focus after ${dismissal}`, async ({
+    page,
+  }) => {
+    await page.goto(
+      "/iframe.html?id=workspace-feedback--toast-queue&viewMode=story&globals=locale:en",
+    );
+    const trigger = page.getByRole("button", {
+      name: "Add three notifications",
+    });
+    const toasts = page.locator('[data-slot="toast"]');
+    const activeToast = page.locator(
+      '[data-slot="toast"]:not([data-limited]):not([data-ending-style])',
+    );
+    const limitedToasts = page.locator('[data-slot="toast"][data-limited]');
+
+    await trigger.click();
+    await expect(trigger).toBeFocused();
+    await expect(toasts).toHaveCount(3);
+    await page.keyboard.press("F6");
+    await page.keyboard.press("Tab");
+
+    const keys =
+      dismissal === "Escape"
+        ? ["Escape", "Escape", "Escape"]
+        : ["Enter", "Space", "Enter"];
+    for (let index = 0; index < keys.length; index++) {
+      const title = `Notification ${3 - index}`;
+      await expect(activeToast).toHaveCount(1);
+      await expect(activeToast.locator('[data-slot="toast-title"]')).toHaveText(
+        title,
+      );
+      await expect(activeToast).toBeFocused();
+      await expect(limitedToasts).toHaveCount(2 - index);
+      for (const limited of await limitedToasts.all()) {
+        await expect(limited).toHaveAttribute("inert", "");
+        await expect(limited).toHaveCSS("opacity", "0");
+      }
+
+      if (dismissal === "keyboard close") {
+        await page.keyboard.press("Tab");
+        await expect(
+          activeToast.locator('[data-slot="toast-close"]'),
+        ).toBeFocused();
+      }
+      await page.keyboard.press(keys[index]);
+      await expect(toasts.filter({ hasText: title })).not.toBeAttached();
+    }
+
+    await expect(toasts).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+}
+
+test("long notification scrolls and its action remains keyboard accessible at 200% text", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 667 });
+  await page.goto(
+    "/iframe.html?id=workspace-feedback--toast-queue&viewMode=story&globals=locale:en",
+  );
+  await page.evaluate(() => {
+    document.documentElement.style.fontSize = "200%";
+  });
+  const trigger = page.getByRole("button", { name: "Add a long notification" });
+  await trigger.click();
+  const notification = page.locator(
+    '[data-slot="toast"]:not([data-limited]):not([data-ending-style])',
+  );
+  const message = notification.locator('[data-slot="toast-message"]');
+  const close = notification.locator('[data-slot="toast-close"]');
+  const action = notification.getByRole("button", {
+    name: "Confirm notification",
+  });
+
+  await expect(notification).toBeVisible();
+  await expect(close).toBeInViewport({ ratio: 1 });
+  await expect(message).toHaveAttribute("tabindex", "0");
+  await expect(message).toHaveAttribute("data-base-ui-swipe-ignore", "");
+  await expect
+    .poll(() =>
+      notification.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return (
+          bounds.width > 0 &&
+          bounds.height > 0 &&
+          bounds.left >= 0 &&
+          bounds.top >= 0 &&
+          bounds.right <= innerWidth &&
+          bounds.bottom <= innerHeight
+        );
+      }),
+    )
+    .toBe(true);
+  expect((await message.boundingBox())!.width).toBeGreaterThan(
+    page.viewportSize()!.width / 2,
+  );
+
+  await page.keyboard.press("F6");
+  await page.keyboard.press("Tab");
+  await expect(notification).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(message).toBeFocused();
+  await page.keyboard.press("PageDown");
+  await expect
+    .poll(() => message.evaluate((element) => element.scrollTop))
+    .toBeGreaterThan(0);
+  await page.keyboard.press("Tab");
+  await expect(action).toBeFocused();
+  await expect(action).toBeInViewport({ ratio: 1 });
+  await page.keyboard.press("Enter");
+  await expect(
+    page
+      .getByRole("status")
+      .filter({ hasText: "Notification action completed locally." }),
+  ).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(notification).not.toBeAttached();
+  await expect(trigger).toBeFocused();
+  await expect
+    .poll(() =>
+      page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    )
+    .toBe(true);
+});
+
 for (const story of stories.filter((story) => story.id.endsWith("--default"))) {
   test(`accessibility addon passes ${story.id}`, async ({ page, isMobile }) => {
     // Keep Storybook's addon panel visible; the Mobile story constrains its canvas.

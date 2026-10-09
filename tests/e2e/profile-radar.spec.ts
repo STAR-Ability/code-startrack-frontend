@@ -193,8 +193,19 @@ test("delayed profile data plots exact six scores after window, locale and viewp
     await expect(
       page.locator("[data-analysis-ability] [role=img]"),
     ).toHaveCount(0);
+    await page.setViewportSize({ width: 320, height: 667 });
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    // Slow feedback must leave language controls usable while data is pending.
+    await expect(
+      page.locator('[data-slot="toast"][data-type="loading"]').first(),
+    ).toBeVisible({ timeout: 12_000 });
     await page.getByRole("button", { name: "English", exact: true }).click();
-    await page.setViewportSize({ width: 320, height: 900 });
+    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    await page.evaluate(() => {
+      document.documentElement.style.removeProperty("font-size");
+    });
     releaseRecent();
     await expectProfileRadar(page, supplied.get("7D")!, "en");
     await page

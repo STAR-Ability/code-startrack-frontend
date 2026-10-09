@@ -1,4 +1,5 @@
 "use client";
+import { FingerprintIcon, TargetIcon } from "lucide-react";
 import type { LearningProfile } from "@/lib/api/v02-schemas";
 import { useLocale } from "@/components/layout/locale-provider";
 import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
@@ -47,12 +48,16 @@ export function LearningProfileView({
           ["v.submissions", summary.submissionCount],
           ["v.activeDays", summary.activeDays],
         ]}
-        secondary={[
-          ["v.unsolved", summary.unsolvedProblemCount],
-          ["v.accepted", summary.acceptedSubmissionCount],
-          ["v.failed", summary.failedSubmissionCount],
-          ["v.pendingCount", summary.pendingSubmissionCount],
-        ]}
+        secondary={
+          compact
+            ? undefined
+            : [
+                ["v.unsolved", summary.unsolvedProblemCount],
+                ["v.accepted", summary.acceptedSubmissionCount],
+                ["v.failed", summary.failedSubmissionCount],
+                ["v.pendingCount", summary.pendingSubmissionCount],
+              ]
+        }
       />
       <p className="text-sm text-muted-foreground">
         {t("v.cutoff")}:{" "}
@@ -69,14 +74,6 @@ export function LearningProfileView({
       {summary.submissionCount === 0 && (
         <EmptyState title={t("v02.profileZero")} embedded />
       )}
-      <MetricPanel
-        title="v02.sources"
-        metrics={[
-          ["v02.platformSubmissions", profile.sources.platformSubmissionCount],
-          ["v02.externalSubmissions", profile.sources.externalSubmissionCount],
-          ["v02.codeAnalyses", profile.sources.codeAnalysisCount],
-        ]}
-      />
       {!compact && (
         <>
           <Panel
@@ -84,6 +81,25 @@ export function LearningProfileView({
             variant="analysis"
             description={t("profile.dimensionNote")}
           >
+            <div className="flex min-w-0 flex-wrap items-end justify-between gap-5 border-b border-insight/15 pb-5">
+              <div className="min-w-0">
+                <p className="mb-2 flex items-center gap-2 text-sm font-medium text-insight">
+                  <FingerprintIcon className="size-4" aria-hidden="true" />
+                  {t("v.overallScore")}
+                </p>
+                <p className="font-mono text-4xl font-semibold tracking-tight tabular-nums text-insight sm:text-5xl">
+                  {formatNumber(profile.overallScore, locale, 2)}
+                  <span className="ml-2 text-base font-normal text-muted-foreground">
+                    / 100
+                  </span>
+                </p>
+              </div>
+              <Badge wrap variant="insight">
+                <TargetIcon aria-hidden="true" />
+                {t("v.weakest")} ·{" "}
+                {t(`data.dimension.${profile.weakestDimension}`)}
+              </Badge>
+            </div>
             <div className="grid min-w-0 gap-4 lg:grid-cols-2">
               <Chart
                 label={t("v.dimensions")}
@@ -117,10 +133,6 @@ export function LearningProfileView({
                 ))}
               </dl>
             </div>
-            <p>
-              {t("v.overallScore")}:{" "}
-              {formatNumber(profile.overallScore, locale, 2)} / 100
-            </p>
             <DetailsDisclosure title={t("v02.dimensionEvidence")}>
               <dl className="flex flex-col gap-3">
                 {dimensions.map((item) => (
@@ -142,36 +154,38 @@ export function LearningProfileView({
               </dl>
             </DetailsDisclosure>
           </Panel>
-          <MetricPanel
-            title="v02.codeQuality"
-            description={t("v02.codeQualityNote")}
-            metrics={[
-              [
-                "v02.analyzedSubmissions",
-                profile.codeQuality.analyzedSubmissionCount,
-              ],
-              ["v02.warnings", profile.codeQuality.warningCount],
-              ["v02.errors", profile.codeQuality.errorCount],
-              [
-                "v02.maxCyclomatic",
-                profile.codeQuality.maxCyclomaticComplexity,
-              ],
-            ]}
-          />
-          <MetricPanel
-            title="v02.cfStatistics"
-            description={t("v02.cfStatisticsNote")}
-            metrics={[
-              ["v.rating", profile.currentRating],
-              ["v.maxRating", profile.maxRating],
-              ["profile.averageDifficulty", summary.averageSolvedDifficulty],
-              ["profile.maxDifficulty", summary.maxSolvedDifficulty],
-            ]}
-            secondary={[
-              ["v.ratedSolved", summary.ratedSolvedCount],
-              ["v.unratedSolved", summary.unratedSolvedCount],
-            ]}
-          />
+          <div className="grid min-w-0 items-start gap-4 xl:grid-cols-2">
+            <MetricPanel
+              title="v02.codeQuality"
+              description={t("v02.codeQualityNote")}
+              metrics={[
+                [
+                  "v02.analyzedSubmissions",
+                  profile.codeQuality.analyzedSubmissionCount,
+                ],
+                ["v02.warnings", profile.codeQuality.warningCount],
+                ["v02.errors", profile.codeQuality.errorCount],
+                [
+                  "v02.maxCyclomatic",
+                  profile.codeQuality.maxCyclomaticComplexity,
+                ],
+              ]}
+            />
+            <MetricPanel
+              title="v02.cfStatistics"
+              description={t("v02.cfStatisticsNote")}
+              metrics={[
+                ["v.rating", profile.currentRating],
+                ["v.maxRating", profile.maxRating],
+                ["profile.averageDifficulty", summary.averageSolvedDifficulty],
+                ["profile.maxDifficulty", summary.maxSolvedDifficulty],
+              ]}
+              secondary={[
+                ["v.ratedSolved", summary.ratedSolvedCount],
+                ["v.unratedSolved", summary.unratedSolvedCount],
+              ]}
+            />
+          </div>
           <Panel
             title="v02.difficulty"
             variant="analysis"
@@ -180,58 +194,64 @@ export function LearningProfileView({
             {!profile.difficultyStats.length && (
               <EmptyState embedded title={t("v.noRecords")} />
             )}
-            {groupLearningDifficulty(profile.difficultyStats).map(
-              ({ scale, buckets }) => (
-                <section
-                  key={scale}
-                  className="flex min-w-0 flex-col gap-3"
-                  aria-label={t(`v02.scale.${scale}`)}
-                >
-                  <h3 className="font-medium">{t(`v02.scale.${scale}`)}</h3>
-                  <Chart
-                    label={`${t("v02.difficulty")} · ${t(`v02.scale.${scale}`)}`}
-                    option={distributionOption(
-                      buckets.map((stat) =>
-                        stat.difficulty === null
-                          ? t("v02.scale.UNRATED")
-                          : String(stat.difficulty),
-                      ),
-                      buckets.map((stat) => stat.attemptedProblemCount),
-                      buckets.map((stat) => stat.solvedCount),
-                      [t("v.attempted"), t("v.solved")],
-                    )}
-                  />
-                  <dl className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-                    {buckets.map((stat) => (
-                      <div key={`${scale}:${stat.difficulty}`}>
-                        <dt>
-                          {t(`v02.scale.${scale}`)} ·{" "}
-                          {stat.difficulty ?? t("v02.scale.UNRATED")}
-                        </dt>
-                        <dd>
-                          {t("v.attempted")}: {stat.attemptedProblemCount} ·{" "}
-                          {t("v.solved")}: {stat.solvedCount}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                </section>
-              ),
-            )}
+            <div className="grid min-w-0 gap-6 xl:grid-cols-2">
+              {groupLearningDifficulty(profile.difficultyStats).map(
+                ({ scale, buckets }) => (
+                  <section
+                    key={scale}
+                    className="flex min-w-0 flex-col gap-3"
+                    aria-label={t(`v02.scale.${scale}`)}
+                  >
+                    <h3 className="font-medium">{t(`v02.scale.${scale}`)}</h3>
+                    <Chart
+                      palette="distribution"
+                      label={`${t("v02.difficulty")} · ${t(`v02.scale.${scale}`)}`}
+                      option={distributionOption(
+                        buckets.map((stat) =>
+                          stat.difficulty === null
+                            ? t("v02.scale.UNRATED")
+                            : String(stat.difficulty),
+                        ),
+                        buckets.map((stat) => stat.attemptedProblemCount),
+                        buckets.map((stat) => stat.solvedCount),
+                        [t("v.attempted"), t("v.solved")],
+                      )}
+                    />
+                    <dl className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                      {buckets.map((stat) => (
+                        <div key={`${scale}:${stat.difficulty}`}>
+                          <dt>
+                            {t(`v02.scale.${scale}`)} ·{" "}
+                            {stat.difficulty ?? t("v02.scale.UNRATED")}
+                          </dt>
+                          <dd>
+                            {t("v.attempted")}: {stat.attemptedProblemCount} ·{" "}
+                            {t("v.solved")}: {stat.solvedCount}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </section>
+                ),
+              )}
+            </div>
           </Panel>
           <div className="grid min-w-0 gap-4 lg:grid-cols-2">
             <Panel title="v.activityStats" variant="analysis">
               {activity.length ? (
                 <Chart
+                  palette="activity"
                   label={t("v.activityStats")}
                   option={trendOption(
                     activity.map((item) => item.date),
                     [
                       {
+                        id: "submissions",
                         name: t("v.submissions"),
                         values: activity.map((item) => item.submissionCount),
                       },
                       {
+                        id: "accepted",
                         name: t("v.accepted"),
                         values: activity.map(
                           (item) => item.acceptedSubmissionCount,
@@ -271,6 +291,7 @@ export function LearningProfileView({
               {profile.tagStats.length ? (
                 <>
                   <Chart
+                    palette="distribution"
                     label={t("v.tagStats")}
                     option={distributionOption(
                       chartTags.map((item) => item.tag),
@@ -298,6 +319,20 @@ export function LearningProfileView({
               )}
             </Panel>
           </div>
+          <MetricPanel
+            title="v02.sources"
+            metrics={[
+              [
+                "v02.platformSubmissions",
+                profile.sources.platformSubmissionCount,
+              ],
+              [
+                "v02.externalSubmissions",
+                profile.sources.externalSubmissionCount,
+              ],
+              ["v02.codeAnalyses", profile.sources.codeAnalysisCount],
+            ]}
+          />
           <Panel title="v02.snapshotMetadata" variant="supporting">
             <dl className="metric-details">
               <div>

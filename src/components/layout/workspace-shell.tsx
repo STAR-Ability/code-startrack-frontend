@@ -214,7 +214,7 @@ function WorkspaceSidebar() {
   return (
     <aside className="shrink-0">
       <Sidebar collapsible="icon" id="workspace-sidebar">
-        <SidebarHeader className="gap-3 p-3 pb-2">
+        <SidebarHeader className="gap-3 p-4 pb-3">
           <div className="sidebar-brand">
             <Brand />
           </div>
@@ -287,7 +287,7 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
         <WorkspaceSidebar />
         <div className="workspace-surface flex min-w-0 flex-1 flex-col">
           <MockNotice />
-          <header className="flex flex-wrap items-center justify-between gap-2 border-b bg-background/90 px-3 py-2 md:hidden">
+          <header className="workspace-mobile-header flex flex-wrap items-center justify-between gap-2 border-b bg-background/90 px-3 py-2 md:hidden">
             <div className="flex min-w-0 items-center gap-2">
               <SidebarTrigger aria-label={t("ui.mobileNavigation")} />
               <Brand compact />

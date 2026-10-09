@@ -15,7 +15,7 @@ const shells = [
     name: "authentication",
     route: "/register",
     selector: ".auth-shell",
-    layers: 1,
+    layers: 2,
   },
 ] as const;
 

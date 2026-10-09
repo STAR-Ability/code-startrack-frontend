@@ -281,6 +281,29 @@ describe("learning profile evidence", () => {
 });
 
 describe("recommendation training loop", () => {
+  it("previews the first supplied recommendation and links to the complete frozen batch", () => {
+    const batch = v02RecommendationBatch();
+    const supplied = {
+      ...batch,
+      recommendations: [
+        { ...batch.recommendations[0], rank: 2, reason: "Supplied preview" },
+        { ...batch.recommendations[1], rank: 1, reason: "Complete batch only" },
+      ],
+    };
+    render(wrap(<LearningRecommendationView batch={supplied} compact />));
+    expect(screen.getByText("Supplied preview")).toBeInTheDocument();
+    expect(screen.queryByText("Complete batch only")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(
+      "Problem 2",
+    );
+    expect(
+      screen.getByRole("link", { name: "View recommendation batch" }),
+    ).toHaveAttribute(
+      "href",
+      `/learning-recommendations?batchId=${batch.batchId}`,
+    );
+  });
+
   it("plans with the actual frozen batch and reference; external navigation sends no completion", async () => {
     const create = vi
       .spyOn(v02, "createTrainingRecord")

@@ -153,7 +153,10 @@ describe("chart data presentation", () => {
           expect(
             [...svg.querySelectorAll("text")].map((label) => label.textContent),
           ).toEqual(
-            width <= 360 ? labels.flatMap((name) => name.split(/\s+/)) : labels,
+            labels.flatMap((name, index) => [
+              ...(width <= 360 ? name.split(/\s+/) : [name]),
+              `${dimensions[index].score} / 100`,
+            ]),
           );
           for (const label of renderedLabels) {
             const bounds = label.getBoundingRect().clone();

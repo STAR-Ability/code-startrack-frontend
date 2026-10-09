@@ -47,7 +47,11 @@ export function ProfileShowcasePage() {
           <Chart
             label={t("v.activityStats")}
             option={trendOption(previewActivity.labels, [
-              { name: t("v.submissions"), values: previewActivity.values },
+              {
+                id: "submissions",
+                name: t("v.submissions"),
+                values: previewActivity.values,
+              },
             ])}
           />
           <SampleNotice />

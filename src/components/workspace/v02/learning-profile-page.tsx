@@ -105,8 +105,12 @@ export function LearningProfilePage() {
   const invalid = !!raw && !valid.success && !ignoreInvalid;
   return (
     <>
-      <p className="text-muted-foreground">{t("v02.learningNote")}</p>
-      <LearningProfileRebuild />
+      <div className="flex min-w-0 flex-col gap-4 rounded-2xl border border-surface-border bg-surface-supporting p-5 sm:p-6 xl:flex-row xl:items-start xl:justify-between">
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          {t("v02.learningNote")}
+        </p>
+        <LearningProfileRebuild />
+      </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <WindowSelector
           value={window}
@@ -154,7 +158,11 @@ export function LearningProfilePage() {
           )}
         </>
       )}
-      <Panel title="v02.history" description={t(`v.window.${window}`)}>
+      <Panel
+        title="v02.history"
+        description={t(`v.window.${window}`)}
+        variant="supporting"
+      >
         <QueryFeedback query={history} />
         {history.data?.data.length === 0 && (
           <EmptyState embedded title={t("v.noRecords")} />

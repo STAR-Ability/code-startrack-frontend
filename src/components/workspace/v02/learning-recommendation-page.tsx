@@ -18,7 +18,6 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -109,8 +108,13 @@ export function LearningRecommendationPage() {
   };
   return (
     <>
-      <Panel title="v02.generation" description={t("v02.generationNote")}>
-        <FieldGroup>
+      <Panel
+        title="v02.generation"
+        description={t("v02.generationNote")}
+        variant="supporting"
+        tone="info"
+      >
+        <FieldGroup className="grid min-w-0 gap-5 lg:grid-cols-2">
           <Field>
             <FieldLabel>{t("v02.problemSource")}</FieldLabel>
             <ToggleGroup
@@ -184,11 +188,11 @@ export function LearningRecommendationPage() {
               generation.mutate(body.data);
             })(event);
           }}
-          className="flex flex-col gap-4"
+          className="flex min-w-0 flex-col gap-4 border-t pt-4 sm:flex-row sm:items-end sm:justify-between"
         >
-          <FieldGroup>
+          <FieldGroup className="min-w-0 max-w-xs">
             <Field
-              className="max-w-xs"
+              className="min-w-0 max-w-xs"
               data-invalid={!!form.formState.errors.limit}
             >
               <FieldLabel htmlFor="learning-limit">{t("v02.limit")}</FieldLabel>
@@ -202,10 +206,9 @@ export function LearningRecommendationPage() {
                 {...form.register("limit", { valueAsNumber: true })}
               />
               <FieldError>{form.formState.errors.limit?.message}</FieldError>
-              <FieldDescription>{t("v02.generationNote")}</FieldDescription>
             </Field>
           </FieldGroup>
-          <div>
+          <div className="max-w-full shrink-0">
             <Button wrap type="submit" disabled={generation.blocked}>
               {generation.isPending && <Spinner aria-hidden="true" />}
               {t(generation.isPending ? "v02.generating" : "v02.generate")}
@@ -262,7 +265,7 @@ export function LearningRecommendationPage() {
           )}
         </>
       )}
-      <Panel title="v02.history">
+      <Panel title="v02.history" variant="supporting">
         <ToggleGroup
           aria-label={t("v02.history")}
           className="max-w-full flex-wrap"

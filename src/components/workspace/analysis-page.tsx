@@ -124,11 +124,13 @@ export function AnalysisPage({
                   <QueryFeedback query={history} />
                   {trend.length > 1 ? (
                     <Chart
+                      palette="ability"
                       label={t("v.trend")}
                       option={trendOption(
                         trend.map((item) => date(item.dataCutoffAt)),
                         [
                           {
+                            id: "overall-score",
                             name: t("v.overallScore"),
                             values: trend.map((item) => item.overallScore),
                           },

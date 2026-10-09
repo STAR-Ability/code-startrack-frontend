@@ -81,12 +81,26 @@ test("failed aggregate read leaves teamwork available and retries without per-ac
   );
 });
 
-test("desktop sidebar collapses to labeled icons, restores preference and supports keyboard", async ({
+test("responsive sidebar restores desktop preference and supports mobile keyboard dismissal", async ({
   page,
   isMobile,
 }) => {
-  test.skip(isMobile, "Mobile retains the compact bottom navigation");
   await page.goto("/dashboard");
+  if (isMobile) {
+    const trigger = page.getByRole("button", {
+      name: "移动端工作区导航",
+      exact: true,
+    });
+    await trigger.click();
+    const dialog = page.getByRole("dialog");
+    await expect(
+      dialog.getByRole("link", { name: "能力画像", exact: true }),
+    ).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(trigger).toBeFocused();
+    return;
+  }
   const sidebar = page.locator('[data-slot="sidebar"][data-state]');
   const gap = sidebar.locator('[data-slot="sidebar-gap"]');
   await expect(sidebar).toHaveAttribute("data-state", "expanded");

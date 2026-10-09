@@ -146,18 +146,21 @@ export function TeamAnalysisView({ analysis }: { analysis: TeamAnalysisDto }) {
                 analysis.activityStats.map((item) => item.date),
                 [
                   {
+                    id: "submissions",
                     name: t("v.submissions"),
                     values: analysis.activityStats.map(
                       (item) => item.submissionCount,
                     ),
                   },
                   {
+                    id: "accepted",
                     name: t("v.accepted"),
                     values: analysis.activityStats.map(
                       (item) => item.acceptedSubmissionCount,
                     ),
                   },
                   {
+                    id: "active-members",
                     name: t("v12.activeMembers"),
                     values: analysis.activityStats.map(
                       (item) => item.activeMemberCount,

@@ -217,7 +217,7 @@ test("delayed profile data plots exact six scores after window, locale and viewp
     // chart must not satisfy the same geometry check as a populated profile.
     await radar.locator("svg").evaluate((svg) => {
       for (const mark of svg.querySelectorAll(
-        'path[stroke-width="2"], path[fill-opacity], polygon, polyline',
+        'path[stroke-width="2.5"], path[fill^="url("], polygon, polyline',
       ))
         mark.remove();
     });

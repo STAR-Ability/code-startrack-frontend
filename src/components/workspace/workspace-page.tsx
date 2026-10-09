@@ -25,7 +25,7 @@ export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
   const id = useId();
   if (!context)
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b bg-background px-5 py-4 sm:px-8">
+      <div className="workspace-context-bar flex flex-wrap items-center justify-between gap-3 border-b bg-background px-5 py-4 sm:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           {session.isFetching ? (
             <Spinner aria-hidden="true" />
@@ -61,7 +61,7 @@ export function AccountSwitcher({ inline = false }: { inline?: boolean }) {
       className={
         inline
           ? "flex flex-wrap items-end gap-3"
-          : "flex flex-wrap items-end justify-between gap-3 border-b bg-background/80 px-5 py-3 sm:px-6"
+          : "workspace-context-bar flex flex-wrap items-end justify-between gap-3 border-b bg-background/80 px-5 py-3 sm:px-6"
       }
     >
       {!userOnly && (
@@ -133,14 +133,16 @@ export function WorkspacePage({
     <main
       id="main-content"
       tabIndex={-1}
-      className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-5 py-6 sm:px-6 lg:px-8"
+      className="workspace-main mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-5 py-6 sm:px-6 lg:px-8"
     >
       <header className="workspace-page-header flex flex-col gap-3">
-        <p className="text-xs tracking-widest text-muted-foreground">
+        <p className="workspace-eyebrow text-xs tracking-widest text-muted-foreground">
           codeStartrack · {t("dashboard.workspace")}
         </p>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight">{t(title)}</h1>
+          <h1 className="workspace-title text-3xl font-semibold tracking-tight">
+            {t(title)}
+          </h1>
           {context && (
             <RefreshButton
               key={`${context.user.publicId}:${context.selectedAccountId}:${pathname}`}

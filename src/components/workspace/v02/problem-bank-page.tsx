@@ -3,7 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
-import { SearchIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  BookOpenIcon,
+  SearchIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -76,13 +81,24 @@ export function ProblemBankPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <p className="max-w-3xl text-muted-foreground">
+      <p className="flex max-w-3xl items-start gap-3 text-sm leading-relaxed text-muted-foreground">
+        <BookOpenIcon
+          className="mt-0.5 size-5 shrink-0 text-info"
+          aria-hidden="true"
+        />
         {t("v02.problem.bankDescription")}
       </p>
       <form
         onSubmit={form.handleSubmit(applyFilters)}
-        className="min-w-0 rounded-xl border bg-card p-5"
+        className="min-w-0 rounded-2xl border border-surface-border bg-surface-supporting p-5 sm:p-6"
       >
+        <p className="mb-5 flex items-center gap-2 text-sm font-semibold">
+          <SlidersHorizontalIcon
+            className="size-4 text-info"
+            aria-hidden="true"
+          />
+          {t("v02.problem.filter")}
+        </p>
         <FieldGroup className="grid min-w-0 grid-cols-1 items-end gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Field className="min-w-0" data-invalid={filterError === "keyword"}>
             <FieldLabel
@@ -179,11 +195,11 @@ export function ProblemBankPage() {
       {query.data && (
         <>
           {query.data.data.length ? (
-            <ul className="flex min-w-0 flex-col divide-y rounded-xl border bg-card">
+            <ul className="flex min-w-0 flex-col divide-y divide-surface-border rounded-2xl border border-surface-border bg-surface-reading">
               {query.data.data.map((problem) => (
                 <li
                   key={`${problem.problemRef.problemId}:${problem.problemRef.problemVersionId}`}
-                  className="flex min-w-0 flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex min-w-0 flex-col gap-4 p-5 transition-colors hover:bg-info-soft/30 sm:flex-row sm:items-center sm:justify-between sm:p-6"
                 >
                   <div className="flex min-w-0 flex-col gap-2">
                     <Link
@@ -216,9 +232,11 @@ export function ProblemBankPage() {
                     className={buttonVariants({
                       variant: "outline",
                       wrap: true,
+                      className: "self-start sm:self-center",
                     })}
                   >
                     {t("v02.problem.open")}
+                    <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
                   </Link>
                 </li>
               ))}

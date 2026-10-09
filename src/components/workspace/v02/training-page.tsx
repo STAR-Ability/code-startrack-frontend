@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { ArrowRightIcon, CheckCheckIcon, ListFilterIcon } from "lucide-react";
 import { v02 } from "@/lib/api/v02";
 import {
   problemSources,
@@ -65,9 +66,13 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
   );
   return (
     <>
-      <Panel title="v02.training" description={t("v02.trainingFactsNote")}>
+      <Panel
+        title="v02.training"
+        description={t("v02.trainingFactsNote")}
+        tone="support"
+      >
         <form
-          className="min-w-0"
+          className="min-w-0 rounded-xl border border-surface-border bg-surface-supporting p-4 sm:p-5"
           onSubmit={form.handleSubmit((values) => {
             const parsed = trainingFiltersSchema.safeParse({
               source: values.source || undefined,
@@ -154,6 +159,7 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
             className="mt-4"
             disabled={query.isFetching}
           >
+            <ListFilterIcon data-icon="inline-start" aria-hidden="true" />
             {t("v02.applyFilters")}
           </Button>
         </form>
@@ -183,45 +189,55 @@ function TrainingList({ urlSource }: { urlSource: string | null }) {
 function TrainingRow({ record }: { record: TrainingRecord }) {
   const { t, locale } = useLocale();
   return (
-    <article className="flex min-w-0 flex-col gap-3 border-b pb-4 last:border-0">
+    <article className="flex min-w-0 flex-col gap-4 border-b py-5 last:border-0 last:pb-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <TrainingProblem problem={record.problem} />
         <Badge
           wrap
           variant={record.status === "COMPLETED" ? "success" : "secondary"}
         >
+          {record.status === "COMPLETED" && (
+            <CheckCheckIcon aria-hidden="true" />
+          )}
           {t(`v02.status.${record.status}`)}
         </Badge>
       </div>
-      <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      <div className="flex min-w-0 flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <dl className="flex min-w-0 flex-wrap gap-x-8 gap-y-3 text-sm">
+          <div>
+            <dt className="text-muted-foreground">{t("v02.attemptCount")}</dt>
+            <dd className="mt-1 font-mono text-xl font-semibold tabular-nums">
+              {record.attemptCount}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t("v02.acceptedCount")}</dt>
+            <dd className="mt-1 font-mono text-xl font-semibold tabular-nums text-success">
+              {record.acceptedSubmissionCount}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t("v02.lastSubmission")}</dt>
+            <dd className="mt-1 text-xs">
+              {record.lastSubmittedAt
+                ? formatTimestamp(record.lastSubmittedAt, locale)
+                : t("v.unavailable")}
+            </dd>
+          </div>
+        </dl>
         <div>
-          <dt className="text-muted-foreground">{t("v02.attemptCount")}</dt>
-          <dd>{record.attemptCount}</dd>
+          <Link
+            href={`/training/detail?trainingRecordId=${record.trainingRecordId}`}
+            className={buttonVariants({
+              variant: "outline",
+              size: "sm",
+              wrap: true,
+            })}
+          >
+            {t("v02.trainingDetail")}
+            <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+          </Link>
         </div>
-        <div>
-          <dt className="text-muted-foreground">{t("v02.acceptedCount")}</dt>
-          <dd>{record.acceptedSubmissionCount}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">{t("v02.lastSubmission")}</dt>
-          <dd>
-            {record.lastSubmittedAt
-              ? formatTimestamp(record.lastSubmittedAt, locale)
-              : t("v.unavailable")}
-          </dd>
-        </div>
-      </dl>
-      <div>
-        <Link
-          href={`/training/detail?trainingRecordId=${record.trainingRecordId}`}
-          className={buttonVariants({
-            variant: "outline",
-            size: "sm",
-            wrap: true,
-          })}
-        >
-          {t("v02.trainingDetail")}
-        </Link>
       </div>
     </article>
   );

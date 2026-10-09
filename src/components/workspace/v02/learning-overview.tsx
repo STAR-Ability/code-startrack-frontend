@@ -1,5 +1,12 @@
 "use client";
 import Link from "next/link";
+import {
+  ArrowRightIcon,
+  BookOpenIcon,
+  FingerprintIcon,
+  HistoryIcon,
+  RouteIcon,
+} from "lucide-react";
 import { v02 } from "@/lib/api/v02";
 import { useV02LatestProfile, useV02Query } from "@/lib/query/v02-hooks";
 import { useLocale } from "@/components/layout/locale-provider";
@@ -21,27 +28,43 @@ export function LearningOverview() {
       className="flex min-w-0 flex-col gap-4"
       aria-label={t("v02.learningOverview")}
     >
-      <p className="text-muted-foreground">{t("v02.learningNote")}</p>
-      <div className="flex flex-wrap gap-2">
-        <Link href="/problems" className={buttonVariants({ wrap: true })}>
+      <div className="flex min-w-0 flex-col gap-5 rounded-2xl border border-info/15 bg-surface-panel p-5 sm:p-6 xl:flex-row xl:items-center xl:justify-between">
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          {t("v02.learningNote")}
+        </p>
+        <Link
+          href="/problems"
+          className={buttonVariants({
+            wrap: true,
+            size: "lg",
+            className: "self-start shrink-0",
+          })}
+        >
+          <BookOpenIcon data-icon="inline-start" aria-hidden="true" />
           {t("v02.problemBank")}
+          <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
         </Link>
+      </div>
+      <div className="flex min-w-0 flex-wrap gap-2">
         <Link
           href="/training"
           className={buttonVariants({ variant: "outline", wrap: true })}
         >
+          <HistoryIcon data-icon="inline-start" aria-hidden="true" />
           {t("v02.training")}
         </Link>
         <Link
           href="/learning-profile"
           className={buttonVariants({ variant: "outline", wrap: true })}
         >
+          <FingerprintIcon data-icon="inline-start" aria-hidden="true" />
           {t("v02.openLearningProfile")}
         </Link>
         <Link
           href="/learning-recommendations"
           className={buttonVariants({ variant: "outline", wrap: true })}
         >
+          <RouteIcon data-icon="inline-start" aria-hidden="true" />
           {t("v02.openRecommendations")}
         </Link>
       </div>

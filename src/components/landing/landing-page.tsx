@@ -115,7 +115,7 @@ export function LandingPage() {
             <p className="text-xs text-muted-foreground">
               {t("landing.currentSource")}{" "}
               <span className="ml-2 font-medium text-foreground">
-                Codeforces
+                {t("landing.sources")}
               </span>
             </p>
             <div className="marquee-window min-w-0 flex-1" data-paused={paused}>
@@ -232,7 +232,7 @@ export function LandingPage() {
       </main>
       <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 border-t px-5 py-6 text-xs text-muted-foreground sm:px-8">
         <p>{t("landing.footer")}</p>
-        <p>V0.11 · {t("demo.label")}</p>
+        <p>{t("demo.label")}</p>
       </footer>
     </>
   );

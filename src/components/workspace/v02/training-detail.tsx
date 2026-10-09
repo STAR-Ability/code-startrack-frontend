@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ArrowLeftIcon, CheckCheckIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { v02 } from "@/lib/api/v02";
 import { uuidSchema } from "@/lib/api/schemas";
@@ -32,6 +33,7 @@ export function TrainingDetail() {
           href="/training"
           className={buttonVariants({ variant: "outline", wrap: true })}
         >
+          <ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
           {t("v02.backTraining")}
         </Link>
       </div>
@@ -43,8 +45,10 @@ export function TrainingDetail() {
       {record && (
         <>
           <Panel
-            title="v02.trainingFacts"
+            title="v02.trainingDetail"
             description={t("v02.trainingFactsNote")}
+            variant="metric"
+            tone="support"
           >
             <TrainingProblem problem={record.problem} />
             <div>
@@ -53,6 +57,9 @@ export function TrainingDetail() {
                   record.status === "COMPLETED" ? "success" : "secondary"
                 }
               >
+                {record.status === "COMPLETED" && (
+                  <CheckCheckIcon aria-hidden="true" />
+                )}
                 {t(`v02.status.${record.status}`)}
               </Badge>
             </div>
@@ -107,49 +114,51 @@ export function TrainingDetail() {
               ],
             ]}
           />
-          <Panel title="v02.reference" variant="supporting">
-            <dl className="metric-details">
-              <div>
-                <dt>{t("v02.trainingId")}</dt>
-                <dd className="break-all">{record.trainingRecordId}</dd>
-              </div>
-              <div>
-                <dt>{t("v02.problemSource")}</dt>
-                <dd>{t(`v02.source.${record.problem.problemRef.source}`)}</dd>
-              </div>
-              <div>
-                <dt>{t("v02.platform")}</dt>
-                <dd>{record.problem.problemRef.platform}</dd>
-              </div>
-              <div>
-                <dt>{t("v02.problemId")}</dt>
-                <dd>{record.problem.problemRef.problemId}</dd>
-              </div>
-              <div>
-                <dt>{t("v02.problemVersion")}</dt>
-                <dd className="break-all">
-                  {record.problem.problemRef.problemVersionId ??
-                    t("v.unavailable")}
-                </dd>
-              </div>
-            </dl>
-          </Panel>
-          <Panel
-            title="v02.attribution"
-            variant="supporting"
-            description={t("v02.attributionNote")}
-          >
-            {record.recommendationBatchId ? (
-              <Link
-                href={`/learning-recommendations?batchId=${record.recommendationBatchId}`}
-                className="auth-text-link break-all"
-              >
-                {record.recommendationBatchId}
-              </Link>
-            ) : (
-              <p>{t("v02.attributionNone")}</p>
-            )}
-          </Panel>
+          <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+            <Panel title="v02.reference" variant="supporting">
+              <dl className="metric-details">
+                <div>
+                  <dt>{t("v02.trainingId")}</dt>
+                  <dd className="break-all">{record.trainingRecordId}</dd>
+                </div>
+                <div>
+                  <dt>{t("v02.problemSource")}</dt>
+                  <dd>{t(`v02.source.${record.problem.problemRef.source}`)}</dd>
+                </div>
+                <div>
+                  <dt>{t("v02.platform")}</dt>
+                  <dd>{record.problem.problemRef.platform}</dd>
+                </div>
+                <div>
+                  <dt>{t("v02.problemId")}</dt>
+                  <dd>{record.problem.problemRef.problemId}</dd>
+                </div>
+                <div>
+                  <dt>{t("v02.problemVersion")}</dt>
+                  <dd className="break-all">
+                    {record.problem.problemRef.problemVersionId ??
+                      t("v.unavailable")}
+                  </dd>
+                </div>
+              </dl>
+            </Panel>
+            <Panel
+              title="v02.attribution"
+              variant="supporting"
+              description={t("v02.attributionNote")}
+            >
+              {record.recommendationBatchId ? (
+                <Link
+                  href={`/learning-recommendations?batchId=${record.recommendationBatchId}`}
+                  className="auth-text-link break-all"
+                >
+                  {record.recommendationBatchId}
+                </Link>
+              ) : (
+                <p>{t("v02.attributionNone")}</p>
+              )}
+            </Panel>
+          </div>
         </>
       )}
     </>

@@ -1,6 +1,6 @@
 /** CSS owns the colors; ECharts receives resolved values for its color parsing. */
 export const chartPalettes = {
-  core: ["--info", "--muted-foreground", "--support", "--insight"],
+  core: ["--info", "--insight", "--support", "--success", "--warning"],
   activity: ["--info", "--success", "--warning"],
   teamActivity: ["--info", "--success", "--support"],
   distribution: ["--muted-foreground", "--success"],
@@ -32,7 +32,11 @@ export function chartTheme(styles: CSSStyleDeclaration, palette: ChartPalette) {
   return {
     color: chartPalettes[palette].map(token),
     backgroundColor: "transparent",
-    textStyle: { color: foreground, fontFamily: styles.fontFamily },
+    textStyle: {
+      color: foreground,
+      fontFamily: styles.fontFamily,
+      fontSize: 12,
+    },
     legend: {
       textStyle: { color: token("--foreground"), fontSize: 11 },
       pageTextStyle: { color: foreground },
@@ -41,19 +45,19 @@ export function chartTheme(styles: CSSStyleDeclaration, palette: ChartPalette) {
     },
     tooltip: {
       confine: true,
-      showDelay: 60,
+      showDelay: 40,
       hideDelay: 80,
       transitionDuration: 0.12,
       backgroundColor: token("--popover"),
       borderColor: border,
       borderWidth: 1,
-      padding: [10, 12],
-      borderRadius: 8,
+      padding: [12, 14],
+      borderRadius: 10,
       textStyle: { color: token("--popover-foreground"), fontSize: 12 },
     },
     axisPointer: {
       lineStyle: { color: border, type: "dashed" },
-      shadowStyle: { color: token("--info-soft"), opacity: 0.55 },
+      shadowStyle: { color: token("--info-soft"), opacity: 0.65 },
       label: { show: false },
     },
     categoryAxis: {
@@ -63,13 +67,28 @@ export function chartTheme(styles: CSSStyleDeclaration, palette: ChartPalette) {
     valueAxis: {
       axisLine: { show: false },
       axisLabel: { color: foreground },
-      splitLine: { lineStyle: { color: border, opacity: 0.75 } },
+      splitLine: { lineStyle: { color: border, opacity: 0.6, type: "dashed" } },
     },
     radar: {
-      axisName: { color: token("--foreground") },
+      axisName: {
+        color: token("--foreground"),
+        rich: {
+          score: {
+            color: token("--insight"),
+            fontSize: 11,
+            fontWeight: 600,
+            lineHeight: 20,
+          },
+        },
+      },
       axisLine: { lineStyle: { color: border, opacity: 0.7 } },
       splitLine: { lineStyle: { color: border, opacity: 0.85 } },
-      splitArea: { areaStyle: { color: ["transparent", token("--muted")] } },
+      splitArea: {
+        areaStyle: {
+          color: ["transparent", token("--insight-soft")],
+          opacity: 0.5,
+        },
+      },
     },
   };
 }

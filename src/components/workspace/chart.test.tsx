@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import {
   afterEach,
   beforeAll,
@@ -20,6 +20,17 @@ const echarts = vi.hoisted(() => ({
   dispose: vi.fn(),
 }));
 vi.mock("echarts", () => ({ init: echarts.init }));
+const engineLoader = vi.hoisted(() => ({ load: vi.fn() }));
+vi.mock("@/lib/charts/engine", () => ({ loadChartEngine: engineLoader.load }));
+vi.mock("@/components/layout/locale-provider", async () => {
+  const { translate } = await import("@/lib/i18n/locale");
+  return {
+    useLocale: () => ({
+      locale: "en",
+      t: (key: Parameters<typeof translate>[1]) => translate("en", key),
+    }),
+  };
+});
 
 let onResize: ResizeObserverCallback;
 let onTheme: MutationCallback;
@@ -41,6 +52,7 @@ beforeAll(async () => {
 beforeEach(() => {
   vi.clearAllMocks();
   echarts.init.mockReturnValue(echarts);
+  engineLoader.load.mockImplementation(() => import("echarts"));
   disconnectResize = vi.fn();
   disconnectTheme = vi.fn();
   motion = {
@@ -124,6 +136,244 @@ async function useRealEcharts() {
 }
 
 describe("ECharts lifecycle", () => {
+  it("keeps actual line strokes, area fills and native legend colors aligned through reorder, removal and palette changes", async () => {
+    const actual = await useRealEcharts();
+    const a = { id: "a", name: "Account A", values: [3, 5] };
+    const b = { id: "b", name: "Account B", values: [6, 4] };
+    const option = (series: (typeof a)[]) =>
+      trendOption(["Mon", "Tue"], series);
+    const { rerender, unmount } = render(
+      <Chart label="Ratings" palette="activity" option={option([a, b])} />,
+    );
+    try {
+      await loadChart();
+      rerender(
+        <Chart label="Ratings" palette="activity" option={option([b, a])} />,
+      );
+      expect(actual.current().getOption()).toMatchObject({
+        series: [
+          { id: "a", lineStyle: { color: "#315fd3" } },
+          {
+            id: "b",
+            lineStyle: { color: "#187347" },
+            areaStyle: {
+              color: {
+                colorStops: [
+                  { color: "rgba(24,115,71,0.22)" },
+                  { color: "rgba(24,115,71,0.015)" },
+                ],
+              },
+            },
+          },
+        ],
+      });
+      expect(
+        screen
+          .getByRole("button", { name: "Account B" })
+          .style.getPropertyValue("--legend-color"),
+      ).toBe("var(--success)");
+      expect(actual.current().renderToSVGString()).toContain(
+        'stroke="#187347"',
+      );
+      rerender(
+        <Chart label="Ratings" palette="activity" option={option([b])} />,
+      );
+      onTheme([], {} as MutationObserver);
+      expect(actual.current().getOption()).toMatchObject({
+        series: [{ id: "b", lineStyle: { color: "#187347" } }],
+      });
+      rerender(
+        <Chart label="Ratings" palette="core" option={option([b, a])} />,
+      );
+      expect(actual.current().getOption()).toMatchObject({
+        series: [
+          { id: "b", lineStyle: { color: "#7156ad" } },
+          { id: "a", lineStyle: { color: "#315fd3" } },
+        ],
+      });
+      expect(
+        screen
+          .getByRole("button", { name: "Account B" })
+          .style.getPropertyValue("--legend-color"),
+      ).toBe("var(--insight)");
+    } finally {
+      unmount();
+      actual.restore();
+    }
+  });
+
+  it("keeps hidden semantic metrics through translated names with actual ECharts", async () => {
+    const actual = await useRealEcharts();
+    const option = (locale: "en" | "zh") =>
+      trendOption(
+        ["Mon"],
+        [
+          {
+            id: "submissions",
+            name: locale === "en" ? "Submissions" : "提交次数",
+            values: [4],
+          },
+          {
+            id: "solved",
+            name: locale === "en" ? "Solved" : "通过题数",
+            values: [2],
+          },
+        ],
+      );
+    const { rerender, unmount } = render(
+      <Chart label="Training" palette="activity" option={option("en")} />,
+    );
+    try {
+      await loadChart();
+      fireEvent.click(screen.getByRole("button", { name: "Solved" }));
+      rerender(<Chart label="训练" palette="activity" option={option("zh")} />);
+      onTheme([], {} as MutationObserver);
+      expect(screen.getByRole("button", { name: "通过题数" })).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+      expect(actual.current().getOption()).toMatchObject({
+        legend: [{ selected: { 提交次数: true, 通过题数: false } }],
+        series: [
+          { id: "submissions", data: [4] },
+          { id: "solved", data: [2] },
+        ],
+      });
+    } finally {
+      unmount();
+      actual.restore();
+    }
+  });
+
+  it("handles a failed lazy engine import and retries without an unhandled rejection or leaked instance", async () => {
+    engineLoader.load.mockRejectedValueOnce(
+      new Error("Synthetic chunk failure"),
+    );
+    const { unmount } = render(
+      <Chart
+        label="Training"
+        option={trendOption(["Mon"], [{ name: "Solved", values: [2] }])}
+      />,
+    );
+    await loadChart();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The chart is unavailable",
+    );
+    expect(echarts.init).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await loadChart();
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByRole("img", { name: "Training" })).toHaveAttribute(
+      "aria-busy",
+      "false",
+    );
+    expect(echarts.init).toHaveBeenCalledOnce();
+    unmount();
+    expect(echarts.dispose).toHaveBeenCalledOnce();
+  });
+
+  it("disposes a chart whose first frame fails before offering retry", async () => {
+    echarts.setOption.mockImplementationOnce(() => {
+      throw new Error("Synthetic first-frame failure");
+    });
+    const { unmount } = render(
+      <Chart label="Training" option={{ series: [] }} />,
+    );
+    await loadChart();
+    expect(screen.getByRole("alert")).toBeVisible();
+    expect(echarts.dispose).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    await loadChart();
+    expect(echarts.init).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("alert")).toBeNull();
+    unmount();
+    expect(echarts.dispose).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps hidden accounts attached to their name when unnamed-id series are reordered", async () => {
+    const accountA = { type: "line" as const, name: "account-a", data: [1200] };
+    const accountB = { type: "line" as const, name: "account-b", data: [1600] };
+    const { rerender } = render(
+      <Chart
+        label="Ratings"
+        option={{ legend: {}, series: [accountA, accountB] }}
+      />,
+    );
+    await loadChart();
+    fireEvent.click(screen.getByRole("button", { name: "account-a" }));
+    rerender(
+      <Chart
+        label="Ratings"
+        option={{ legend: {}, series: [accountB, accountA] }}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "account-a" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.getByRole("button", { name: "account-b" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(echarts.setOption).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        legend: expect.objectContaining({
+          selected: { "account-a": false, "account-b": true },
+        }),
+      }),
+      expect.any(Object),
+    );
+  });
+
+  it("exposes native pressed-state legend buttons and preserves selected series through data, theme and motion changes", async () => {
+    const actual = await useRealEcharts();
+    const option = (value: number) =>
+      trendOption(
+        ["Monday"],
+        [
+          { name: "Submissions", values: [value] },
+          { name: "Solved", values: [2] },
+        ],
+      );
+    const { rerender, unmount } = render(
+      <Chart label="Training" palette="activity" option={option(4)} />,
+    );
+    try {
+      await loadChart();
+      const solved = screen.getByRole("button", {
+        name: "Solved",
+        pressed: true,
+      });
+      fireEvent.click(solved);
+      expect(solved).toHaveAttribute("aria-pressed", "false");
+      expect(actual.current().getOption()).toMatchObject({
+        legend: [
+          { show: false, selected: { Submissions: true, Solved: false } },
+        ],
+      });
+      rerender(
+        <Chart label="Training" palette="activity" option={option(9)} />,
+      );
+      onTheme([], {} as MutationObserver);
+      motion.matches = true;
+      onMotion?.();
+      expect(actual.current().getOption()).toMatchObject({
+        animation: false,
+        legend: [{ selected: { Submissions: true, Solved: false } }],
+        series: [{ data: [9] }, { data: [2] }],
+      });
+      fireEvent.click(solved);
+      expect(solved).toHaveAttribute("aria-pressed", "true");
+      expect(actual.current().getOption()).toMatchObject({
+        legend: [{ selected: { Solved: true } }],
+      });
+      expect(echarts.init).toHaveBeenCalledOnce();
+    } finally {
+      unmount();
+      actual.restore();
+    }
+  });
+
   it("updates data, accessible labels and palette on the same SVG instance", async () => {
     const { rerender, unmount } = render(
       <Chart

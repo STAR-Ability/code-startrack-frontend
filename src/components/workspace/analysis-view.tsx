@@ -324,14 +324,17 @@ export function AnalysisStatistics({
                     daily.map((item) => item.date),
                     [
                       {
+                        id: "submissions",
                         name: t("v.submissions"),
                         values: daily.map((item) => item.submissionCount),
                       },
                       {
+                        id: "solved",
                         name: t("v.solved"),
                         values: daily.map((item) => item.solvedCount),
                       },
                       {
+                        id: "pending",
                         name: t("v.pendingCount"),
                         values: daily.map(
                           (item) => item.pendingSubmissionCount,

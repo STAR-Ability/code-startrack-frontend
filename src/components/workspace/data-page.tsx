@@ -439,6 +439,7 @@ function Ratings() {
                 chronological.map((item) => date(item.occurredAt)),
                 [
                   {
+                    id: "rating",
                     name: t("v.rating"),
                     values: chronological.map((item) => item.newRating),
                   },

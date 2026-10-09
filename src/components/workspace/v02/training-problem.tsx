@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ExternalLinkIcon } from "lucide-react";
+import { ExternalLinkIcon, PlusIcon } from "lucide-react";
 import { v02 } from "@/lib/api/v02";
 import type {
   CreateTrainingRecordInput,
@@ -149,10 +149,14 @@ export function TrainingPlanAction({
       ) : (
         <Button
           wrap
+          className="self-start"
           disabled={mutation.blocked}
           onClick={() => mutation.mutate(body)}
         >
           {mutation.isPending && <Spinner aria-hidden="true" />}
+          {!mutation.isPending && (
+            <PlusIcon data-icon="inline-start" aria-hidden="true" />
+          )}
           {t("v02.plan")}
         </Button>
       )}

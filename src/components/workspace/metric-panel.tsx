@@ -71,7 +71,7 @@ export function MetricPanel({
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <dl className="metric-strip">
+        <dl className="metric-strip" data-metric-count={metrics.length}>
           {metrics.map(([label, v]) => (
             <div
               key={label}

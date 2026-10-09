@@ -29,7 +29,7 @@ export const zhCN = {
   "nav.start": "开始训练",
   "auth.login": "登录",
   "auth.title": "登录你的训练空间",
-  "auth.description": "使用平台账号登录，管理自己的 Codeforces 训练数据。",
+  "auth.description": "登录平台，查看做题记录、学习画像与平台及外部题目推荐。",
   "auth.unavailable": "Session 安全登录",
   "auth.close": "暂不登录",
   "auth.dismiss": "关闭弹窗",
@@ -37,10 +37,10 @@ export const zhCN = {
   "landing.title": "你的每一道代码，",
   "landing.titleEnd": "都留下成长轨迹。",
   "landing.description":
-    "连接你的 Codeforces 账号，查看训练数据、六维能力与个性化推荐。让每一个账号的练习，连成清晰的成长轨迹。",
+    "练习平台题目，也可连接 Codeforces 账号。查看训练记录、学习画像与题目推荐，让每一次练习连成清晰的成长轨迹。",
   "landing.preview": "查看产品演示",
   "landing.sample": "交互示意 · 非真实学习者数据",
-  "landing.trust": "多 CF 账号 · 独立画像 · 下一题推荐",
+  "landing.trust": "平台做题 · 多 CF 账号 · 学习画像与推荐",
   "landing.previewProfile": "练习，正在积累。",
   "landing.previewReason": "从基础到进阶，为下一次思考留一点空间。",
   "landing.next": "下一道，值得一试",
@@ -49,26 +49,26 @@ export const zhCN = {
   "landing.flowTitle": "把练习串起来，让下一步更清晰。",
   "landing.flowDescription": "一个学习者，一条持续生长的训练轨迹。",
   "flow.data": "训练数据",
-  "flow.dataNote": "从 Codeforces 开始，保留练习的每一份积累。",
-  "flow.unify": "账号数据",
-  "flow.unifyNote": "后端整理公开记录，每个绑定账号独立保存与分析。",
+  "flow.dataNote": "从平台提交和公开 Codeforces 记录中，保留练习的积累。",
+  "flow.unify": "学习记录",
+  "flow.unifyNote": "学习画像结合平台与外部训练，账号视图保留各自的来源。",
   "flow.profile": "训练画像",
   "flow.profileNote": "用通过题数、难度与近期提交看见训练状态。",
   "flow.recommend": "题目推荐",
   "flow.recommendNote": "按难度匹配、弱项训练或综合模式生成推荐。",
   "flow.practice": "继续训练",
-  "flow.practiceNote": "前往题目来源平台，开启下一次练习。",
+  "flow.practiceNote": "在平台题库做题，或前往外部题目来源继续练习。",
   "landing.featuresTitle": "少一点分散，多一点方向。",
   "landing.featuresDescription": "围绕编程训练本身，构建清晰、连贯的学习体验。",
   "feature.profile": "一个画像，看见你的积累",
   "feature.profileNote":
-    "每个 Codeforces 账号有独立的六维能力画像与四窗口分析。",
+    "用四个时间窗口查看综合学习画像；每个 Codeforces 账号也保留独立分析。",
   "feature.recommend": "下一题，有迹可循",
   "feature.recommendNote":
     "题目、标签、来源与推荐说明，一眼读懂。历史批次保留原始排名。",
-  "feature.sources": "多个账号，各自的轨迹",
+  "feature.sources": "不同来源，清晰的轨迹",
   "feature.sourcesNote":
-    "支持多个 Codeforces 账号，切换查看各自的数据与同步进度。",
+    "平台题目与外部训练保留来源；多个 Codeforces 账号各自显示数据与同步进度。",
   "feature.activity": "每一次提交，都有分量",
   "feature.activityNote":
     "查看每日提交、等待判题与窗口内通过题数，了解训练节奏。",
@@ -81,9 +81,10 @@ export const zhCN = {
   "landing.today": "下一步",
   "landing.stackTitle": "留一点挑战给明天。",
   "landing.stackNote": "推荐体验示意。登录后可以生成、切换模式并查看推荐历史。",
-  "landing.currentSource": "当前数据源",
+  "landing.currentSource": "训练来源",
+  "landing.sources": "平台题库 · Codeforces",
   "landing.futureSources": "更多连接器 · 未来开放",
-  "landing.unified": "按账号独立分析",
+  "landing.unified": "综合学习画像 · 来源清晰可见",
   "landing.ctaTitle": "下一道题，不再只是随机开始。",
   "landing.ctaNote": "从一份训练画像开始，找到属于自己的练习节奏。",
   "landing.viewProfile": "查看个人画像",
@@ -200,7 +201,8 @@ export const en = {
   "nav.start": "Start practicing",
   "auth.login": "Log in",
   "auth.title": "Log in to your training workspace",
-  "auth.description": "Log in to manage your own Codeforces practice data.",
+  "auth.description":
+    "Sign in to review practice records, learning profiles and platform or external recommendations.",
   "auth.unavailable": "Session sign-in",
   "auth.close": "Maybe later",
   "auth.dismiss": "Close dialog",
@@ -208,11 +210,11 @@ export const en = {
   "landing.title": "Every line of code,",
   "landing.titleEnd": "a step in your story.",
   "landing.description":
-    "Connect your Codeforces accounts to explore practice data, six-dimensional profiles and recommendations. Follow each account’s own progress.",
+    "Practice platform problems and connect Codeforces accounts. Explore your records, learning profile and recommendations, and follow your progress.",
   "landing.preview": "Explore the preview",
   "landing.sample": "Interactive preview · illustrative data",
   "landing.trust":
-    "Multiple CF accounts · Separate profiles · Your next problem",
+    "Platform practice · Multiple CF accounts · Learning profiles",
   "landing.previewProfile": "Practice adds up.",
   "landing.previewReason":
     "A little room for the next challenge, from fundamentals to new ideas.",
@@ -222,10 +224,11 @@ export const en = {
   "landing.flowTitle": "Connect your practice. Find your next step.",
   "landing.flowDescription": "One learner. One evolving practice journey.",
   "flow.data": "Practice data",
-  "flow.dataNote": "Starting with Codeforces and the practice you already do.",
-  "flow.unify": "Account data",
+  "flow.dataNote":
+    "Keep the evidence from platform submissions and public Codeforces records.",
+  "flow.unify": "Learning records",
   "flow.unifyNote":
-    "The backend organizes public records independently for each account binding.",
+    "Learning profiles combine platform and external practice; account views retain their own sources.",
   "flow.profile": "Your profile",
   "flow.profileNote":
     "Solved problems, difficulty and recent submission counts.",
@@ -234,19 +237,19 @@ export const en = {
     "Generate recommendations by level, weakness or hybrid mode.",
   "flow.practice": "Keep practicing",
   "flow.practiceNote":
-    "Open the source platform for your next practice session.",
+    "Practice in the platform bank or open an external problem at its source.",
   "landing.featuresTitle": "Less scattered. More focused.",
   "landing.featuresDescription":
     "A clear, connected experience built around programming practice.",
   "feature.profile": "One profile. A clearer picture.",
   "feature.profileNote":
-    "Each Codeforces account has its own six-dimensional profile and four analysis windows.",
+    "Explore combined learning profiles across four time windows, with separate analysis for each Codeforces account.",
   "feature.recommend": "A direction for your next problem",
   "feature.recommendNote":
     "Read the problem, tags, source and reason together. Historical batches retain their original ranking.",
-  "feature.sources": "Multiple accounts, separate journeys",
+  "feature.sources": "Different sources, a clearer journey",
   "feature.sourcesNote":
-    "Connect multiple Codeforces accounts and switch between their data and sync progress.",
+    "Platform and external practice retain their sources. Each Codeforces account keeps its own data and sync progress.",
   "feature.activity": "Every attempt counts",
   "feature.activityNote":
     "Explore daily submissions, pending judgements and problems solved within each window.",
@@ -261,9 +264,10 @@ export const en = {
   "landing.stackTitle": "Leave a little challenge for tomorrow.",
   "landing.stackNote":
     "An illustrative recommendation preview. Log in to generate, switch modes and browse history.",
-  "landing.currentSource": "Current data source",
+  "landing.currentSource": "Practice sources",
+  "landing.sources": "Platform bank · Codeforces",
   "landing.futureSources": "More connectors · coming later",
-  "landing.unified": "Independent analysis per account",
+  "landing.unified": "Combined learning profiles · Clear sources",
   "landing.ctaTitle": "Give your next problem a direction.",
   "landing.ctaNote":
     "Start with your training profile. Find your own practice rhythm.",

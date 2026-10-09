@@ -13,13 +13,16 @@ export function Brand({ compact = false }: { compact?: boolean }) {
       className="brand-link flex min-w-0 items-center gap-3 rounded-lg"
       aria-label={t("nav.home")}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+      <span className="brand-mark flex size-10 shrink-0 items-center justify-center rounded-xl bg-info text-primary-foreground">
         <OrbitIcon className="size-6" aria-hidden="true" />
       </span>
       {!compact && (
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="font-semibold tracking-tight">码练星轨</span>
-          <span className="font-mono text-xs wrap-anywhere text-muted-foreground">
+          <span
+            translate="no"
+            className="font-mono text-xs wrap-anywhere text-muted-foreground"
+          >
             codeStartrack
           </span>
         </span>

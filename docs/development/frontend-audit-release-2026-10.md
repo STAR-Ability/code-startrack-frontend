@@ -43,9 +43,9 @@ production deployment has occurred in this task.
 
 ## Verification ledger
 
-This ledger is the documentation snapshot after the local gates completed and
-source/tests were pushed through `c5c339d`. Documentation is delivered in a
-subsequent commit. Fresh CI results for the final dev head are recorded in
+This ledger records the local gates and the subsequent CI follow-up. The first
+pushed dev candidate was `bf528dd`; its quality CI exposed the date-locator
+collision described below. Fresh CI results for the corrected final dev head are recorded in
 [PR #42](https://github.com/STAR-Ability/code-startrack-frontend/pull/42); initial
 CI runs are not acceptance of this candidate.
 
@@ -58,7 +58,7 @@ CI runs are not acceptance of this candidate.
 | Production export                  | PASS: final stable-layout production export (37 product routes; 40 generated static pages)                                                                                               |
 | Storybook build                    | PASS against final source                                                                                                                                                                |
 | Storybook browser suite            | PASS: all 486 tests against rebuilt stable-layout source; desktop/mobile keyboard story also passes (2 tests); earlier failure evidence retained                                         |
-| Full E2E                           | PASS: all 334 tests against the final stable-layout export, exit code 0, no skipped tests; original failures and canceled replay retained                                                |
+| Full E2E                           | PASS: full local 334-test application replay and 6 focused tests after the CI date-locator correction; fresh complete corrected-head CI pending                                          |
 | Rendered route matrix              | PASS: 222 route observations, 24 member-view checks and 54 final affected-route recaptures with 174 SVGs, in two locales and desktop/tablet/mobile                                       |
 | Responsive chart review            | PASS: 72 shared visual checks, 13 chart cases and four final locale/theme/reduced-motion/native-keyboard interaction cases                                                               |
 | Keyboard/source review             | PASS in both locales including 320px at 200% text; no external requests, business writes or console errors                                                                               |
@@ -69,7 +69,7 @@ CI runs are not acceptance of this candidate.
 | Real authenticated roles/workflows | BLOCKED: no designated existing credentials or session supplied                                                                                                                          |
 | Real browser authentication origin | BLOCKED: local preview Origin is rejected by the deployed backend; do not infer browser CAPTCHA success from a Node request without Origin                                               |
 | V0.2 real API success              | UNVERIFIED: additive endpoint families absent from advertised live OpenAPI; anonymous 401s do not prove route support                                                                    |
-| Git/PR/CI                          | Source/test commits df06272, 6777343, 765b55e and c5c339d pushed to dev; PR #42 is draft while real release gates remain unmet; fresh final-head CI pending at this snapshot             |
+| Git/PR/CI                          | Initial candidate bf528dd pushed; PR #42 is draft; first quality CI FAIL (332 passed / 2 date-locator failures), corrected-head CI pending; Storybook CI PASS                            |
 | Main merge/image publication       | NOT RUN; release gates remain unmet                                                                                                                                                      |
 | server2 deployment                 | BLOCKED: no existing frontend deployment or backend route; requested topology clarification pending                                                                                      |
 
@@ -124,6 +124,40 @@ replay log for the deliberately stopped earlier export is
 `test-results/e2e-layout-race/`. No test was skipped or disabled. The locator
 corrections preserve the original assertions; the separate stable-layout fix
 changes one production input, `chart.tsx`.
+
+## CI date-locator follow-up
+
+Both fresh `bf528dd` CI runs passed Storybook, but quality failed two bilingual
+desktop E2E checks: 332 passed and 2 failed, including both configured retries.
+The failures were in the final collapsed-date assertion of
+`evidence-clarity.spec.ts`. The card-wide text matcher resolved to a visible SVG
+axis label and the disclosure's native `<time>` during its closing transition.
+The original local full run did not expose this ambiguous matcher.
+
+The assertion now targets the existing definition list's dated `<time>`. It
+retains negative visibility, both keyboard Enter actions, every supplied-value
+assertion and the original timeout; no readiness wait or application change was
+introduced. The complete affected file passes all 6 desktop/mobile tests.
+Production inputs and the accepted Docker image remain unchanged. A fresh full
+334-test CI run is required for the corrected head.
+
+Independent ready-engine browser checks also pass both locales at 1440px. The
+actually drawn axis date (`2026-09-03`) has two exact card matches while open:
+SVG text and native definition-list time. After Enter closes the disclosure,
+that native time and the first supplied fixture date (`2026-10-01`) are unmounted,
+while the SVG tick stays visible. The supplied row retains 5 submissions,
+2 solved and 1 pending. Axis ticks can omit the first raw date, so this check
+records those two dates separately rather than claiming an identical tick set.
+No browser error, failed API request or business write occurs. Artifacts are in
+`test-results/route-design-audit/ready-disclosure-*`, with combined status in
+`test-results/route-design-audit/ready-date-disclosure.json`.
+
+Both failed CI logs and all downloaded traces remain under ignored
+`test-results/final-ci-pr-failed.log`, `test-results/final-ci-push-failed.log`
+and `test-results/ci-initial-failures/`. The focused successful replay is
+`test-results/ci-date-selector-replay.log`. Failed runs are
+[PR 37876381817](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37876381817)
+and [push 37876377660](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37876377660).
 
 ## Release boundaries
 

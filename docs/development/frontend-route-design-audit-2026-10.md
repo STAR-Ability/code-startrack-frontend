@@ -114,6 +114,7 @@ The default STUDENT preset is restored after the review.
 - PASS: 24 additional valid member-view observations across four views, two locales and three widths. Basic training, ability and report-list views rendered; detailed submissions correctly showed privacy denial in the supplied fixture.
 - PASS: 54 observations of the final rebuilt production export across nine chart states, both locales and 1440, 768 and 390 pixels. All 174 chart SVGs rendered, with no pending data, console/page errors, document/control overflow, external requests or API writes.
 - PASS: eight production cases on source `765b55e` at 1440, 768, 390 and 320 pixels in both locales, with the actual lazy ECharts package chunk held until after a real Personal data mode interaction. All 24 chart frames and 56 native legend buttons remained mounted with exactly 0px measured geometry change.
+- PASS: two independent ready-engine dashboard disclosure checks at 1440 pixels in both locales. Enter opened the native date/value list and closed it again; native dates were unmounted while the fully rendered SVG axis remained visible.
 
 The final targeted states include the public profile example, expanded personal
 profile evidence, account-data statistics and Ratings, selected-account analysis,
@@ -149,6 +150,26 @@ The reproducible focused script is
 `test-results/route-design-audit/loading-geometry.mjs`; its eight state/network JSON
 files, combined `loading-geometry.json`, and 24 full-page pending, pending-selected
 and ready screenshots remain in the same ignored artifact directory.
+
+The release follow-up date check used an owned offline preview of the unchanged
+application export. Its actual visible axis date was `2026-09-03`, a documented
+zero-filled calendar day. That date had two exact card-wide matches when the
+disclosure opened: one SVG axis label and one native `dl time[datetime]`. The first
+raw activity date, `2026-10-01`, was not an axis tick at this local layout; its native
+row retained the supplied five submissions, two solved problems and one pending
+submission. On Enter close, both native dates were unmounted, while the SVG axis
+date remained visible. This independently demonstrates why a closed-list assertion
+must target native evidence rather than all card text. No application or fixture
+changes were made, and the owned browser and preview were closed.
+
+The reproducible check is
+`test-results/route-design-audit/ready-date-disclosure.mjs`, with two status/network
+JSON files, combined `ready-date-disclosure.json`, and six initial, expanded and
+collapsed screenshots. Earlier inspection runs assumed the first raw date would
+be a visible axis tick; their assumption failures are preserved separately in
+`ready-date-disclosure-*-axis-assumption.json`. The final checks select an actually
+drawn date and separately verify the first raw date, with no browser errors,
+warnings, failed API requests, external requests or API writes.
 
 The request-failure log preserves 151 `net::ERR_ABORTED` cancellations on frontend
 route requests during navigation/prefetch. There were no failed API requests or

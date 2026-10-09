@@ -172,6 +172,22 @@ fixture operation was performed by the locator reviewers.
 **PASS:** targeted ESLint for `evidence-clarity.spec.ts`, targeted Prettier for
 that test and this report, and the scoped whitespace/diff check.
 
+## CI disclosure-date follow-up
+
+The first fresh candidate CI exposed one further card-wide text collision in
+the bilingual desktop keyboard-data tests. All six retry error contexts identify
+the same date in both an ECharts SVG axis and the native definition-list time
+while the disclosure closes. Both CI runs passed 332 tests and failed these two;
+the original logs and complete trace artifacts remain retained by the lead.
+
+Only the final negative visibility assertion changes. It now selects
+`dl time[datetime="..."]`, the same native date boundary used by its positive
+definition-row checks. The keyboard actions, expanded states, supplied values
+and timeout remain intact; no chart-readiness wait or application edit is added.
+The complete affected file passes all 6 viewport/locale checks in the lead's
+focused replay. Scoped ESLint, Prettier and the diff check also pass. Acceptance
+of the corrected final head still requires fresh complete CI.
+
 ## Executed regression checks
 
 **PASS:** 65 tests across these eight suites:

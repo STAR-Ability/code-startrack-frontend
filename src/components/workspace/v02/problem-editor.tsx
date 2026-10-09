@@ -100,13 +100,20 @@ export function ProblemEditor({
     setDraft({ ...draft, version: problem.problemRef.problemVersionId });
     setRefreshed(true);
   }
-  useEffect(() => {
-    if (user && draft.language && isCurrentUser(client, user.publicId))
-      client.setQueryData(
+  const savedSource = user
+    ? client.getQueryData<string>(
         problemDraftKey(user.publicId, problem, draft.language),
-        draft.source,
+      )
+    : undefined;
+  useEffect(() => {
+    if (user && draft.language && isCurrentUser(client, user.publicId)) {
+      const key = problemDraftKey(user.publicId, problem, draft.language);
+      // Preserve version migrations without overwriting a newer editor event.
+      client.setQueryData<string>(key, (current) =>
+        current === savedSource ? draft.source : current,
       );
-  }, [client, user, problem, draft.language, draft.source]);
+    }
+  }, [client, user, problem, draft.language, draft.source, savedSource]);
 
   const mutation = useV02Mutation(
     "submission-create",
@@ -381,6 +388,11 @@ export function ProblemEditor({
           filename={selected?.sourceFilename ?? draft.language}
           languageFamily={selected?.languageFamily}
           onChange={(source) => {
+            if (user && draft.language && isCurrentUser(client, user.publicId))
+              client.setQueryData(
+                problemDraftKey(user.publicId, problem, draft.language),
+                source,
+              );
             setDraft({ ...draft, source });
             if (mutation.error) mutation.reset();
           }}

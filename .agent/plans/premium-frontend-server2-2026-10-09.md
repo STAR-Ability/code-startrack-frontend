@@ -106,7 +106,7 @@ Keep scoped milestone commits; preserve unrelated work and private settings. Use
 ## Progress
 
 - [x] Stage 1
-- [ ] Stage 2
+- [x] Stage 2
 - [ ] Stage 3
 - [x] Stage 4
 - [ ] Stage 5
@@ -127,3 +127,7 @@ Keep scoped milestone commits; preserve unrelated work and private settings. Use
 - Stage 2 workspace hierarchy is implemented: learning KPIs precede action/recommendation modules, CF summary precedes its next step, compact recommendations lose nested frames, and shared page headers/metrics improve all workspace routes. Targeted 34-unit checks pass; the second coordinated build, full lint/format and 515 unit tests across 59 files pass. Twenty-four bilingual four-width route observations pass after KPI column refinement. Public composition and follow-on settings/result/filter improvements remain separate reviewed milestones.
 
 - Stage 4 preserves ECharts semantic palettes, radar/gradient infrastructure and exact data, adds safe native text-node tooltip panels and responsive horizontal labels, and resets ECharts when tooltip renderers change. Forty focused tests pass, including actual ECharts injection/lifecycle/media regressions. Sixteen rendered light/dark bilingual viewport combinations cover 64 charts with no runtime, overflow or settled tooltip containment failures; keyboard legend toggles actual plotted series. This independent milestone is committed before the editor milestone while its discovered layout/focus defects are being fixed.
+
+- Stage 2 public composition is complete and independently reviewed: the home flow replaces repeated cards with one ordered journey, product/features use asymmetric composition, and profile/recommendation/about/demo pages use shared surfaces with distinct information hierarchy. Three focused units and scoped source checks pass. Fifty-four responsive/locale observations and fifteen final third-export captures pass, including centered profile artwork, three correctly offset capability nodes and a full-width mobile source ribbon; no overflow, runtime, failed-request or API-call findings. Shared feedback, settings/result/filter improvements remain in the Stage 5 milestone.
+
+- Third production export passes. The focused editor/workflow/accessibility run has 40 passes and two desktop text-zoom failures caused by the full account badge exceeding the /data header at 320px. The first full Storybook run has 482 passes and four failures: an old textarea story against the lazy client wrapper, and editor contrast, each duplicated across desktop/mobile. These failures are retained and are being corrected; no full-suite success is claimed until the rebuilt reruns pass. Independent review also requires fallback canvas geometry and no-editor separator focus fixes.

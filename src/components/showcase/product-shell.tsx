@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { ArrowLeftIcon, ArrowUpRightIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowUpRightIcon, OrbitIcon } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { useLocale } from "@/components/layout/locale-provider";
 import { buttonVariants } from "@/components/ui/button";
@@ -47,16 +47,33 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
         </div>
         {children}
         <section className="landing-section border-t">
-          <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-            <div>
-              <p className="section-eyebrow">codeStartrack</p>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                {t("showcase.about.open")}
-              </h2>
+          <div className="relative flex flex-col items-start justify-between gap-8 overflow-hidden rounded-3xl border border-info/15 bg-surface-reading p-7 shadow-raised sm:p-10 lg:flex-row lg:items-center">
+            <span
+              className="pointer-events-none absolute -top-24 -right-10 size-72 rounded-full border border-info/15 bg-info-soft/40"
+              aria-hidden="true"
+            />
+            <span
+              className="pointer-events-none absolute -top-12 right-2 size-48 rounded-full border border-info/20"
+              aria-hidden="true"
+            />
+            <div className="relative flex min-w-0 items-start gap-5">
+              <span className="hidden size-12 shrink-0 items-center justify-center rounded-2xl bg-info-soft text-info sm:flex">
+                <OrbitIcon className="size-6" aria-hidden="true" />
+              </span>
+              <div>
+                <p className="section-eyebrow">codeStartrack</p>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  {t("showcase.about.open")}
+                </h2>
+              </div>
             </div>
             <Link
               href="/practice"
-              className={buttonVariants({ size: "xl", wrap: true })}
+              className={buttonVariants({
+                size: "xl",
+                wrap: true,
+                className: "relative shrink-0",
+              })}
             >
               {t("nav.start")}
               <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />

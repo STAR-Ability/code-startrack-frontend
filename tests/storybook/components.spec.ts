@@ -80,7 +80,11 @@ test("dialog traps focus, scrolls and returns focus after Escape", async ({
       .toBe(true);
   }
   const bounds = await dialog.boundingBox();
-  expect(bounds!.height).toBeLessThanOrEqual(page.viewportSize()!.height - 32);
+  // Chromium can round transformed bounds slightly above the CSS height limit.
+  const subpixelTolerance = 0.001;
+  expect(bounds!.height).toBeLessThanOrEqual(
+    page.viewportSize()!.height - 32 + subpixelTolerance,
+  );
   await page.keyboard.press("Escape");
   await expect(dialog).not.toBeVisible();
   await expect(trigger).toBeFocused();

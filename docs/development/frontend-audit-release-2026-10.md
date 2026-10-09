@@ -43,9 +43,10 @@ production deployment has occurred in this task.
 
 ## Verification ledger
 
-This ledger records the local gates and the subsequent CI follow-up. The first
-pushed dev candidate was `bf528dd`; its quality CI exposed the date-locator
-collision described below. Fresh CI results for the corrected final dev head are recorded in
+This ledger records the local gates and subsequent CI checkpoints. The
+`bf528dd` quality CI exposed the date-locator collision described below.
+Both corrected `b88aaee` runs completed successfully, with one PR Storybook
+subpixel-measurement flake documented below. Exact final-head CI results are recorded in
 [PR #42](https://github.com/STAR-Ability/code-startrack-frontend/pull/42); initial
 CI runs are not acceptance of this candidate.
 
@@ -57,8 +58,8 @@ CI runs are not acceptance of this candidate.
 | Full unit suite                    | PASS: 507 tests across 57 files in final `pnpm check`; 33 scoped chart tests also pass                                                                                                   |
 | Production export                  | PASS: final stable-layout production export (37 product routes; 40 generated static pages)                                                                                               |
 | Storybook build                    | PASS against final source                                                                                                                                                                |
-| Storybook browser suite            | PASS: all 486 tests against rebuilt stable-layout source; desktop/mobile keyboard story also passes (2 tests); earlier failure evidence retained                                         |
-| Full E2E                           | PASS: full local 334-test application replay and 6 focused tests after the CI date-locator correction; fresh complete corrected-head CI pending                                          |
+| Storybook browser suite            | PASS locally: 486 tests; b88aaee push CI: 486 passed; PR CI: 485 passed + 1 flaky, retry passed. Precision correction has a separate focused replay below                                |
+| Full E2E                           | PASS: full local 334-test application replay, 6 focused tests after the date-locator correction and 334 tests in each b88aaee CI run                                                     |
 | Rendered route matrix              | PASS: 222 route observations, 24 member-view checks and 54 final affected-route recaptures with 174 SVGs, in two locales and desktop/tablet/mobile                                       |
 | Responsive chart review            | PASS: 72 shared visual checks, 13 chart cases and four final locale/theme/reduced-motion/native-keyboard interaction cases                                                               |
 | Keyboard/source review             | PASS in both locales including 320px at 200% text; no external requests, business writes or console errors                                                                               |
@@ -69,7 +70,7 @@ CI runs are not acceptance of this candidate.
 | Real authenticated roles/workflows | BLOCKED: no designated existing credentials or session supplied                                                                                                                          |
 | Real browser authentication origin | BLOCKED: local preview Origin is rejected by the deployed backend; do not infer browser CAPTCHA success from a Node request without Origin                                               |
 | V0.2 real API success              | UNVERIFIED: additive endpoint families absent from advertised live OpenAPI; anonymous 401s do not prove route support                                                                    |
-| Git/PR/CI                          | Initial candidate bf528dd pushed; PR #42 is draft; first quality CI FAIL (332 passed / 2 date-locator failures), corrected-head CI pending; Storybook CI PASS                            |
+| Git/PR/CI                          | dev pushed; PR #42 remains draft. Both b88aaee quality/Storybook jobs succeeded; latest exact-head terminal results are recorded in the PR. Original failures remain documented          |
 | Main merge/image publication       | NOT RUN; release gates remain unmet                                                                                                                                                      |
 | server2 deployment                 | BLOCKED: no existing frontend deployment or backend route; requested topology clarification pending                                                                                      |
 
@@ -138,8 +139,9 @@ The assertion now targets the existing definition list's dated `<time>`. It
 retains negative visibility, both keyboard Enter actions, every supplied-value
 assertion and the original timeout; no readiness wait or application change was
 introduced. The complete affected file passes all 6 desktop/mobile tests.
-Production inputs and the accepted Docker image remain unchanged. A fresh full
-334-test CI run is required for the corrected head.
+Production inputs and the accepted Docker image remain unchanged. Both full
+`b88aaee` CI runs subsequently passed all 334 E2E tests and all 507 unit tests
+across 57 files.
 
 Independent ready-engine browser checks also pass both locales at 1440px. The
 actually drawn axis date (`2026-09-03`) has two exact card matches while open:
@@ -158,6 +160,30 @@ and `test-results/ci-initial-failures/`. The focused successful replay is
 `test-results/ci-date-selector-replay.log`. Failed runs are
 [PR 37876381817](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37876381817)
 and [push 37876377660](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37876377660).
+
+## CI dialog-measurement follow-up
+
+Both `b88aaee` CI runs completed successfully:
+[PR 37878386503](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37878386503)
+and [push 37878382389](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37878382389).
+Push Storybook passed all 486 tests directly. PR Storybook reported 485 passed
+and one flaky mobile dialog check, which passed its configured retry. Its first
+attempt measured `768.0000305175781px` against a `768px` height limit after all
+six Tab focus checks had passed. The retained log records this precision error;
+the successful workflow skipped its failure-only trace/screenshot upload, so
+no downloaded runner artifact is claimed for this flake.
+
+The existing height assertion now allows `0.001` CSS pixels for Chromium's
+fractional transformed bounds. This covers the recorded `0.0000305175781px`
+excess while still rejecting a `0.01px` overflow. The 32px viewport allowance,
+six Tab checks, Escape dismissal, focus restoration, network isolation and
+timeouts remain unchanged. No production CSS or application input changed.
+The desktop/mobile dialog check passes five repetitions per viewport (10 tests,
+no retries or skips), recorded in `test-results/dialog-subpixel-replay.log`.
+The earlier CI logs and receipts are preserved in
+`test-results/ci-subpixel-b88aaee/`. Fresh exact-head full-suite CI evidence after
+this correction is maintained in PR #42, avoiding a documentation-only commit
+being represented as verified by an earlier run.
 
 ## Release boundaries
 

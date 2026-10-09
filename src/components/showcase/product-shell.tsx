@@ -46,8 +46,8 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         {children}
-        <section className="landing-section border-t">
-          <div className="relative flex flex-col items-start justify-between gap-8 overflow-hidden rounded-3xl border border-info/15 bg-surface-reading p-7 shadow-raised sm:p-10 lg:flex-row lg:items-center">
+        <section className="landing-section border-t px-[min(1.25rem,5vw)] sm:px-8">
+          <div className="relative flex flex-col items-start justify-between gap-8 overflow-hidden rounded-3xl border border-info/15 bg-surface-reading px-[min(1.75rem,6vw)] py-7 shadow-raised sm:p-10 lg:flex-row lg:items-center">
             <span
               className="pointer-events-none absolute -top-24 -right-10 size-72 rounded-full border border-info/15 bg-info-soft/40"
               aria-hidden="true"
@@ -56,13 +56,13 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
               className="pointer-events-none absolute -top-12 right-2 size-48 rounded-full border border-info/20"
               aria-hidden="true"
             />
-            <div className="relative flex min-w-0 items-start gap-5">
+            <div className="relative flex w-full min-w-0 items-start gap-5 lg:w-auto">
               <span className="hidden size-12 shrink-0 items-center justify-center rounded-2xl bg-info-soft text-info sm:flex">
                 <OrbitIcon className="size-6" aria-hidden="true" />
               </span>
-              <div>
-                <p className="section-eyebrow">codeStartrack</p>
-                <h2 className="text-2xl font-semibold tracking-tight">
+              <div className="w-full min-w-0">
+                <p className="section-eyebrow flex-wrap">codeStartrack</p>
+                <h2 className="text-2xl font-semibold tracking-tight text-wrap">
                   {t("showcase.about.open")}
                 </h2>
               </div>
@@ -72,10 +72,11 @@ export function ProductShell({ children }: { children: React.ReactNode }) {
               className={buttonVariants({
                 size: "xl",
                 wrap: true,
-                className: "relative shrink-0",
+                className:
+                  "relative w-full min-w-0 shrink-0 gap-[min(0.5rem,2vw)] px-[min(1.25rem,4vw)] has-data-[icon=inline-end]:pr-[min(1rem,4vw)] lg:w-auto",
               })}
             >
-              {t("nav.start")}
+              <span className="min-w-0 wrap-normal">{t("nav.start")}</span>
               <ArrowUpRightIcon data-icon="inline-end" aria-hidden="true" />
             </Link>
           </div>

@@ -18,7 +18,7 @@ export function AppHeader() {
     <Link
       key={href}
       href={href}
-      className="nav-link"
+      className="nav-link min-w-0 wrap-anywhere"
       aria-current={pathname === href ? "page" : undefined}
     >
       {t(`showcase.${key}.label`)}
@@ -35,8 +35,8 @@ export function AppHeader() {
   return (
     <>
       <SkipLink />
-      <header ref={header} className="landing-header sticky top-0">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-4 sm:px-8">
+      <header ref={header} className="landing-header xl:sticky xl:top-0">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-[min(1.25rem,5vw)] py-4 sm:px-8 [&>.brand-link]:gap-2 sm:[&>.brand-link]:gap-3">
           <Brand />
           <nav
             aria-label={t("nav.features")}
@@ -44,7 +44,7 @@ export function AppHeader() {
           >
             {links}
           </nav>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto">
             <LocaleSwitch />
             <LoginDialog />
             <Link
@@ -61,12 +61,12 @@ export function AppHeader() {
             key={pathname}
           >
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm">
-              <span>{t("showcase.menu")}</span>
-              <MenuIcon className="size-4" aria-hidden="true" />
+              <span className="min-w-0">{t("showcase.menu")}</span>
+              <MenuIcon className="size-4 shrink-0" aria-hidden="true" />
             </summary>
             <nav
               aria-label={t("showcase.menu")}
-              className="grid grid-cols-2 gap-x-4 gap-y-1 pt-3 text-sm text-muted-foreground"
+              className="grid grid-cols-1 gap-x-4 gap-y-1 pt-3 text-sm text-muted-foreground sm:grid-cols-2"
             >
               {links}
             </nav>

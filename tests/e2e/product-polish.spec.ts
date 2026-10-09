@@ -433,3 +433,114 @@ test("dashboard preserves full supplied source, team and inviter names at respon
     true,
   );
 });
+
+for (const locale of ["zh-CN", "en"] as const) {
+  test(`the public footer keeps complete words and a keyboard action at 320px with enlarged ${locale} text`, async ({
+    page,
+    context,
+  }) => {
+    await context.addCookies([
+      {
+        name: "codestartrack_locale",
+        value: locale,
+        url: "http://127.0.0.1:3100",
+      },
+    ]);
+    await page.setViewportSize({ width: 320, height: 667 });
+    await page.goto("/product");
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = "200%";
+    });
+    const footer = page
+      .getByRole("main")
+      .locator("section")
+      .filter({
+        has: page.getByRole("heading", {
+          name: translate(locale, "showcase.about.open"),
+          exact: true,
+        }),
+      });
+    const action = footer.getByRole("link", {
+      name: translate(locale, "nav.start"),
+      exact: true,
+    });
+    await expect(action).toHaveAttribute("href", "/practice");
+    for (const target of [
+      footer.getByText("codeStartrack", { exact: true }),
+      footer.getByRole("heading", {
+        name: translate(locale, "showcase.about.open"),
+        exact: true,
+      }),
+      action,
+    ]) {
+      await expect
+        .poll(
+          () =>
+            target.evaluate((element, language) => {
+              const bounds = element.getBoundingClientRect();
+              const walker = document.createTreeWalker(
+                element,
+                NodeFilter.SHOW_TEXT,
+              );
+              const segmenter = new Intl.Segmenter(language, {
+                granularity: "word",
+              });
+              let words = 0;
+              let complete = true;
+              for (
+                let node = walker.nextNode();
+                node;
+                node = walker.nextNode()
+              ) {
+                for (const part of segmenter.segment(node.textContent ?? "")) {
+                  if (!part.isWordLike) continue;
+                  words++;
+                  const range = document.createRange();
+                  range.setStart(node, part.index);
+                  range.setEnd(node, part.index + part.segment.length);
+                  const rects = Array.from(range.getClientRects());
+                  complete &&=
+                    rects.length > 0 &&
+                    new Set(rects.map((rect) => rect.top)).size === 1 &&
+                    rects.every(
+                      (rect) =>
+                        rect.left >= bounds.left - 1 &&
+                        rect.right <= bounds.right + 1 &&
+                        rect.top >= bounds.top - 1 &&
+                        rect.bottom <= bounds.bottom + 1,
+                    );
+                }
+              }
+              return words > 0 && complete;
+            }, locale),
+          { message: "Every footer word remains whole and contained" },
+        )
+        .toBe(true);
+    }
+    await expect
+      .poll(() =>
+        page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      )
+      .toBe(true);
+    let reached = false;
+    for (let step = 0; step < 40; step++) {
+      await page.keyboard.press("Tab");
+      if (
+        await action.evaluate((element) => element === document.activeElement)
+      ) {
+        reached = true;
+        break;
+      }
+    }
+    expect(
+      reached,
+      "The actual footer action is reachable in the tab sequence",
+    ).toBe(true);
+    await expect(action).toBeFocused();
+    await action.click();
+    await expect(page).toHaveURL("/practice");
+    expect((await upstreamCalls()).every((call) => call.method === "GET")).toBe(
+      true,
+    );
+  });
+}

@@ -36,7 +36,7 @@ export function CapabilitiesPage() {
         >
           {steps.map(([key, label, Icon], index) => (
             <div key={key} className="capability-node">
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className="shrink-0 font-mono text-xs whitespace-nowrap text-muted-foreground">
                 0{index + 1}
               </span>
               <span
@@ -47,7 +47,7 @@ export function CapabilitiesPage() {
               >
                 <Icon className="size-5" />
               </span>
-              <span>{t(`showcase.features.${label}`)}</span>
+              <span className="min-w-0">{t(`showcase.features.${label}`)}</span>
             </div>
           ))}
         </div>

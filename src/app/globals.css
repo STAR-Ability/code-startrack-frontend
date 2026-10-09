@@ -1332,16 +1332,19 @@
   .capability-map {
     display: flex;
     flex-direction: column;
+    container-type: inline-size;
+    container-name: capability;
     gap: 1.5rem;
     padding: 2rem 1rem;
     background: radial-gradient(ellipse, var(--canvas), transparent 70%);
   }
   .capability-node {
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
+    gap: min(1rem, 4cqi);
+    padding: min(1.25rem, 6cqi);
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     background: var(--card);
@@ -1356,6 +1359,17 @@
     height: 1.5rem;
     border-left: 1px dashed var(--muted-foreground);
     opacity: 0.5;
+  }
+  @container capability (max-width: 12rem) {
+    .capability-node {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+    .capability-node > :nth-child(2) {
+      justify-self: start;
+    }
+    .capability-node > :last-child {
+      grid-column: 1 / -1;
+    }
   }
   .profile-exhibit {
     padding: clamp(1rem, 3vw, 2rem);

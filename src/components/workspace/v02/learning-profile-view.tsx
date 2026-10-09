@@ -41,10 +41,27 @@ export function LearningProfileView({
       )}
       <MetricPanel
         title="v02.learningOverview"
-        description={`${t(`v.window.${profile.window}`)} · ${profile.timezone}`}
+        description={
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <span>
+              {t(`v.window.${profile.window}`)} · {profile.timezone}
+            </span>
+            <span className="text-xs">
+              {t("v.cutoff")}:{" "}
+              <time dateTime={profile.dataCutoffAt}>
+                {formatTimestamp(profile.dataCutoffAt, locale)}
+              </time>
+              {profile.stale && (
+                <Badge variant="warning" className="ml-2">
+                  {t("v.stale")}
+                </Badge>
+              )}
+            </span>
+          </div>
+        }
         metrics={[
-          ["v.attempted", summary.attemptedProblemCount],
           ["v.solved", summary.solvedCount],
+          ["v.attempted", summary.attemptedProblemCount],
           ["v.submissions", summary.submissionCount],
           ["v.activeDays", summary.activeDays],
         ]}
@@ -59,18 +76,6 @@ export function LearningProfileView({
               ]
         }
       />
-      <p className="text-sm text-muted-foreground">
-        {t("v.cutoff")}:{" "}
-        <time dateTime={profile.dataCutoffAt}>
-          {formatTimestamp(profile.dataCutoffAt, locale)}
-        </time>
-        {profile.stale && (
-          <>
-            {" "}
-            · <Badge variant="warning">{t("v.stale")}</Badge>
-          </>
-        )}
-      </p>
       {summary.submissionCount === 0 && (
         <EmptyState title={t("v02.profileZero")} embedded />
       )}
@@ -81,13 +86,13 @@ export function LearningProfileView({
             variant="analysis"
             description={t("profile.dimensionNote")}
           >
-            <div className="flex min-w-0 flex-wrap items-end justify-between gap-5 border-b border-insight/15 pb-5">
+            <div className="ability-score-summary flex min-w-0 flex-wrap items-end justify-between gap-5 border-b border-insight/15 pb-6">
               <div className="min-w-0">
                 <p className="mb-2 flex items-center gap-2 text-sm font-medium text-insight">
                   <FingerprintIcon className="size-4" aria-hidden="true" />
                   {t("v.overallScore")}
                 </p>
-                <p className="font-mono text-4xl font-semibold tracking-tight tabular-nums text-insight sm:text-5xl">
+                <p className="font-mono text-5xl font-semibold tracking-tight tabular-nums text-insight sm:text-6xl">
                   {formatNumber(profile.overallScore, locale, 2)}
                   <span className="ml-2 text-base font-normal text-muted-foreground">
                     / 100
@@ -129,6 +134,17 @@ export function LearningProfileView({
                       )}
                     </dt>
                     <dd>{formatNumber(item.score, locale, 2)} / 100</dd>
+                    <div
+                      className="col-span-full h-1.5 overflow-hidden rounded-full bg-insight/10"
+                      aria-hidden="true"
+                    >
+                      <span
+                        className="block h-full rounded-full bg-linear-to-r from-insight/60 to-insight"
+                        style={{
+                          width: `${Math.max(0, Math.min(100, item.score))}%`,
+                        }}
+                      />
+                    </div>
                   </div>
                 ))}
               </dl>

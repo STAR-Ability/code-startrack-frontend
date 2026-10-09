@@ -26,26 +26,30 @@ export function LearningRecommendationView({
       title="v02.batch"
       variant="recommendation"
       description={t("v02.frozenRanking")}
+      size={compact ? "default" : "lg"}
+      className={compact ? "h-full" : undefined}
     >
       {batch.stale && (
         <Alert>
           <AlertDescription>{t("v02.recommendationStale")}</AlertDescription>
         </Alert>
       )}
-      <div className="flex flex-wrap gap-2">
-        <Badge wrap variant="outline">
-          {t(`v02.source.${batch.source}`)}
-        </Badge>
-        <Badge wrap variant="secondary">
-          {t(`v.mode.${batch.mode}`)}
-        </Badge>
-      </div>
-      <div className="flex min-w-0 flex-wrap items-center justify-between gap-3 border-b border-info/15 pb-4">
-        <p className="text-xs text-muted-foreground">
-          <time dateTime={batch.generatedAt}>
-            {formatTimestamp(batch.generatedAt, locale)}
-          </time>
-        </p>
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-4 border-b border-info/15 pb-4">
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Badge wrap variant="outline">
+              {t(`v02.source.${batch.source}`)}
+            </Badge>
+            <Badge wrap variant="secondary">
+              {t(`v.mode.${batch.mode}`)}
+            </Badge>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            <time dateTime={batch.generatedAt}>
+              {formatTimestamp(batch.generatedAt, locale)}
+            </time>
+          </p>
+        </div>
         <dl className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
           <div className="flex items-baseline gap-2">
             <dt>{t("v02.candidates")}</dt>
@@ -71,31 +75,52 @@ export function LearningRecommendationView({
         <article
           key={`${batch.batchId}:${item.problem.problemRef.source}:${item.problem.problemRef.platform}:${item.problem.problemRef.problemId}`}
           className={cn(
-            "flex min-w-0 flex-col gap-4 py-5",
-            item.rank === 1
-              ? "rounded-xl border border-info/15 bg-info-soft/40 px-4 sm:px-5"
-              : "border-b last:border-0 last:pb-0",
+            "recommendation-entry flex min-w-0 flex-col gap-4 py-5",
+            compact
+              ? "py-1"
+              : item.rank === 1
+                ? "rounded-2xl border border-info/15 bg-info-soft/40 px-4 sm:px-6"
+                : "border-b last:border-0 last:pb-0",
           )}
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3
-              className={cn(
-                "flex items-center gap-2 text-sm font-medium",
-                item.rank === 1 && "text-info",
-              )}
-            >
-              {item.rank === 1 && (
-                <SparklesIcon className="size-4 shrink-0" aria-hidden="true" />
-              )}
-              {t("v02.rank", { rank: String(item.rank) })}
-            </h3>
+            <div className="flex items-center gap-3">
+              <span
+                className={cn(
+                  "flex size-9 items-center justify-center rounded-xl border font-mono text-base tabular-nums",
+                  item.rank === 1
+                    ? "border-info/20 bg-info-soft text-info"
+                    : "bg-surface-panel text-muted-foreground",
+                )}
+                aria-hidden="true"
+              >
+                {item.rank === 1 ? (
+                  <SparklesIcon className="size-4" />
+                ) : (
+                  item.rank
+                )}
+              </span>
+              <h3
+                className={cn(
+                  "text-sm font-medium",
+                  item.rank === 1 && "text-info",
+                )}
+              >
+                {t("v02.rank", { rank: String(item.rank) })}
+              </h3>
+            </div>
             {item.solvedSinceGeneration && (
               <Badge wrap variant="success">
                 {t("v02.solvedSinceGeneration")}
               </Badge>
             )}
           </div>
-          <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+          <div
+            className={cn(
+              "grid min-w-0 items-start gap-5",
+              !compact && "lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)]",
+            )}
+          >
             <div className="flex min-w-0 flex-col gap-4">
               <TrainingProblem problem={item.problem} />
               <p className="wrap-anywhere text-sm leading-relaxed text-muted-foreground">
@@ -103,14 +128,22 @@ export function LearningRecommendationView({
               </p>
             </div>
             <div className="flex min-w-0 flex-col gap-4">
-              <p className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                <TargetIcon className="size-3.5 shrink-0" aria-hidden="true" />
-                {t("v02.recommendationScore")}:{" "}
-                {formatNumber(item.score, locale, 2)}
+              <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+                <dl className="flex items-baseline gap-2">
+                  <dt className="text-xs text-muted-foreground">
+                    {t("v02.recommendationScore")}
+                  </dt>
+                  <dd className="font-mono text-2xl font-semibold tracking-tight tabular-nums text-info">
+                    {formatNumber(item.score, locale, 2)}
+                  </dd>
+                </dl>
                 {item.matchedDimension && (
-                  <> · {t(`data.dimension.${item.matchedDimension}`)}</>
+                  <Badge wrap variant="insight">
+                    <TargetIcon aria-hidden="true" />
+                    {t(`data.dimension.${item.matchedDimension}`)}
+                  </Badge>
                 )}
-              </p>
+              </div>
               {!compact && (
                 <DetailsDisclosure title={t("v02.reasonCode")}>
                   <p>{item.reasonCode}</p>

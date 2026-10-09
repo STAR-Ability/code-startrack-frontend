@@ -139,13 +139,93 @@ describe("V0.2 independent task polling", () => {
     const submission = v02Submission();
     expect(
       acceptSubmission(submission, { ...submission, judgeRevision: 1 }),
-    ).toBe(submission);
+    ).toEqual(submission);
     const newTask = {
       ...submission,
       analysisId: fixtureUuid(2201),
       analysisRevision: 0,
     };
     expect(acceptSubmission(submission, newTask)).toBe(newTask);
+  });
+  it("accepts a completed verdict while preserving a newer analysis revision", () => {
+    const completed = v02Submission();
+    const previous = {
+      ...completed,
+      judgeStatus: "RUNNING" as const,
+      judgeRevision: 2,
+      judgeResult: null,
+      analysisStatus: "PARTIAL" as const,
+      analysisRevision: 5,
+      analysisError: {
+        code: "TOOL_TIMEOUT",
+        message: "Partial evidence",
+        retryable: true,
+      },
+      updatedAt: "2026-10-07T03:00:00.000900Z",
+    };
+    const incoming = {
+      ...completed,
+      judgeRevision: 3,
+      analysisStatus: "RUNNING" as const,
+      analysisRevision: 2,
+      analysisError: null,
+      updatedAt: "2026-10-07T03:00:00.000100Z",
+    };
+    const accepted = acceptSubmission(previous, incoming);
+    expect(accepted).toMatchObject({
+      judgeStatus: "COMPLETED",
+      judgeRevision: 3,
+      judgeResult: completed.judgeResult,
+      analysisStatus: "PARTIAL",
+      analysisRevision: 5,
+      analysisError: previous.analysisError,
+      updatedAt: previous.updatedAt,
+    });
+    expect(judgePollDelay(accepted)).toBe(false);
+  });
+  it("accepts analysis progress while preserving an already completed verdict", () => {
+    const previous = {
+      ...v02Submission(),
+      judgeRevision: 5,
+      analysisStatus: "QUEUED" as const,
+      analysisRevision: 1,
+    };
+    const incoming = {
+      ...previous,
+      judgeStatus: "RUNNING" as const,
+      judgeRevision: 2,
+      judgeResult: null,
+      analysisStatus: "SUCCEEDED" as const,
+      analysisRevision: 3,
+      updatedAt: "2026-10-07T04:00:00Z",
+    };
+    expect(acceptSubmission(previous, incoming)).toMatchObject({
+      judgeStatus: "COMPLETED",
+      judgeRevision: 5,
+      judgeResult: previous.judgeResult,
+      analysisStatus: "SUCCEEDED",
+      analysisRevision: 3,
+      updatedAt: incoming.updatedAt,
+    });
+  });
+  it("accepts a new analysis task even when the judge projection is behind", () => {
+    const previous = { ...v02Submission(), judgeRevision: 5 };
+    const incoming = {
+      ...previous,
+      judgeRevision: 2,
+      judgeStatus: "RUNNING" as const,
+      judgeResult: null,
+      analysisId: fixtureUuid(2201),
+      analysisStatus: "QUEUED" as const,
+      analysisRevision: 0,
+    };
+    expect(acceptSubmission(previous, incoming)).toMatchObject({
+      judgeStatus: "COMPLETED",
+      judgeRevision: 5,
+      analysisId: incoming.analysisId,
+      analysisStatus: "QUEUED",
+      analysisRevision: 0,
+    });
   });
 });
 describe("private caches and uncertain mutation operations", () => {

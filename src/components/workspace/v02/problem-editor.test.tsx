@@ -74,6 +74,7 @@ describe("platform code submission", () => {
     expect(
       screen.getByRole("textbox", { name: "Source code" }),
     ).toHaveAttribute("aria-invalid", "true");
+    expect(screen.getByRole("textbox", { name: "Source code" })).toHaveFocus();
     fireEvent.change(screen.getByRole("textbox", { name: "Source code" }), {
       target: { value: "练".repeat(87_382) },
     });

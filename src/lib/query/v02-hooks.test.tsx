@@ -16,6 +16,7 @@ import {
   useV02Submission,
   invalidateV02LearningSources,
   useV02LatestProfile,
+  restartV02LearningRead,
 } from "./v02-hooks";
 
 const session = vi.hoisted(() => ({ user: null as UserDto | null }));
@@ -177,6 +178,50 @@ describe("V0.2 mounted polling and mutation ownership", () => {
     });
     await tick(3000);
     expect(read.mock.calls.length).toBeGreaterThan(boundedCount + 1);
+    client.clear();
+  });
+  it("restarts bounded profile reads through the page-header query-client refresh", async () => {
+    const read = vi
+      .spyOn(v02, "learningProfile")
+      .mockResolvedValue({ ...v02LearningProfile(), stale: true });
+    const rebuild = vi.spyOn(v02, "rebuildProfile");
+    const { client, wrapper } = harness();
+    renderHook(() => useV02LatestProfile("ALL"), { wrapper });
+    await tick();
+    await tick(61000);
+    const firstAttempt = read.mock.calls.length;
+    await tick(9000);
+    expect(read).toHaveBeenCalledTimes(firstAttempt);
+
+    await act(async () => {
+      restartV02LearningRead(client, demoUser.publicId);
+      await client.refetchQueries({ type: "active" });
+    });
+    await tick(3000);
+    expect(read.mock.calls.length).toBeGreaterThan(firstAttempt + 1);
+    expect(rebuild).not.toHaveBeenCalled();
+    expect(
+      client.getQueryData(
+        v02Keys.resource(demoUser.publicId, "learning-reconciliation"),
+      ),
+    ).toEqual({ readRestartedAt: expect.any(Number) });
+    await tick(61000);
+    const secondAttempt = read.mock.calls.length;
+    await tick(9000);
+    expect(read).toHaveBeenCalledTimes(secondAttempt);
+    client.clear();
+  });
+  it("does not invent a source-change event or poll null evidence after a header refresh", async () => {
+    const read = vi.spyOn(v02, "learningProfile").mockResolvedValue(null);
+    const { client, wrapper } = harness();
+    renderHook(() => useV02LatestProfile("ALL"), { wrapper });
+    await tick();
+    await act(async () => {
+      restartV02LearningRead(client, demoUser.publicId);
+      await client.refetchQueries({ type: "active" });
+    });
+    await tick(9000);
+    expect(read).toHaveBeenCalledTimes(2);
     client.clear();
   });
   it("refreshes dynamic completion/stale flags in recommendation history and detail after source changes", async () => {

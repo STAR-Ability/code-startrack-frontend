@@ -43,15 +43,28 @@ function useVisibility() {
     () => true,
   );
 }
+type LearningReconciliation = {
+  sourceChangedAt?: number;
+  readRestartedAt?: number;
+};
+/** A manual GET refresh starts a new bounded read attempt without claiming a source change. */
+export function restartV02LearningRead(client: QueryClient, publicId: string) {
+  if (!isCurrentUser(client, publicId)) return;
+  client.setQueryData<LearningReconciliation>(
+    v02Keys.resource(publicId, "learning-reconciliation"),
+    (previous) => ({ ...previous, readRestartedAt: Date.now() }),
+  );
+}
 /** Frozen rank/reason fields stay intact; completion and staleness flags are live projections. */
 export async function invalidateV02LearningSources(
   client: QueryClient,
   publicId: string,
 ) {
   if (!isCurrentUser(client, publicId)) return;
-  client.setQueryData(v02Keys.resource(publicId, "learning-reconciliation"), {
-    sourceChangedAt: Date.now(),
-  });
+  client.setQueryData<LearningReconciliation>(
+    v02Keys.resource(publicId, "learning-reconciliation"),
+    (previous) => ({ ...previous, sourceChangedAt: Date.now() }),
+  );
   await Promise.all(
     [
       "training-records",
@@ -237,7 +250,7 @@ export function useV02LatestProfile(
     (signal) => v02.learningProfile(user!.publicId, window, signal),
     (profile, failures, error) => {
       const sourceUpdate = user
-        ? client.getQueryData<{ sourceChangedAt: number }>(
+        ? client.getQueryData<LearningReconciliation>(
             v02Keys.resource(user.publicId, "learning-reconciliation"),
           )
         : undefined;
@@ -246,6 +259,8 @@ export function useV02LatestProfile(
         failures,
         error,
         sourceUpdate?.sourceChangedAt,
+        Date.now(),
+        sourceUpdate?.readRestartedAt,
       );
     },
     enabled,
@@ -274,7 +289,7 @@ export function useV02LatestProfile(
   }, [profile, user, client]);
   function refetch(...options: Parameters<typeof query.refetch>) {
     const sourceUpdate = user
-      ? client.getQueryData<{ sourceChangedAt: number }>(
+      ? client.getQueryData<LearningReconciliation>(
           v02Keys.resource(user.publicId, "learning-reconciliation"),
         )
       : undefined;

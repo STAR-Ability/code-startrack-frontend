@@ -19,6 +19,16 @@ export function SubmissionSourceReveal({
 }: {
   submissionId: string;
 }) {
+  const { data: user } = useWorkspaceSession();
+  return (
+    <SubmissionSourceContent
+      key={`${user?.publicId ?? "guest"}:${submissionId}`}
+      submissionId={submissionId}
+    />
+  );
+}
+
+function SubmissionSourceContent({ submissionId }: { submissionId: string }) {
   const { t } = useLocale();
   const { data: user } = useWorkspaceSession();
   const client = useQueryClient();
@@ -126,6 +136,7 @@ export function SubmissionSourceReveal({
                 </div>
               </dl>
               <pre
+                translate="no"
                 className="max-h-[32rem] overflow-auto rounded-lg border bg-surface-supporting p-4 text-xs"
                 tabIndex={0}
                 aria-label={t("v02.source")}

@@ -46,6 +46,38 @@ async function advance(ms: number) {
   await act(() => vi.advanceTimersByTimeAsync(ms));
 }
 describe("AI job lifecycle", () => {
+  it.each([403, 404])(
+    "withdraws a denied job and releases the processing state after HTTP %s",
+    async (status) => {
+      const denied = new ApiError("UNAUTHORIZED", status);
+      vi.mocked(v012.aiJob).mockRejectedValue(denied);
+      const { result } = setup();
+      await advance(1);
+      expect(result.current.data).toBeUndefined();
+      expect(
+        isAiJobPending(
+          v012Job().jobId,
+          result.current.data,
+          result.current.error,
+        ),
+      ).toBe(false);
+      await advance(30_000);
+      expect(v012.aiJob).toHaveBeenCalledTimes(1);
+    },
+  );
+  it("releases the processing state when the session expires", () => {
+    const expired = new ApiError("SESSION_EXPIRED", 401);
+    expect(isAiJobPending(v012Job().jobId, v012Job("RUNNING"), expired)).toBe(
+      false,
+    );
+  });
+  it("retains processing after a transient read failure instead of permitting duplicate jobs", () => {
+    const outage = new ApiError("UPSTREAM_UNAVAILABLE", 503);
+    expect(isAiJobPending(v012Job().jobId, undefined, outage)).toBe(true);
+    expect(isAiJobPending(v012Job().jobId, v012Job("RUNNING"), outage)).toBe(
+      true,
+    );
+  });
   it("withdraws a missing job, stops polling and permits a deliberate new request", async () => {
     const missing = new ApiError("RESOURCE_NOT_FOUND", 404);
     vi.mocked(v012.aiJob).mockRejectedValue(missing);

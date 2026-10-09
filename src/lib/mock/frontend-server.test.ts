@@ -1,7 +1,10 @@
 // @vitest-environment node
 import { createHash } from "node:crypto";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { createServer, request as httpRequest, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createFrontendServer } from "../../../scripts/start.mjs";
 
@@ -73,6 +76,8 @@ describe("static frontend private source cache policy", () => {
 });
 let frontend: Server;
 let base: string;
+let directory: string;
+const notFoundPage = "<h1>Exported page not found</h1>";
 
 async function listen(server: Server) {
   await new Promise<void>((resolve, reject) => {
@@ -83,7 +88,27 @@ async function listen(server: Server) {
 }
 
 beforeAll(async () => {
-  frontend = createFrontendServer({ upstream: await listen(upstream) });
+  directory = await mkdtemp(join(tmpdir(), "codestartrack-export-"));
+  for (const [path, content] of [
+    ["index.html", "<h1>Home</h1>"],
+    ["404.html", notFoundPage],
+    ["dashboard.html", "<h1>Dashboard</h1>"],
+    ["dashboard/payload.txt", "App Router payload"],
+    ["problems/detail.html", "<h1>Problem detail</h1>"],
+    ["problems/detail/payload.txt", "Nested App Router payload"],
+    ["docs/index.html", "<h1>Directory index</h1>"],
+    ["_next/static/chunks/app.js", "console.log('static fixture');"],
+    ["styles.css", "body { margin: 0; }"],
+    ["without-404/index.html", "<h1>Home without custom 404</h1>"],
+  ]) {
+    const file = join(directory, path);
+    await mkdir(dirname(file), { recursive: true });
+    await writeFile(file, content);
+  }
+  frontend = createFrontendServer({
+    upstream: await listen(upstream),
+    directory,
+  });
   base = await listen(frontend);
 });
 beforeEach(() => {
@@ -96,6 +121,144 @@ afterAll(async () => {
       server.close((error) => (error ? reject(error) : resolve())),
     );
   }
+  await rm(directory, { recursive: true, force: true });
+});
+
+describe("static frontend exported-page routing", () => {
+  it.each([
+    ["/", "Home"],
+    ["/dashboard?accountId=42", "Dashboard"],
+    ["/problems/detail?problemId=42&source=PLATFORM", "Problem detail"],
+    ["/docs/", "Directory index"],
+  ])("serves the exported page at %s", async (route, heading) => {
+    const response = await fetch(`${base}${route}`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    expect(await response.text()).toBe(`<h1>${heading}</h1>`);
+    expect(calls).toEqual([]);
+  });
+
+  it("serves the App Router payload file beside a page", async () => {
+    const response = await fetch(`${base}/dashboard/payload.txt`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/plain");
+    expect(await response.text()).toBe("App Router payload");
+  });
+
+  it.each([
+    ["/dashboard/", "?accountId=42&filter=a%2Fb", "Dashboard"],
+    ["/problems/detail/", "?problemId=42&source=PLATFORM", "Problem detail"],
+  ])(
+    "canonicalizes %s without losing the query",
+    async (route, query, heading) => {
+      const url = `${base}${route}${query}`;
+      const response = await fetch(url, { redirect: "manual" });
+      const canonical = `${route.slice(0, -1)}${query}`;
+      expect(response.status).toBe(308);
+      expect(response.headers.get("location")).toBe(canonical);
+      const followed = await fetch(url);
+      expect(followed.status).toBe(200);
+      expect(followed.url).toBe(`${base}${canonical}`);
+      expect(await followed.text()).toBe(`<h1>${heading}</h1>`);
+      expect(calls).toEqual([]);
+    },
+  );
+
+  it("keeps raw repeated-slash canonical redirects on the frontend origin", async () => {
+    // fetch normalizes this target before sending; retain the raw HTTP path.
+    const response = await new Promise<{
+      status: number | undefined;
+      location: string | undefined;
+    }>((resolve, reject) => {
+      const outgoing = httpRequest(
+        base,
+        { path: "/x/..//problems/detail/?problemId=42" },
+        (incoming) => {
+          incoming.resume();
+          incoming.on("end", () =>
+            resolve({
+              status: incoming.statusCode,
+              location: incoming.headers.location,
+            }),
+          );
+        },
+      );
+      outgoing.on("error", reject);
+      outgoing.end();
+    });
+    expect(response.status).toBe(308);
+    expect(response.location).toBe("/problems/detail?problemId=42");
+    expect(new URL(response.location ?? "", base).origin).toBe(base);
+    expect(calls).toEqual([]);
+  });
+
+  it.each([
+    "/missing-page",
+    "/missing-page/",
+    "/dashboard/unexported-child",
+    "/missing.css",
+    "/missing.txt",
+  ])("returns the exported 404 with HTTP 404 at %s", async (route) => {
+    const response = await fetch(`${base}${route}`, { redirect: "manual" });
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe(notFoundPage);
+    expect(calls).toEqual([]);
+  });
+
+  it("serves static assets and returns 404 for missing Next assets", async () => {
+    const stylesheet = await fetch(`${base}/styles.css`);
+    expect(stylesheet.status).toBe(200);
+    expect(stylesheet.headers.get("content-type")).toBe("text/css");
+    expect(await stylesheet.text()).toBe("body { margin: 0; }");
+    const asset = await fetch(`${base}/_next/static/chunks/app.js`);
+    expect(asset.status).toBe(200);
+    expect(asset.headers.get("content-type")).toBe("text/javascript");
+    expect(asset.headers.get("cache-control")).toContain("immutable");
+    expect(await asset.text()).toBe("console.log('static fixture');");
+    const missing = await fetch(`${base}/_next/static/chunks/missing.js`);
+    expect(missing.status).toBe(404);
+    expect(await missing.text()).toBe("");
+  });
+
+  it("keeps HEAD status and content type while omitting page bodies", async () => {
+    const page = await fetch(`${base}/dashboard`, { method: "HEAD" });
+    expect(page.status).toBe(200);
+    expect(page.headers.get("content-type")).toContain("text/html");
+    expect(await page.text()).toBe("");
+    const missing = await fetch(`${base}/missing-page`, { method: "HEAD" });
+    expect(missing.status).toBe(404);
+    expect(missing.headers.get("content-type")).toContain("text/html");
+    expect(await missing.text()).toBe("");
+  });
+
+  it("returns 404 when the export has no custom 404 page", async () => {
+    const server = createFrontendServer({
+      directory: join(directory, "without-404"),
+    });
+    try {
+      const response = await fetch(`${await listen(server)}/missing-page`);
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe("");
+    } finally {
+      server.closeAllConnections();
+      await new Promise<void>((resolve, reject) =>
+        server.close((error) => (error ? reject(error) : resolve())),
+      );
+    }
+  });
+
+  it("keeps versioned API slash/query forwarding and obsolete API rejection", async () => {
+    const path = "/api/v1/me/?page=1&filter=a%2Fb";
+    const api = await fetch(`${base}${path}`, { redirect: "manual" });
+    expect(api.status).toBe(200);
+    await api.json();
+    expect(calls).toEqual([{ path, size: 0 }]);
+    calls.length = 0;
+    const obsolete = await fetch(`${base}/api/training/profile/`);
+    expect(obsolete.status).toBe(404);
+    expect(await obsolete.text()).toBe("");
+    expect(calls).toEqual([]);
+  });
 });
 
 function chunkedBody(chunks: Buffer[]) {

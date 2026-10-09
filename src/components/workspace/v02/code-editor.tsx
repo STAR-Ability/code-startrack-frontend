@@ -12,12 +12,14 @@ export function CodeEditor({
   filename,
   error,
   disabled = false,
+  inputRef,
 }: {
   source: string;
   onChange: (source: string) => void;
   filename: string;
   error?: string;
   disabled?: boolean;
+  inputRef?: React.Ref<HTMLTextAreaElement>;
 }) {
   const id = useId();
   const { t } = useLocale();
@@ -32,7 +34,10 @@ export function CodeEditor({
         </code>
       </div>
       <Textarea
+        ref={inputRef}
         id={id}
+        name="sourceCode"
+        translate="no"
         aria-invalid={!!error}
         aria-describedby={`${id}-hint${error ? ` ${id}-error` : ""}`}
         value={source}

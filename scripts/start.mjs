@@ -144,14 +144,33 @@ export function createFrontendServer({
       response.writeHead(404).end();
       return;
     }
-    const candidates = [path, `${path}.html`, resolve(path, "index.html")];
+    if (pathname !== "/" && pathname.endsWith("/")) {
+      try {
+        if ((await stat(`${path}.html`)).isFile()) {
+          response
+            .writeHead(308, {
+              Location: `${pathname.replace(/^\/+/, "/").slice(0, -1)}${requestUrl.search}`,
+              "Cache-Control": "no-cache",
+            })
+            .end();
+          return;
+        }
+      } catch {
+        /* A missing page may still have an exported directory index. */
+      }
+    }
+    const candidates = (
+      path === root
+        ? [resolve(root, "index.html")]
+        : [`${path}.html`, path, resolve(path, "index.html")]
+    ).map((candidate) => [candidate, 200]);
     if (!pathname.startsWith("/_next/"))
-      candidates.push(resolve(root, "index.html"));
-    for (const candidate of candidates) {
+      candidates.push([resolve(root, "404.html"), 404]);
+    for (const [candidate, status] of candidates) {
       try {
         if (!(await stat(candidate)).isFile()) continue;
         const content = await readFile(candidate);
-        response.writeHead(200, {
+        response.writeHead(status, {
           "Content-Type":
             mime[extname(candidate)] || "application/octet-stream",
           "Cache-Control": pathname.startsWith("/_next/static/")

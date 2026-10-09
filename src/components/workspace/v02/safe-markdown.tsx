@@ -53,7 +53,7 @@ export function SafeMarkdown({
               <a
                 href={src}
                 rel="noopener noreferrer"
-                className="text-link underline underline-offset-4"
+                className="text-link underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
               >
                 {alt || src}
               </a>
@@ -74,6 +74,7 @@ export function SafeMarkdown({
           ),
           pre: ({ children }) => (
             <pre
+              translate="no"
               tabIndex={0}
               role="region"
               aria-label={codeLabel}

@@ -17,6 +17,42 @@ try {
     }
     return route.continue();
   });
+  for (const route of ["/", "/dashboard", "/product/profile"]) {
+    const exported = await context.request.get(`${origin}${route}`);
+    assert.equal(exported.status(), 200, `${route} must select page HTML`);
+    assert.match(exported.headers()["content-type"], /text\/html/);
+  }
+  for (const route of ["/dashboard", "/product/profile"]) {
+    const query = "?routing=a%2Fb&view=overview";
+    const trailingSlash = await context.request.get(
+      `${origin}${route}/${query}`,
+      { maxRedirects: 0 },
+    );
+    assert.equal(trailingSlash.status(), 308);
+    assert.equal(
+      new URL(trailingSlash.headers().location, origin).href,
+      `${origin}${route}${query}`,
+    );
+    const canonical = await context.request.get(`${origin}${route}/${query}`);
+    assert.equal(canonical.status(), 200);
+    assert.equal(canonical.url(), `${origin}${route}${query}`);
+  }
+  for (const route of [
+    "/missing-routing-page",
+    "/missing-routing-page/",
+    "/dashboard/missing-routing-page/",
+    "/missing-routing.css",
+    "/_next/static/missing-routing.js",
+  ]) {
+    const missing = await context.request.get(`${origin}${route}`, {
+      maxRedirects: 0,
+    });
+    assert.equal(missing.status(), 404, `${route} must return HTTP 404`);
+    if (!route.startsWith("/_next/")) {
+      assert.match(await missing.text(), /This page could not be found/);
+      assert.equal(missing.headers()["cache-control"], "no-cache");
+    }
+  }
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -44,7 +80,10 @@ try {
     }
   }
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto(`${origin}/dashboard`);
+  await page.goto(`${origin}/dashboard/?routing=a%2Fb&view=overview`);
+  await expect(page).toHaveURL(
+    `${origin}/dashboard?routing=a%2Fb&view=overview`,
+  );
   await expect(
     page.getByRole("heading", { name: "账号来源", exact: true }),
   ).toBeVisible();
@@ -107,8 +146,26 @@ try {
   );
   assert.equal(secureCalls.calls.at(-1).headers["x-forwarded-proto"], "https");
   assert.match(login.headers()["cache-control"], /no-store/);
+  const apiSlashPath = "/api/v1/missing-routing-endpoint/?routing=a%2Fb";
+  const apiSlash = await context.request.get(`${origin}${apiSlashPath}`, {
+    maxRedirects: 0,
+  });
+  assert.equal(apiSlash.status(), 404);
+  assert.match(apiSlash.headers()["cache-control"], /no-store/);
+  const routedApiCalls = await (
+    await fetch("http://backend:8081/__control")
+  ).json();
+  assert.equal(routedApiCalls.calls.at(-1).path, apiSlashPath);
   assert.equal(
     (await context.request.get(`${origin}/api/training/profile`)).status(),
+    404,
+  );
+  assert.equal(
+    (
+      await context.request.get(`${origin}/api/training/profile/`, {
+        maxRedirects: 0,
+      })
+    ).status(),
     404,
   );
   assert.equal((await context.request.get(`${origin}/healthz`)).status(), 200);

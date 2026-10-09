@@ -114,6 +114,7 @@ export function useCollaborationMutation<V, R>(
     onSuccess: async (result) => {
       if (!user || !isCurrentUser(client, user.publicId)) return;
       await invalidateCollaboration(client, user.publicId, operation, teamId);
+      if (!isCurrentUser(client, user.publicId)) return;
       onSuccess?.(result);
     },
     onError: async (error) => {

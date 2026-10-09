@@ -35,22 +35,57 @@ const source: SubmissionSource = {
 function setup() {
   const client = new QueryClient();
   client.setQueryData(keys.session, identity);
-  const rendered = render(
+  const tree = (submissionId = "123") => (
     <QueryClientProvider client={client}>
       <LocaleProvider initialLocale="en">
-        <SubmissionSourceReveal submissionId="123" />
+        <SubmissionSourceReveal submissionId={submissionId} />
       </LocaleProvider>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
-  return { ...rendered, client };
+  const rendered = render(tree());
+  return { ...rendered, client, tree };
 }
 
 beforeEach(() => {
+  identity.publicId = "10000000-0000-4000-8000-000000000001";
   document.cookie = "codestartrack_locale=en; Path=/";
   vi.mocked(v02.submissionSource).mockReset();
 });
 
 describe("private source reveal", () => {
+  it("clears revealed source synchronously when its identity or submission changes", async () => {
+    vi.mocked(v02.submissionSource).mockResolvedValue(source);
+    const { client, rerender, tree } = setup();
+    fireEvent.click(screen.getByRole("button", { name: "Show source" }));
+    await screen.findByLabelText("Private source");
+    rerender(tree("456"));
+    expect(screen.queryByLabelText("Private source")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Show source" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    rerender(tree());
+    fireEvent.click(screen.getByRole("button", { name: "Show source" }));
+    await screen.findByLabelText("Private source");
+    identity.publicId = "10000000-0000-4000-8000-000000000002";
+    client.setQueryData(keys.session, { ...identity });
+    rerender(tree());
+    expect(screen.queryByLabelText("Private source")).not.toBeInTheDocument();
+    expect(screen.queryByText(source.sourceSha256)).not.toBeInTheDocument();
+  });
+
+  it("aborts in-flight source reads when the viewer changes identity", () => {
+    vi.mocked(v02.submissionSource).mockReturnValue(new Promise(() => {}));
+    const { client, rerender, tree } = setup();
+    fireEvent.click(screen.getByRole("button", { name: "Show source" }));
+    const signal = vi.mocked(v02.submissionSource).mock.calls[0][1]!;
+    identity.publicId = "10000000-0000-4000-8000-000000000002";
+    client.setQueryData(keys.session, { ...identity });
+    rerender(tree());
+    expect(signal.aborted).toBe(true);
+    expect(screen.queryByLabelText("Private source")).not.toBeInTheDocument();
+  });
+
   it("clears the expired session and every cached private record after a source 401", async () => {
     vi.mocked(v02.submissionSource).mockRejectedValue(
       new ApiError("UNAUTHORIZED", 401),

@@ -17,7 +17,10 @@ export function isAiJobPending(
   job: AiJobDto | undefined,
   error: unknown,
 ) {
-  if (!jobId || (error instanceof ApiError && error.status === 404))
+  if (
+    !jobId ||
+    (error instanceof ApiError && [401, 403, 404].includes(error.status))
+  )
     return false;
   return !job || ["QUEUED", "RUNNING"].includes(job.status);
 }

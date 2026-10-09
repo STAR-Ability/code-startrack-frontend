@@ -1,5 +1,6 @@
 import { ApiError } from "@/lib/api/errors";
 import { createIdempotencyKey } from "./idempotency-key";
+import { compareInstants } from "@/lib/time";
 import type {
   ProblemRef,
   SubmissionView,
@@ -94,6 +95,7 @@ export class V02LatestProfilePolling {
   private startedAt: number | null = null;
   private sourceChangedAt: number | undefined;
   private manuallyRetriedSource: number | undefined;
+  private readRestartedAt: number | undefined;
   reset(now = Date.now(), sourceChangedAt?: number) {
     this.startedAt = now;
     this.manuallyRetriedSource = sourceChangedAt;
@@ -105,9 +107,18 @@ export class V02LatestProfilePolling {
     error: unknown,
     sourceChangedAt?: number,
     now = Date.now(),
+    readRestartedAt?: number,
   ): number | false {
     if (deniedV02(error) || (error instanceof ApiError && error.status === 400))
       return false;
+    if (
+      readRestartedAt !== undefined &&
+      readRestartedAt !== this.readRestartedAt &&
+      now - readRestartedAt < PROFILE_RECONCILIATION_MS
+    ) {
+      this.readRestartedAt = readRestartedAt;
+      this.reset(readRestartedAt, sourceChangedAt);
+    }
     const recentSourceUpdate =
       sourceChangedAt !== undefined &&
       now - sourceChangedAt < PROFILE_RECONCILIATION_MS;
@@ -185,14 +196,39 @@ export function acceptSubmission(
 ) {
   if (!previous || previous.submissionId !== incoming.submissionId)
     return incoming;
-  if (
-    (previous.judgeTaskId === incoming.judgeTaskId &&
-      previous.judgeRevision > incoming.judgeRevision) ||
-    (previous.analysisId === incoming.analysisId &&
-      previous.analysisRevision > incoming.analysisRevision)
-  )
-    return previous;
-  return incoming;
+  const staleJudge =
+    previous.judgeTaskId === incoming.judgeTaskId &&
+    previous.judgeRevision > incoming.judgeRevision;
+  const staleAnalysis =
+    previous.analysisId === incoming.analysisId &&
+    previous.analysisRevision > incoming.analysisRevision;
+  if (!staleJudge && !staleAnalysis) return incoming;
+  // Each task owns its revision. A lagging analysis projection must not hide a
+  // newly completed verdict, and a lagging judge projection must not hide analysis.
+  return {
+    ...incoming,
+    ...(staleJudge
+      ? {
+          judgeTaskId: previous.judgeTaskId,
+          judgeStatus: previous.judgeStatus,
+          judgeRevision: previous.judgeRevision,
+          judgeResult: previous.judgeResult,
+          judgeError: previous.judgeError,
+        }
+      : {}),
+    ...(staleAnalysis
+      ? {
+          analysisId: previous.analysisId,
+          analysisStatus: previous.analysisStatus,
+          analysisRevision: previous.analysisRevision,
+          analysisError: previous.analysisError,
+        }
+      : {}),
+    updatedAt:
+      compareInstants(previous.updatedAt, incoming.updatedAt) > 0
+        ? previous.updatedAt
+        : incoming.updatedAt,
+  };
 }
 export function isUncertainWrite(error: unknown) {
   return (

@@ -17,6 +17,7 @@ import {
 import { toast } from "@/components/ui/toast";
 import { useLocale } from "@/components/layout/locale-provider";
 import { isCurrentUser } from "@/lib/query/session";
+import { restartV02LearningRead } from "@/lib/query/v02-hooks";
 
 export function RefreshButton({
   publicId,
@@ -69,6 +70,7 @@ export function RefreshButton({
     toast.close(noticeId);
     try {
       // Only mounted reads, including the explicit portfolio; never create jobs.
+      restartV02LearningRead(client, publicId);
       await client.refetchQueries(
         { type: "active", predicate },
         { throwOnError: true, cancelRefetch: false },

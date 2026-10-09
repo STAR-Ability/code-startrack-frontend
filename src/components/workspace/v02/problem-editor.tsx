@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -59,6 +59,7 @@ export function ProblemEditor({
   const client = useQueryClient();
   const router = useRouter();
   const languageId = useId();
+  const sourceInput = useRef<HTMLTextAreaElement>(null);
   const languages = problemLanguages(problem, capabilities.languages);
   const initialLanguage =
     languages.find((language) => language.languageId === "cpp17") ??
@@ -138,7 +139,11 @@ export function ProblemEditor({
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setShowValidation(true);
-    if (invalidSource || blocked) return;
+    if (invalidSource) {
+      sourceInput.current?.focus();
+      return;
+    }
+    if (blocked) return;
     mutation.mutate({
       problemRef: problem.problemRef,
       languageId: draft.language,
@@ -243,6 +248,7 @@ export function ProblemEditor({
               </Alert>
             ))}
           <CodeEditor
+            inputRef={sourceInput}
             source={draft.source}
             filename={selected?.sourceFilename ?? draft.language}
             onChange={(source) => {

@@ -220,6 +220,7 @@ try {
     '  // UTF-8 原样保留\n#include <iostream>\nint main() { long long a, b; std::cin >> a >> b; std::cout << a + b << "\\n"; }\n  ';
   await page.getByRole("textbox", { name: "源码", exact: true }).fill(source);
   await page.getByLabel("编译语言", { exact: true }).selectOption("cpp17");
+  const problemUrl = page.url();
   const accepted = page.waitForResponse(
     (reply) =>
       new URL(reply.url()).pathname === "/api/v1/submissions" &&
@@ -230,6 +231,12 @@ try {
   assert.equal(submissionResponse.status(), 202);
   assert.equal(submissionResponse.request().postDataJSON().sourceCode, source);
   const { submissionId } = (await submissionResponse.json()).data;
+  await expect(page).toHaveURL(problemUrl);
+  const results = page.getByRole("tabpanel", { name: "提交结果", exact: true });
+  await expect(results.getByText("AC · 通过", { exact: true })).toBeVisible({
+    timeout: 20_000,
+  });
+  await results.getByRole("link", { name: "查看提交", exact: true }).click();
   await expect(page).toHaveURL(
     new RegExp(`/submissions/detail\\?submissionId=${submissionId}`),
   );

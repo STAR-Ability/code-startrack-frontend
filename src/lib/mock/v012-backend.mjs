@@ -324,7 +324,7 @@ export function createV012Mock() {
     if (path === "/coach-invite-codes/redeem") {
       user.roles = ["STUDENT", "COACH"];
       user.primaryRole = "COACH";
-      data(user);
+      data({ user });
       return true;
     }
     if (path === "/coach/dashboard") {
@@ -370,8 +370,9 @@ export function createV012Mock() {
       return true;
     }
     if (path === "/notifications/read-all") {
+      const updated = notifications.filter((item) => !item.read).length;
       notifications.forEach((item) => (item.read = true));
-      data({ count: notifications.length });
+      data({ updated });
       return true;
     }
     const read = path.match(/^\/notifications\/([^/]+)\/read$/);

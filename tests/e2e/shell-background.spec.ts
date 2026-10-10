@@ -4,18 +4,16 @@ import { test, expect, configureUpstream } from "./fixtures";
 test.beforeEach(() => configureUpstream());
 
 const shells = [
-  { name: "public", route: "/", selector: ".brand-surface", layers: 2 },
+  { name: "public", route: "/", selector: ".brand-surface" },
   {
     name: "workspace",
     route: "/dashboard",
     selector: ".workspace-surface",
-    layers: 2,
   },
   {
     name: "authentication",
     route: "/register",
     selector: ".auth-shell",
-    layers: 1,
   },
 ] as const;
 
@@ -35,11 +33,11 @@ for (const shell of shells) {
       await expect(heading).toBeVisible();
       await noHorizontalOverflow(page);
 
-      const before = await backgroundGeometry(surface, shell.layers);
+      const backdrop = page.locator(".geometric-background");
+      const before = await backgroundGeometry(backdrop);
       for (const layer of before.layers) {
         expect(layer.position).toBe("fixed");
         expect(layer.pointerEvents).toBe("none");
-        expect(layer.content).not.toBe("none");
         expect(layer.top).toBe("0px");
         expect(layer.right).toBe("0px");
         expect(layer.bottom).toBe("0px");
@@ -59,7 +57,7 @@ for (const shell of shells) {
       const scrollDelta = contentAfter.scrollY - contentBefore.scrollY;
       expect(scrollDelta).toBeGreaterThan(80);
       expect(contentBefore.y - contentAfter.y).toBeCloseTo(scrollDelta, 0);
-      expect(await backgroundGeometry(surface, shell.layers)).toEqual(before);
+      expect(await backgroundGeometry(backdrop)).toEqual(before);
       await noHorizontalOverflow(page);
     }
   });
@@ -142,14 +140,14 @@ async function contentGeometry(heading: Locator) {
   });
 }
 
-async function backgroundGeometry(surface: Locator, layerCount: number) {
-  return surface.evaluate((element, count) => {
-    const layers = ["::before", "::after"].slice(0, count).map((pseudo) => {
-      const style = getComputedStyle(element, pseudo);
-      return {
+async function backgroundGeometry(backdrop: Locator) {
+  return backdrop.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const bounds = element.getBoundingClientRect();
+    const layers = [
+      {
         position: style.position,
         pointerEvents: style.pointerEvents,
-        content: style.content,
         top: style.top,
         right: style.right,
         bottom: style.bottom,
@@ -159,29 +157,32 @@ async function backgroundGeometry(surface: Locator, layerCount: number) {
         transform: style.transform,
         animationName: style.animationName,
         backgroundImage: style.backgroundImage,
-        backgroundPosition: style.backgroundPosition,
-        backgroundSize: style.backgroundSize,
-        maskImage: style.maskImage,
-      };
-    });
+        bounds: {
+          x: bounds.x,
+          y: bounds.y,
+          width: bounds.width,
+          height: bounds.height,
+        },
+      },
+    ];
     const containingBlocks: string[] = [];
     for (
       let ancestor: Element | null = element;
       ancestor;
       ancestor = ancestor.parentElement
     ) {
-      const style = getComputedStyle(ancestor);
+      const ancestorStyle = getComputedStyle(ancestor);
       if (
-        style.transform !== "none" ||
-        style.translate !== "none" ||
-        style.rotate !== "none" ||
-        style.scale !== "none" ||
-        style.perspective !== "none" ||
-        style.filter !== "none" ||
-        style.backdropFilter !== "none" ||
-        /(?:layout|paint|strict|content)/.test(style.contain) ||
-        /(?:transform|perspective|filter)/.test(style.willChange) ||
-        style.contentVisibility === "auto"
+        ancestorStyle.transform !== "none" ||
+        ancestorStyle.translate !== "none" ||
+        ancestorStyle.rotate !== "none" ||
+        ancestorStyle.scale !== "none" ||
+        ancestorStyle.perspective !== "none" ||
+        ancestorStyle.filter !== "none" ||
+        ancestorStyle.backdropFilter !== "none" ||
+        /(?:layout|paint|strict|content)/.test(ancestorStyle.contain) ||
+        /(?:transform|perspective|filter)/.test(ancestorStyle.willChange) ||
+        ancestorStyle.contentVisibility === "auto"
       )
         containingBlocks.push(ancestor.tagName);
     }
@@ -189,11 +190,45 @@ async function backgroundGeometry(surface: Locator, layerCount: number) {
       layers,
       containingBlocks,
       viewport: {
-        // Mobile emulation can round the layout viewport up after resizing.
-        // Fixed inset layers fill that viewport, as reported by innerWidth.
         width: window.innerWidth,
         height: window.innerHeight,
       },
     };
-  }, layerCount);
+  });
 }
+
+test("page categories have distinct static compositions behind accessible content", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const compositions: string[] = [];
+  for (const [route, category] of [
+    ["/", "public"],
+    ["/dashboard", "overview"],
+    ["/profile", "insight"],
+    ["/problems", "training"],
+    ["/teams", "collaboration"],
+    ["/security", "account"],
+    ["/register", "auth"],
+  ]) {
+    await page.goto(route);
+    const backdrop = page.locator(".geometric-background");
+    await expect(backdrop).toHaveAttribute("data-category", category);
+    await expect(backdrop).toHaveAttribute("aria-hidden", "true");
+    await expect(backdrop.locator("svg")).toHaveCount(4);
+    const composition = await backdrop.evaluate((element) => {
+      const orbit = element.querySelector(".geometry-orbits")!;
+      const shape = element.querySelector(".geometry-shape")!;
+      const orbitBounds = orbit.getBoundingClientRect();
+      const shapeBounds = shape.getBoundingClientRect();
+      return JSON.stringify({
+        orbit: [orbitBounds.x, orbitBounds.y, orbitBounds.width],
+        shape: [shapeBounds.x, shapeBounds.y, shapeBounds.width],
+        stroke: getComputedStyle(orbit).stroke,
+      });
+    });
+    compositions.push(composition);
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  }
+  expect(new Set(compositions).size).toBe(compositions.length);
+});

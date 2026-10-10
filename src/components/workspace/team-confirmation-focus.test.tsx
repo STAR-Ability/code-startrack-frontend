@@ -52,8 +52,8 @@ beforeEach(() => {
   document.cookie = "codestartrack_locale=en; Path=/";
   route.teamId = v012Teams[1].teamId;
   vi.restoreAllMocks();
-  vi.spyOn(v012, "removeMember").mockResolvedValue({});
-  vi.spyOn(v012, "leaveTeam").mockResolvedValue({});
+  vi.spyOn(v012, "removeMember").mockResolvedValue(undefined);
+  vi.spyOn(v012, "leaveTeam").mockResolvedValue(undefined);
 });
 
 function show(children: React.ReactNode) {

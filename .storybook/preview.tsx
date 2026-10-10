@@ -60,7 +60,7 @@ function Providers({
     <LocaleProvider initialLocale={locale}>
       <Appearance locale={locale} theme={theme} />
       <TooltipProvider delay={350}>
-        <Toaster limit={3}>
+        <Toaster>
           <QueryClientProvider client={client}>{children}</QueryClientProvider>
         </Toaster>
       </TooltipProvider>

@@ -12,6 +12,8 @@ export default defineConfig({
     },
   },
   test: {
+    // Bound concurrent jsdom/ECharts environments to keep browser lifecycle tests reliable.
+    maxWorkers: 2,
     environment: "jsdom",
     include: ["src/**/*.test.{ts,tsx}"],
     setupFiles: ["./tests/setup.ts"],

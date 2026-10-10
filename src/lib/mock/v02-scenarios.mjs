@@ -1,0 +1,27 @@
+// Pure configuration shared by the offline server and Storybook interception.
+export const v02MockScenarios = {
+  "v02-new-learner": {
+    noAccounts: true,
+    v02EmptyTraining: true,
+    v02NoProfile: true,
+    v02NoBatch: true,
+  },
+  "v02-pure-platform": { noAccounts: true },
+  "v02-all-verdicts": { v02AllVerdicts: true },
+  "v02-analysis-partial": { v02AnalysisStatus: "PARTIAL" },
+  "v02-analysis-failed": { v02AnalysisStatus: "FAILED" },
+  "v02-analysis-skipped": { v02AnalysisStatus: "SKIPPED" },
+  "v02-analysis-delayed": { v02KeepAnalysis: true },
+  "v02-zero": { zero: true, v02EmptyTraining: true },
+  "v02-stale": { stale: true },
+  "v02-empty-candidates": { emptyCandidates: true },
+  "v02-timeout-replay": { v02LoseResponse: true },
+  "v02-local-failed": { v02JudgeLocalFailure: true, v02JudgeRetryable: true },
+  "v02-cancelled": { v02JudgeStatus: "CANCELLED" },
+  "v02-analysis-unavailable": { v02AnalysisUnavailable: true },
+  "v02-version-conflict": { v02VersionConflict: true },
+  "v02-coach-only": { roles: ["COACH"] },
+  "v02-admin": { roles: ["ADMIN"] },
+  "v02-historical-rating": { oneAccount: true, v02HistoricalRatingOnly: true },
+  "v02-unsafe-statement": { v02UnsafeStatement: true },
+};

@@ -34,6 +34,59 @@ describe("chart data presentation", () => {
     }
   });
 
+  it("allocates more room for category names on wide distributions and restores compact labels on resize", () => {
+    const canvas = vi
+      .spyOn(HTMLCanvasElement.prototype, "getContext")
+      .mockReturnValue({
+        measureText: (text: string) => ({ width: text.length * 6 }),
+      } as unknown as CanvasRenderingContext2D);
+    const chart = init(null, undefined, {
+      renderer: "svg",
+      ssr: true,
+      width: 900,
+      height: 320,
+    });
+    const labels = ["Dynamic programming", "Data structures"];
+    try {
+      chart.setOption({
+        ...distributionOption(
+          labels,
+          [12, 8],
+          [7, 0],
+          ["Attempted", "Solved"],
+          true,
+        ),
+        animation: false,
+      });
+      for (const [width, labelWidth] of [
+        [900, 160],
+        [500, 110],
+        [248, 90],
+        [900, 160],
+      ] as const) {
+        chart.resize({ width, height: 320 });
+        expect(chart.getOption()).toMatchObject({
+          xAxis: [{ min: 0, minInterval: 1 }],
+          yAxis: [
+            {
+              data: labels,
+              inverse: true,
+              axisLabel: { width: labelWidth, interval: 0 },
+            },
+          ],
+          series: [{ data: [12, 8] }, { data: [7, 0] }],
+        });
+        const svg = chart.renderToSVGString();
+        if (width === 900) {
+          for (const label of labels) expect(svg).toContain(label);
+        }
+      }
+    } finally {
+      chart.dispose();
+      canvas.mockRestore();
+    }
+  });
+
   it("uses supplied radar names and scores at every width, with a fixed 0–100 scale", () => {
     const dimensions = [
       { name: "Implementation", score: 24.25 },
@@ -153,7 +206,10 @@ describe("chart data presentation", () => {
           expect(
             [...svg.querySelectorAll("text")].map((label) => label.textContent),
           ).toEqual(
-            width <= 360 ? labels.flatMap((name) => name.split(/\s+/)) : labels,
+            labels.flatMap((name, index) => [
+              ...(width <= 360 ? name.split(/\s+/) : [name]),
+              `${dimensions[index].score} / 100`,
+            ]),
           );
           for (const label of renderedLabels) {
             const bounds = label.getBoundingRect().clone();

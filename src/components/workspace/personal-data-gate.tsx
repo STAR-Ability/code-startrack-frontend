@@ -141,10 +141,12 @@ export function LoginPrompt() {
 export function PersonalDataGate({
   children,
   requireAccount = true,
+  requireStudent = true,
   guestContent,
 }: {
   children: React.ReactNode;
   requireAccount?: boolean;
+  requireStudent?: boolean;
   guestContent?: React.ReactNode;
 }) {
   const session = useWorkspaceSession();
@@ -172,6 +174,12 @@ export function PersonalDataGate({
       </>
     );
   }
+  if (!requireStudent)
+    return (
+      <div key={session.data.publicId} className="flex min-w-0 flex-col gap-4">
+        {children}
+      </div>
+    );
   if (!context)
     return (
       <EmptyState

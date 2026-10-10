@@ -66,6 +66,14 @@ export function LocaleProvider({
             : "metadata.homeTitle",
     );
     const routeTitles = {
+      "/problems": "v02.problems",
+      "/problems/detail": "v02.problemDetail",
+      "/submissions": "v02.submissions",
+      "/submissions/detail": "v02.submissionDetail",
+      "/training": "v02.training",
+      "/training/detail": "v02.trainingDetail",
+      "/learning-profile": "v02.learningProfile",
+      "/learning-recommendations": "v02.learningRecommendations",
       "/product": "showcase.features.label",
       "/product/profile": "showcase.profile.label",
       "/product/recommendations": "showcase.recommendations.label",

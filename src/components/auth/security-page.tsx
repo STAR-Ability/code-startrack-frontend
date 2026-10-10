@@ -2,7 +2,13 @@
 import Link from "next/link";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon, KeyRoundIcon, MailIcon } from "lucide-react";
+import {
+  ArrowRightIcon,
+  GraduationCapIcon,
+  KeyRoundIcon,
+  MailIcon,
+  ShieldCheckIcon,
+} from "lucide-react";
 import { api } from "@/lib/api/endpoints";
 import { isCurrentUser } from "@/lib/query/session";
 import { ApiError } from "@/lib/api/errors";
@@ -46,12 +52,40 @@ export function SecurityPage() {
   return (
     <>
       <IdentityCard />
-      <Link href="/privacy" className="underline">
-        {t("v12.privacy")}
-      </Link>
-      <Link href="/security/coach" className="underline">
-        {t("v12.redeem")}
-      </Link>
+      <nav
+        aria-label={t("security.operations")}
+        className="grid min-w-0 gap-3 sm:grid-cols-2"
+      >
+        <Link
+          href="/privacy"
+          className={buttonVariants({
+            variant: "outline",
+            wrap: true,
+            className: "h-auto justify-start gap-3 p-4 text-left",
+          })}
+        >
+          <ShieldCheckIcon data-icon="inline-start" aria-hidden="true" />
+          <span className="flex min-w-0 flex-1 flex-col gap-1">
+            <span className="font-medium">{t("v12.privacy")}</span>
+            <span className="text-xs font-normal text-muted-foreground">
+              {t("v12.privacyNote")}
+            </span>
+          </span>
+          <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+        </Link>
+        <Link
+          href="/security/coach"
+          className={buttonVariants({
+            variant: "outline",
+            wrap: true,
+            className: "h-auto justify-start gap-3 p-4 text-left",
+          })}
+        >
+          <GraduationCapIcon data-icon="inline-start" aria-hidden="true" />
+          <span className="min-w-0 flex-1 font-medium">{t("v12.redeem")}</span>
+          <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
+        </Link>
+      </nav>
       <Card size="sm" interaction="none">
         <CardHeader>
           <CardTitle>

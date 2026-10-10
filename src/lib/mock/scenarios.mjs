@@ -1,5 +1,7 @@
 // Server-only scenarios. Never select synthetic data from a failed live request.
+import { v02MockScenarios } from "./v02-scenarios.mjs";
 export const mockScenarios = {
+  ...v02MockScenarios,
   success: {},
   student: { identity: "student" },
   "student-no-cf": { identity: "student-no-cf" },

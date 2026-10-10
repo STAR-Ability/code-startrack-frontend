@@ -2,7 +2,7 @@ import { test, expect, configureUpstream } from "./fixtures";
 
 test.beforeEach(() => configureUpstream());
 
-test("slow captcha keeps input focus and shows one top notification until it resolves", async ({
+test("slow captcha keeps input focus and shows one bottom notification until it resolves", async ({
   page,
 }) => {
   await page.clock.install();
@@ -32,7 +32,16 @@ test("slow captcha keeps input focus and shows one top notification until it res
   await expect(notice).toHaveCount(1);
   await expect(notice).toContainText("加载比平时久一点");
   await expect(account).toBeFocused();
-  expect((await notice.boundingBox())!.y).toBeLessThan(80);
+  await page.clock.runFor(600);
+  await expect(notice).toBeVisible();
+  await expect(notice).toBeInViewport({ ratio: 1 });
+  await expect(account).toBeFocused();
+  const bounds = (await notice.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  expect(bounds.x).toBeGreaterThanOrEqual(0);
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width);
+  expect(bounds.y).toBeGreaterThan(viewport.height / 2);
+  expect(bounds.y + bounds.height).toBeLessThanOrEqual(viewport.height);
   release();
   await expect(captcha).toBeEnabled();
   await page.clock.runFor(600);

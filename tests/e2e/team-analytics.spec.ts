@@ -58,9 +58,14 @@ for (const locale of ["en", "zh-CN"] as const satisfies readonly Locale[]) {
     const largeSamples = `${t("v12.dimensionSamples")}: 12,345`;
     await expect(page.getByText(zeroSamples, { exact: true })).toBeVisible();
     await expect(page.getByText(largeSamples, { exact: true })).toHaveCount(5);
-    await expect(page.getByText("0 / 100", { exact: true })).toBeVisible();
+    const zeroDimension = page.getByRole("definition").filter({
+      has: page.getByText(zeroSamples, { exact: true }),
+    });
+    await expect(zeroDimension).toHaveCount(1);
+    const zeroScore = zeroDimension.getByText("0 / 100", { exact: true });
     for (const width of [1440, 390, 320]) {
       await page.setViewportSize({ width, height: 900 });
+      await expect(zeroScore).toBeVisible();
       await expect
         .poll(() =>
           page.evaluate(

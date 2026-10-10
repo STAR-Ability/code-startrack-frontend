@@ -31,6 +31,7 @@ export function Panel({
   variant = "default",
   size = "sm",
   tone,
+  className,
 }: {
   title: CopyKey;
   description?: string;
@@ -38,6 +39,7 @@ export function Panel({
   variant?: React.ComponentProps<typeof Card>["variant"];
   size?: React.ComponentProps<typeof Card>["size"];
   tone?: React.ComponentProps<typeof Card>["tone"];
+  className?: string;
 }) {
   const { t } = useLocale();
   return (
@@ -46,9 +48,9 @@ export function Panel({
       variant={variant}
       tone={tone}
       interaction="none"
-      className="min-w-0 wrap-anywhere"
+      className={`min-w-0 wrap-anywhere ${className ?? ""}`}
     >
-      <CardHeader>
+      <CardHeader className="panel-heading">
         <CardTitle>
           <h2>{t(title)}</h2>
         </CardTitle>
@@ -114,6 +116,7 @@ export function useCollaborationMutation<V, R>(
     onSuccess: async (result) => {
       if (!user || !isCurrentUser(client, user.publicId)) return;
       await invalidateCollaboration(client, user.publicId, operation, teamId);
+      if (!isCurrentUser(client, user.publicId)) return;
       onSuccess?.(result);
     },
     onError: async (error) => {

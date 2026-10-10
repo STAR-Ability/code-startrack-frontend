@@ -93,6 +93,29 @@ for (const status of [404, 503]) {
         call.path.includes("oj-accounts"),
       ),
     ).toHaveLength(0);
+    const notice = page.locator('[data-slot="toast"][data-type="error"]');
+    await expect(notice).toBeVisible();
+    await notice
+      .getByLabel(translate("zh-CN", "ui.dismiss"), {
+        exact: true,
+      })
+      .click();
+    await expect(notice).toBeHidden();
+    await expect(page).toHaveURL("/practice");
+    await expect(
+      page.getByText("请登录查看更多数据", { exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      page.getByRole("button", { name: "生成推荐", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: /A Small Step/ }),
+    ).toHaveCount(0);
+    expect(
+      (await upstreamCalls()).filter((call) =>
+        call.path.includes("oj-accounts"),
+      ),
+    ).toHaveLength(0);
     await page.unroute("**/api/v1/me");
     await page.getByRole("button", { name: "重试", exact: true }).click();
     await expect(

@@ -1,9 +1,16 @@
 import { expect, test } from "vitest";
 import { ApiError, isMissingResource } from "./errors";
 
-test.each(["RESOURCE_NOT_FOUND", "OJ_ACCOUNT_NOT_FOUND", "SYNC_JOB_NOT_FOUND"])(
-  "recognizes the documented missing-resource code %s",
-  (code) => expect(isMissingResource(new ApiError(code, 404))).toBe(true),
+test.each([
+  "RESOURCE_NOT_FOUND",
+  "OJ_ACCOUNT_NOT_FOUND",
+  "SYNC_JOB_NOT_FOUND",
+  "PROBLEM_NOT_FOUND",
+  "SUBMISSION_NOT_FOUND",
+  "TRAINING_RECORD_NOT_FOUND",
+  "TASK_NOT_FOUND",
+])("recognizes the documented missing-resource code %s", (code) =>
+  expect(isMissingResource(new ApiError(code, 404))).toBe(true),
 );
 test.each([
   new ApiError("HTTP_ERROR", 404),

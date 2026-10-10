@@ -12,7 +12,7 @@ import {
   radarOption,
 } from "@/lib/charts/options";
 import { ApiError } from "@/lib/api/errors";
-import { fn } from "storybook/test";
+import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { StoryFrame, mobile } from "./helpers";
 
 const activity = trendOption(
@@ -63,7 +63,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "ECharts SVG rendering reads semantic CSS tokens, converting modern CSS colors for the chart parser. Activity uses blue/green/amber; team activity uses blue/green/teal; distributions use gray/green. Data, palette and theme changes update one chart instance. Responsive radar options preserve supplied values and the 0–100 scale. Reduced motion disables chart animation. Loading/empty/error are owner-level compositions; production analysis also exposes text values. All story data is synthetic.",
+          "ECharts SVG rendering reads semantic CSS tokens with restrained gradients. Activity uses blue/green/amber with circle/diamond/square marks and a dashed pending line; team activity uses blue/green/teal; distributions use neutral/green. Native legend buttons support keyboard toggles and preserve selection through theme/data/locale updates. Dense horizontal distributions grow by category count and display solved values. Responsive radars show supplied scores beside axis names with the 0–100 scale. Reduced motion disables animation. Loading/empty/error stay owner-level compositions; production analysis exposes full text values. All story data is synthetic.",
       },
     },
   },
@@ -71,6 +71,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Default: Story = {};
+export const KeyboardLegend: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const solved = await canvas.findByRole("button", {
+      name: "Solved",
+      pressed: true,
+    });
+    await waitFor(() => expect(solved).toBeEnabled());
+    solved.focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(solved).toHaveAttribute("aria-pressed", "false");
+    await userEvent.keyboard(" ");
+    await expect(solved).toHaveAttribute("aria-pressed", "true");
+  },
+};
 export const Distribution: Story = {
   parameters: { chartTitle: "Practice coverage" },
   args: {
@@ -134,3 +149,46 @@ export const Error: Story = {
 };
 export const Mobile: Story = { globals: mobile };
 export const Dark: Story = { globals: { theme: "dark" } };
+export const DenseDistribution: Story = {
+  parameters: { chartTitle: "Topic coverage · ten supplied categories" },
+  args: {
+    palette: "distribution",
+    label: "Synthetic attempted and solved counts across ten categories",
+    option: distributionOption(
+      [
+        "implementation",
+        "dynamic programming",
+        "data structures",
+        "graphs",
+        "number theory",
+        "binary search",
+        "combinatorics",
+        "geometry",
+        "strings",
+        "greedy",
+      ],
+      [180, 75, 120, 45, 52, 80, 38, 32, 60, 110],
+      [156, 35, 98, 26, 22, 63, 17, 9, 43, 82],
+      ["Attempted", "Solved"],
+      true,
+    ),
+  },
+};
+export const MobileDenseDistribution: Story = {
+  ...DenseDistribution,
+  globals: mobile,
+};
+export const ZeroActivity: Story = {
+  parameters: { chartTitle: "A valid zero-activity snapshot" },
+  args: {
+    option: trendOption(
+      ["10-01", "10-02", "10-03"],
+      [
+        { name: "Submissions", values: [0, 0, 0] },
+        { name: "Solved", values: [0, 0, 0] },
+      ],
+    ),
+    label:
+      "Synthetic valid snapshot: zero submissions and solved problems on all three dates",
+  },
+};

@@ -16,6 +16,50 @@ const mime = {
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
 };
+const apiBodyLimit = 2 * 1024 * 1024;
+
+function apiCacheControl(value) {
+  const upstreamControl = (
+    Array.isArray(value) ? value.join(", ") : (value ?? "")
+  ).trim();
+  // Quoted extension values may contain commas and directive-like text.
+  const directives = upstreamControl
+    .replace(/"(?:\\.|[^"\\])*"?/g, '""')
+    .split(",");
+  return directives.some(
+    (directive) => directive.trim().toLowerCase() === "no-store",
+  )
+    ? upstreamControl
+    : [upstreamControl, "no-store"].filter(Boolean).join(", ");
+}
+
+async function readApiBody(request, response) {
+  function rejectBody() {
+    response
+      .writeHead(413, {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+      })
+      .end("Request body is too large");
+    request.resume();
+  }
+  if (Number(request.headers["content-length"]) > apiBodyLimit) {
+    rejectBody();
+    return null;
+  }
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of request.iterator({ destroyOnReturn: false })) {
+    size += chunk.length;
+    if (size > apiBodyLimit) {
+      rejectBody();
+      return null;
+    }
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks, size);
+}
+
 export function createFrontendServer({
   upstream = process.env.BACKEND_BASE_URL || "http://backend:8081",
   directory = "out",
@@ -41,6 +85,15 @@ export function createFrontendServer({
       return;
     }
     if (pathname.startsWith("/api/v1/")) {
+      let body;
+      try {
+        // Validate the complete body before forwarding a potentially mutating request.
+        body = await readApiBody(request, response);
+      } catch {
+        if (!response.destroyed) response.writeHead(400).end();
+        return;
+      }
+      if (body === null) return;
       const proxy = (target.protocol === "https:" ? httpsRequest : httpRequest)(
         new URL(`${pathname}${requestUrl.search}`, target),
         {
@@ -54,7 +107,7 @@ export function createFrontendServer({
         (incoming) => {
           response.writeHead(incoming.statusCode, {
             ...incoming.headers,
-            "cache-control": "no-store",
+            "cache-control": apiCacheControl(incoming.headers["cache-control"]),
           });
           incoming.pipe(response);
         },
@@ -68,7 +121,7 @@ export function createFrontendServer({
         response.end();
       });
       response.on("close", () => proxy.destroy());
-      request.pipe(proxy);
+      proxy.end(body);
       return;
     }
     if (pathname.startsWith("/api/")) {
@@ -91,14 +144,33 @@ export function createFrontendServer({
       response.writeHead(404).end();
       return;
     }
-    const candidates = [path, `${path}.html`, resolve(path, "index.html")];
+    if (pathname !== "/" && pathname.endsWith("/")) {
+      try {
+        if ((await stat(`${path}.html`)).isFile()) {
+          response
+            .writeHead(308, {
+              Location: `${pathname.replace(/^\/+/, "/").slice(0, -1)}${requestUrl.search}`,
+              "Cache-Control": "no-cache",
+            })
+            .end();
+          return;
+        }
+      } catch {
+        /* A missing page may still have an exported directory index. */
+      }
+    }
+    const candidates = (
+      path === root
+        ? [resolve(root, "index.html")]
+        : [`${path}.html`, path, resolve(path, "index.html")]
+    ).map((candidate) => [candidate, 200]);
     if (!pathname.startsWith("/_next/"))
-      candidates.push(resolve(root, "index.html"));
-    for (const candidate of candidates) {
+      candidates.push([resolve(root, "404.html"), 404]);
+    for (const [candidate, status] of candidates) {
       try {
         if (!(await stat(candidate)).isFile()) continue;
         const content = await readFile(candidate);
-        response.writeHead(200, {
+        response.writeHead(status, {
           "Content-Type":
             mime[extname(candidate)] || "application/octet-stream",
           "Cache-Control": pathname.startsWith("/_next/static/")

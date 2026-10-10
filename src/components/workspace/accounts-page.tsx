@@ -11,6 +11,7 @@ import { api } from "@/lib/api/endpoints";
 import { ApiError } from "@/lib/api/errors";
 import { keys } from "@/lib/query/keys";
 import { isCurrentBinding, isCurrentUser } from "@/lib/query/session";
+import { invalidateV02LearningSources } from "@/lib/query/v02-hooks";
 import type { OjAccountDto } from "@/lib/api/schemas";
 import { useAccounts } from "./account-provider";
 import { useLocale } from "@/components/layout/locale-provider";
@@ -77,6 +78,8 @@ export function AccountsPage() {
       await client.invalidateQueries({
         queryKey: keys.accounts(user.publicId),
       });
+      if (!isCurrentUser(client, user.publicId)) return;
+      void invalidateV02LearningSources(client, user.publicId);
       selectAccount(result.account.accountId);
       form.reset();
       void client.invalidateQueries({
@@ -177,6 +180,7 @@ function AccountCard({ account }: { account: OjAccountDto }) {
       await client.cancelQueries({
         queryKey: keys.account(user.publicId, account.accountId),
       });
+      if (!isCurrentUser(client, user.publicId)) return;
       client.removeQueries({
         queryKey: keys.account(user.publicId, account.accountId),
       });
@@ -191,6 +195,7 @@ function AccountCard({ account }: { account: OjAccountDto }) {
       void client.invalidateQueries({
         queryKey: keys.accounts(user.publicId, true),
       });
+      void invalidateV02LearningSources(client, user.publicId);
     },
   });
   const remaining = useCountdown(

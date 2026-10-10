@@ -3,9 +3,16 @@ import { validateMockRequest } from "../../src/lib/mock/requests.mjs";
 import { scenarioConfig } from "../../src/lib/mock/scenarios.mjs";
 import { identityFixture } from "../../src/lib/demo/v012-scenarios";
 import { fixtureUuid } from "../../src/lib/demo/fixtures";
+import { createV02StoryHandler } from "../../.storybook/v02-request-handler";
+import {
+  isV02Path,
+  validateV02Request,
+} from "../../src/lib/mock/v02-requests.mjs";
 
-// Storybook-only transport. Reuses the HTTP Mock's validator, DTO builders and
-// business state machine. Unhandled API calls fail locally, never reach a server.
+// Storybook-only transport with shared strict request validation. V0.12 reuses
+// its HTTP business state machine; V0.2 uses browser presentation fixtures.
+// Judge and synchronization transitions remain in the offline HTTP backend.
+// Unhandled API calls fail locally, never reach a server.
 let restore: (() => void) | undefined;
 export function installStoryScenario(name?: string) {
   restore?.();
@@ -17,6 +24,7 @@ export function installStoryScenario(name?: string) {
   );
   const collaboration = createV012Mock();
   collaboration.reset(config);
+  const learning = createV02StoryHandler(config);
   const original = window.fetch;
   const intercepted: typeof fetch = async (input, init) => {
     const url = new URL(
@@ -35,7 +43,9 @@ export function installStoryScenario(name?: string) {
     const method =
       init?.method ?? (input instanceof Request ? input.method : "GET");
     const body = init?.body ? JSON.parse(String(init.body)) : undefined;
-    const validated = validateMockRequest(method, path, body, url.searchParams);
+    const validated = (
+      isV02Path(path) ? validateV02Request : validateMockRequest
+    )(method, path, body, url.searchParams);
     let response: Response | undefined;
     const requestId = fixtureUuid(9900);
     const json = (
@@ -99,7 +109,35 @@ export function installStoryScenario(name?: string) {
       );
       return response!;
     }
-    if (path === "/me") data(identity.user);
+    const paginated = (items: unknown[]) => {
+      const page = query.page ?? 1,
+        pageSize = query.pageSize ?? 20;
+      json({
+        data: items.slice((page - 1) * pageSize, page * pageSize),
+        meta: {
+          page,
+          pageSize,
+          total: items.length,
+          hasNext: page * pageSize < items.length,
+        },
+        requestId,
+      });
+    };
+    if (isV02Path(path))
+      learning({
+        path,
+        method,
+        body: validated.body,
+        query,
+        headers: new Headers(
+          init?.headers ??
+            (input instanceof Request ? input.headers : undefined),
+        ),
+        data,
+        error,
+        paginated,
+      });
+    else if (path === "/me") data(identity.user);
     else if (path === "/oj-accounts")
       data(config.noAccounts ? [] : identity.accounts);
     else
@@ -119,20 +157,7 @@ export function installStoryScenario(name?: string) {
             headers: { "X-codeStartrack-Mock": "true", ...headers },
           });
         },
-        paginated: (items: unknown[]) => {
-          const page = query.page ?? 1,
-            pageSize = query.pageSize ?? 20;
-          json({
-            data: items.slice((page - 1) * pageSize, page * pageSize),
-            meta: {
-              page,
-              pageSize,
-              total: items.length,
-              hasNext: page * pageSize < items.length,
-            },
-            requestId,
-          });
-        },
+        paginated,
       });
     if (!response) error("RESOURCE_NOT_FOUND", 404);
     return response!;

@@ -32,6 +32,7 @@ import { Separator } from "@/components/ui/separator";
 import { MetricPanel } from "./metric-panel";
 import type { UserAnalysisDto } from "@/lib/api/v012-schemas";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LearningOverview } from "./v02/learning-overview";
 function DashboardDirection({
   analysis,
   loading,
@@ -48,8 +49,9 @@ function DashboardDirection({
     <Card
       variant="recommendation"
       interaction="none"
-      size="lg"
+      size="default"
       data-dashboard-direction
+      className="h-full"
     >
       <CardHeader>
         <CardDescription>{t("dashboard.nextStep")}</CardDescription>
@@ -63,7 +65,7 @@ function DashboardDirection({
           </h2>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex min-w-0 flex-wrap items-center justify-between gap-5">
+      <CardContent className="flex min-w-0 flex-1 flex-col items-start justify-between gap-5">
         <div className="flex min-w-0 flex-col gap-3">
           {ready && (
             <Badge variant="insight" wrap className="self-start">
@@ -135,14 +137,20 @@ export function UserDashboardPage() {
   );
   return (
     <>
-      <DashboardDirection
-        analysis={analysis.data ?? null}
-        loading={analysis.isFetching && !analysis.data}
-        failed={!!analysis.error}
-      />
+      <LearningOverview />
+      <div className="flex items-center gap-3 pt-2">
+        <ChartNoAxesCombinedIcon
+          className="size-5 text-insight"
+          aria-hidden="true"
+        />
+        <h2 className="text-xl font-semibold tracking-tight">
+          {t("v02.codeforcesProfile")}
+        </h2>
+        <Separator className="flex-1" />
+      </div>
       <QueryFeedback query={analysis} />
-      {analysis.data && (
-        <>
+      <div className="grid min-w-0 items-stretch gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+        {analysis.data && (
           <MetricPanel
             title="v12.abilitySummary"
             description={
@@ -169,15 +177,20 @@ export function UserDashboardPage() {
               ["v12.sources", analysis.data.sourceAccountCount],
             ]}
           />
-          {analysis.data.stale && (
-            <Alert>
-              <AlertDescription>{t("v12.staleNote")}</AlertDescription>
-            </Alert>
-          )}
-          {!analysis.data.summary.submissionCount && (
-            <EmptyState title={t("v.noEvidence")} />
-          )}
-        </>
+        )}
+        <DashboardDirection
+          analysis={analysis.data ?? null}
+          loading={analysis.isFetching && !analysis.data}
+          failed={!!analysis.error}
+        />
+      </div>
+      {analysis.data?.stale && (
+        <Alert>
+          <AlertDescription>{t("v12.staleNote")}</AlertDescription>
+        </Alert>
+      )}
+      {analysis.data && !analysis.data.summary.submissionCount && (
+        <EmptyState title={t("v.noEvidence")} />
       )}
       <DataRegion
         query={overview}
@@ -204,7 +217,7 @@ export function UserDashboardPage() {
       </DataRegion>
       {analysis.data && <UserSources analysis={analysis.data} />}
       <UserRebuild />
-      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+      <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
         <Card variant="analysis" interaction="none" className="min-w-0">
           <CardHeader className="gap-2">
             <CardTitle>
@@ -326,12 +339,14 @@ export function UserDashboardPage() {
           <section className="flex min-w-0 flex-col gap-3">
             <h3 className="text-sm font-medium">{t("v12.notifications")}</h3>
             <QueryFeedback query={unread} />
-            <p className="text-xs text-muted-foreground">
-              {t("v12.unread")}:{" "}
-              <span className="font-medium tabular-nums text-foreground">
+            <dl className="flex items-baseline gap-3">
+              <dt className="text-xs text-muted-foreground">
+                {t("v12.unread")}
+              </dt>
+              <dd className="font-mono text-3xl font-semibold tabular-nums text-support">
                 {unread.data ? formatNumber(unread.data.count, locale) : "—"}
-              </span>
-            </p>
+              </dd>
+            </dl>
             <Link
               href="/notifications"
               className={buttonVariants({

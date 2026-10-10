@@ -20,7 +20,8 @@ server {
         default_type application/json;
         return 200 '{"status":"ok"}';
     }
-    location /api/v1/ {
+    location ^~ /api/v1/ {
+        client_max_body_size 2m;
         proxy_pass ${BACKEND_BASE_URL};
         proxy_http_version 1.1;
         proxy_set_header Host $http_host;
@@ -33,13 +34,28 @@ server {
         add_header Cache-Control "no-store" always;
     }
     # Do not turn obsolete API calls into successful HTML responses.
-    location /api/ { return 404; }
-    location /_next/static/ {
+    location ^~ /api/ { return 404; }
+    location ^~ /_next/static/ {
         add_header Cache-Control "public, max-age=31536000, immutable";
         try_files $uri =404;
     }
     location / {
         add_header Cache-Control "no-cache";
-        try_files $uri $uri.html $uri/ /index.html;
+        error_page 404 /404.html;
+        # App Router exports also create payload directories beside page HTML.
+        try_files $uri.html $uri $uri/index.html =404;
+    }
+    location ~ ^(?<export_page>/.+)/$ {
+        add_header Cache-Control "no-cache";
+        error_page 404 /404.html;
+        if (-f $document_root$export_page.html) {
+            return 308 $export_page$is_args$args;
+        }
+        try_files $export_page/index.html =404;
+    }
+    location = /404.html {
+        internal;
+        add_header Cache-Control "no-cache" always;
+        try_files /404.html =404;
     }
 }

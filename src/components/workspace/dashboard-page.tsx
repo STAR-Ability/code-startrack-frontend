@@ -1,6 +1,7 @@
 "use client";
 import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
+import { ArrowRightIcon, RouteIcon } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useJobLock } from "./use-job-lock";
 import { api } from "@/lib/api/endpoints";
@@ -20,13 +21,19 @@ import { PersonalDataGate } from "./personal-data-gate";
 import { SyncPanel } from "./sync-panel";
 import { Badge } from "@/components/ui/badge";
 import { AccountSwitcher } from "./workspace-page";
+import { Separator } from "@/components/ui/separator";
 
 export function DashboardPage() {
   const { t } = useLocale();
   return (
     <>
       <AccountPortfolio />
-      <h2 className="text-base font-medium">{t("portfolio.selected")}</h2>
+      <div className="flex items-center gap-3 pt-2">
+        <h2 className="text-lg font-semibold tracking-tight">
+          {t("portfolio.selected")}
+        </h2>
+        <Separator className="flex-1" />
+      </div>
       <PersonalDataGate>
         <SelectedTraining />
       </PersonalDataGate>
@@ -93,13 +100,18 @@ function SelectedTraining() {
       </div>
       <DataRegion query={dashboard} name={t("v.dashboard")}>
         <div className="grid min-w-0 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
-          <Card size="sm">
-            <CardHeader>
+          <Card variant="recommendation" interaction="none" className="h-full">
+            <CardHeader className="gap-4">
+              <span className="flex size-11 items-center justify-center rounded-xl border border-info/15 bg-info-soft text-info">
+                <RouteIcon className="size-5" aria-hidden="true" />
+              </span>
               <CardTitle>
-                <h2>{t("v.nextAction")}</h2>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  {t("v.nextAction")}
+                </h2>
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col items-start gap-3">
+            <CardContent className="flex flex-1 flex-col items-start gap-4">
               {!dashboard.data ? (
                 <p>{t("v.unavailable")}</p>
               ) : next === "WAIT_SYNC" ? (
@@ -113,6 +125,7 @@ function SelectedTraining() {
                     account?.bindStatus === "UNBOUND"
                   }
                   onClick={() => action.mutate(next)}
+                  size="lg"
                 >
                   {action.isPending && (
                     <Spinner data-icon="inline-start" aria-hidden="true" />
@@ -122,12 +135,16 @@ function SelectedTraining() {
               ) : (
                 <>
                   <p>{t(next === "NONE" ? "v.ready" : "v.noBatch")}</p>
-                  <Link href="/practice" className={buttonVariants()}>
+                  <Link
+                    href="/practice"
+                    className={buttonVariants({ size: "lg", wrap: true })}
+                  >
                     {t(
                       next === "GENERATE_RECOMMENDATIONS"
                         ? "v.generate"
                         : "nav.practice",
                     )}
+                    <ArrowRightIcon data-icon="inline-end" aria-hidden="true" />
                   </Link>
                 </>
               )}

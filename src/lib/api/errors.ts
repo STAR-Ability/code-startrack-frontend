@@ -22,6 +22,10 @@ export function isMissingResource(error: unknown): boolean {
       "RESOURCE_NOT_FOUND",
       "OJ_ACCOUNT_NOT_FOUND",
       "SYNC_JOB_NOT_FOUND",
+      "PROBLEM_NOT_FOUND",
+      "SUBMISSION_NOT_FOUND",
+      "TRAINING_RECORD_NOT_FOUND",
+      "TASK_NOT_FOUND",
     ].includes(error.code)
   );
 }

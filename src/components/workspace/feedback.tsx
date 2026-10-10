@@ -24,6 +24,7 @@ import { toast } from "@/components/ui/toast";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Skeleton } from "@/components/ui/skeleton";
 import { v012Zh } from "@/lib/i18n/v012-messages";
+import { v02CommonZh } from "@/lib/i18n/v02-common-messages";
 import type { CopyKey } from "@/lib/i18n/messages";
 import type { PageMeta } from "@/lib/api/schemas";
 import { dataState, useMockMode, type DataQuery } from "@/lib/api/data-state";
@@ -69,6 +70,8 @@ export function useSlowRequest(pending: boolean) {
 
 function errorMessage(error: unknown) {
   const apiError = error instanceof ApiError ? error : null;
+  const v02Key = `v02.error.${apiError?.code}`;
+  if (v02Key in v02CommonZh) return v02Key as CopyKey;
   if (apiError?.code === "INVALID_RESPONSE") return "ui.invalidResponseHint";
   const v12Code =
     apiError?.code === "PRIVACY_DENIED" ? "PRIVATE_DENIED" : apiError?.code;
@@ -117,7 +120,9 @@ export function ErrorNotice({
       !invalidResponse &&
       !(
         error instanceof ApiError &&
-        (`v12.${error.code}` in v012Zh || error.code === "PRIVACY_DENIED")
+        (`v12.${error.code}` in v012Zh ||
+          `v02.error.${error.code}` in v02CommonZh ||
+          error.code === "PRIVACY_DENIED")
       )
       ? "ui.connectionHint"
       : errorMessage(error),

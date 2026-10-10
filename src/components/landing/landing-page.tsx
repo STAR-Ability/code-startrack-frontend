@@ -18,7 +18,6 @@ import { useLocale } from "@/components/layout/locale-provider";
 import { AppHeader } from "@/components/layout/app-header";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ProductPreview } from "./product-preview";
 import { Journey } from "./journey";
@@ -61,7 +60,7 @@ export function LandingPage() {
         ref={main}
         className="brand-surface"
       >
-        <section className="brand-hero mx-auto grid max-w-7xl items-center gap-12 px-5 pt-14 pb-20 sm:px-8 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24 lg:pb-28">
+        <section className="brand-hero mx-auto grid max-w-7xl items-center gap-12 px-5 pt-14 pb-16 sm:px-8 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:pt-20 lg:pb-24">
           <div className="flex min-w-0 flex-col items-start gap-7">
             <Badge variant="outline" wrap>
               <span className="size-1.5 shrink-0 rounded-full bg-link" />
@@ -69,7 +68,7 @@ export function LandingPage() {
             </Badge>
             <h1 className="hero-title">
               {t("landing.title")}
-              <span className="mt-2 block text-muted-foreground">
+              <span className="mt-2 block text-info">
                 {t("landing.titleEnd")}
               </span>
             </h1>
@@ -112,13 +111,16 @@ export function LandingPage() {
         </section>
         <div className="border-y bg-muted/50">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-5 py-5 sm:px-8">
-            <p className="text-xs text-muted-foreground">
+            <p className="min-w-0 flex-1 text-xs text-muted-foreground sm:flex-none">
               {t("landing.currentSource")}{" "}
               <span className="ml-2 font-medium text-foreground">
-                Codeforces
+                {t("landing.sources")}
               </span>
             </p>
-            <div className="marquee-window min-w-0 flex-1" data-paused={paused}>
+            <div
+              className="marquee-window order-last w-full min-w-0 basis-full sm:order-none sm:w-auto sm:flex-1 sm:basis-auto"
+              data-paused={paused}
+            >
               <div className="marquee-track">
                 <span>{t("landing.unified")}</span>
                 <OrbitIcon className="size-4 shrink-0" aria-hidden="true" />
@@ -140,35 +142,47 @@ export function LandingPage() {
           </div>
         </div>
         <section className="landing-section" aria-labelledby="flow-title">
-          <p className="section-eyebrow">{t("landing.flowEyebrow")}</p>
-          <h2 id="flow-title" className="section-title">
-            {t("landing.flowTitle")}
-          </h2>
-          <p className="section-description mt-4">
-            {t("landing.flowDescription")}
-          </p>
-          <div className="flow-grid mt-12">
-            {flow.map(([key, Icon], index) => (
-              <Card key={key} interaction="lift" className="flow-card">
-                <CardHeader>
-                  <div className="mb-5 flex items-center justify-between gap-2">
-                    <Icon className="size-5" aria-hidden="true" />
-                    <span className="font-mono text-xs text-muted-foreground">
-                      0{index + 1}
-                    </span>
-                  </div>
-                  <CardTitle>
-                    <h3>{t(`flow.${key}`)}</h3>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-xs leading-relaxed text-muted-foreground">
-                    {t(`flow.${key}Note`)}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="grid items-end gap-5 lg:grid-cols-[1.3fr_1fr]">
+            <div>
+              <p className="section-eyebrow">{t("landing.flowEyebrow")}</p>
+              <h2 id="flow-title" className="section-title">
+                {t("landing.flowTitle")}
+              </h2>
+            </div>
+            <p className="section-description lg:max-w-sm lg:justify-self-end">
+              {t("landing.flowDescription")}
+            </p>
           </div>
+          <ol className="mt-10 grid min-w-0 gap-2 rounded-3xl border border-surface-border bg-surface-supporting p-3 shadow-surface sm:grid-cols-2 sm:p-5 lg:grid-cols-5">
+            {flow.map(([key, Icon], index) => (
+              <li
+                key={key}
+                className={cn(
+                  "relative flex min-w-0 flex-col gap-4 rounded-2xl p-4 sm:p-5",
+                  key === "profile" &&
+                    "bg-insight-soft shadow-surface ring-1 ring-insight/15",
+                )}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className={cn(
+                      "flex size-10 items-center justify-center rounded-xl bg-card text-info",
+                      key === "profile" && "text-insight",
+                    )}
+                  >
+                    <Icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    0{index + 1}
+                  </span>
+                </div>
+                <h3 className="font-semibold">{t(`flow.${key}`)}</h3>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  {t(`flow.${key}Note`)}
+                </p>
+              </li>
+            ))}
+          </ol>
         </section>
         <div className="section-wash border-y">
           <section
@@ -176,12 +190,14 @@ export function LandingPage() {
             className="landing-section scroll-mt-32"
             aria-labelledby="features-title"
           >
-            <h2 id="features-title" className="section-title">
-              {t("landing.featuresTitle")}
-            </h2>
-            <p className="section-description mt-4">
-              {t("landing.featuresDescription")}
-            </p>
+            <div className="grid items-end gap-5 lg:grid-cols-[1.3fr_1fr]">
+              <h2 id="features-title" className="section-title">
+                {t("landing.featuresTitle")}
+              </h2>
+              <p className="section-description lg:max-w-sm lg:justify-self-end">
+                {t("landing.featuresDescription")}
+              </p>
+            </div>
             <ProductIndex />
           </section>
         </div>
@@ -232,7 +248,7 @@ export function LandingPage() {
       </main>
       <footer className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 border-t px-5 py-6 text-xs text-muted-foreground sm:px-8">
         <p>{t("landing.footer")}</p>
-        <p>V0.11 · {t("demo.label")}</p>
+        <p>{t("demo.label")}</p>
       </footer>
     </>
   );

@@ -19,10 +19,13 @@ import { scenarioConfig, mockScenarios } from "./scenarios.mjs";
 import { mockCaptchaImage } from "./captcha.mjs";
 import { createV012Mock } from "./v012-backend.mjs";
 import { validateMockRequest } from "./requests.mjs";
+import { createV02Mock } from "./v02-backend.mjs";
+import { isV02Path, validateV02Request } from "./v02-requests.mjs";
 
 // Isolated, in-memory single-learner service. No provider, DB or network calls.
 export function createMockBackend({ scenario = "success" } = {}) {
   const collaboration = createV012Mock();
+  const learning = createV02Mock();
   let config,
     calls,
     bound,
@@ -45,6 +48,11 @@ export function createMockBackend({ scenario = "success" } = {}) {
       user.primaryRole = "COACH";
     }
     if (config.publicId) user.publicId = config.publicId;
+    if (config.roles) {
+      user.roles = [...config.roles];
+      user.primaryRole = config.roles[0];
+    }
+    learning.reset();
     collaboration.reset(config);
     bound = config.noAccounts
       ? []
@@ -57,6 +65,7 @@ export function createMockBackend({ scenario = "success" } = {}) {
           demoUnbound,
         ]);
     if (config.invalid && bound[0]) bound[0].bindStatus = "INVALID";
+    if (config.v02HistoricalRatingOnly && bound[0]) bound[0].rating = null;
     jobs = new Map();
     lastManualJob = new Map();
     snapshots = new Map();
@@ -183,7 +192,12 @@ export function createMockBackend({ scenario = "success" } = {}) {
     try {
       const chunks = [];
       for await (const chunk of request) chunks.push(chunk);
-      const raw = Buffer.concat(chunks).toString();
+      const bytes = Buffer.concat(chunks);
+      if (bytes.byteLength > 2097152) {
+        error("INPUT_TOO_LARGE", 413);
+        return;
+      }
+      const raw = bytes.toString();
       body = raw ? JSON.parse(raw) : undefined;
     } catch {
       error("INVALID_ARGUMENT", 400);
@@ -200,8 +214,14 @@ export function createMockBackend({ scenario = "success" } = {}) {
         return;
       }
       if (request.method === "POST") {
-        if (body?.preserveCalls) config = { ...config, ...body };
-        else reset(body ?? {});
+        if (body?.preserveCalls) {
+          config = { ...config, ...body };
+          if (body.publicId) user.publicId = body.publicId;
+          if (body.roles) {
+            user.roles = [...body.roles];
+            user.primaryRole = body.roles[0];
+          }
+        } else reset(body ?? {});
       }
       json({
         calls,
@@ -221,7 +241,7 @@ export function createMockBackend({ scenario = "success" } = {}) {
       return;
     }
     const path = url.pathname.slice(7);
-    const valid = validateMockRequest(
+    const valid = (isV02Path(path) ? validateV02Request : validateMockRequest)(
       request.method,
       path,
       body,
@@ -229,7 +249,9 @@ export function createMockBackend({ scenario = "success" } = {}) {
     );
     if (!valid.success) {
       error(
-        valid.missing ? "RESOURCE_NOT_FOUND" : "INVALID_ARGUMENT",
+        valid.missing
+          ? "RESOURCE_NOT_FOUND"
+          : (valid.code ?? "INVALID_ARGUMENT"),
         valid.missing ? 404 : 400,
       );
       return;
@@ -380,6 +402,23 @@ export function createMockBackend({ scenario = "success" } = {}) {
       );
       return;
     }
+    if (
+      learning.handle({
+        path,
+        method: request.method,
+        body,
+        query,
+        config,
+        user,
+        bound,
+        data,
+        paginated,
+        error,
+        request,
+        response,
+      })
+    )
+      return;
     if (config.guest) {
       error("FORBIDDEN", 403);
       return;
@@ -434,6 +473,7 @@ export function createMockBackend({ scenario = "success" } = {}) {
         };
         jobs.set(account.accountId, initialSync);
         jobs.set(initialSync.jobId, initialSync);
+        learning.sourceChanged({ user, bound, config, event: "bound" });
         data({ account, initialSync }, 201);
         return;
       }
@@ -509,6 +549,12 @@ export function createMockBackend({ scenario = "success" } = {}) {
           } else
             for (const snapshot of snapshots.get(account.accountId) ?? [])
               snapshot.stale = true;
+          learning.sourceChanged({
+            user,
+            bound,
+            config,
+            event: "sync-completed",
+          });
         }
       }
       data(job);
@@ -542,6 +588,7 @@ export function createMockBackend({ scenario = "success" } = {}) {
           },
         ];
       }
+      learning.sourceChanged({ user, bound, config, event: "unbound" });
       noContent();
       return;
     }

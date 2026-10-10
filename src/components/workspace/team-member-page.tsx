@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { FingerprintIcon, TargetIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { v012 } from "@/lib/api/v012";
 import { uuidSchema } from "@/lib/api/schemas";
@@ -12,6 +13,7 @@ import type {
 import { keys } from "@/lib/query/keys";
 import { useLocale } from "@/components/layout/locale-provider";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DetailsDisclosure } from "@/components/ui/details-disclosure";
 import { Panel, useTeamQuery } from "./v012-shared";
 import { EmptyState, Pagination, QueryFeedback } from "./feedback";
@@ -22,7 +24,7 @@ import {
   distributionOption,
   radarOption,
 } from "@/lib/charts/options";
-import { formatTimestamp } from "@/lib/i18n/locale";
+import { formatNumber, formatTimestamp } from "@/lib/i18n/locale";
 import { PersonalReportView } from "./personal-reports-page";
 import { useAccounts } from "./account-provider";
 const views = [
@@ -35,9 +37,10 @@ type MemberView = (typeof views)[number];
 export function SharedTrainingView({
   data,
 }: {
-  data: SharedTrainingOverviewDto;
+  data: SharedTrainingOverviewDto | null;
 }) {
   const { t, locale } = useLocale();
+  if (data === null) return <EmptyState title={t("v.noAnalysis")} />;
   const number = (value: number) => new Intl.NumberFormat(locale).format(value);
   return (
     <>
@@ -78,12 +81,14 @@ export function SharedTrainingView({
                 data.activityStats.map((item) => item.date),
                 [
                   {
+                    id: "submissions",
                     name: t("v.submissions"),
                     values: data.activityStats.map(
                       (item) => item.submissionCount,
                     ),
                   },
                   {
+                    id: "solved",
                     name: t("v.solved"),
                     values: data.activityStats.map((item) => item.solvedCount),
                   },
@@ -205,38 +210,70 @@ export function SharedTrainingView({
     </>
   );
 }
-export function SharedProfileView({ data }: { data: SharedAbilityProfileDto }) {
-  const { t } = useLocale();
+export function SharedProfileView({
+  data,
+}: {
+  data: SharedAbilityProfileDto | null;
+}) {
+  const { t, locale } = useLocale();
+  if (data === null) return <EmptyState title={t("v.noAnalysis")} />;
   const dimensions = [...data.dimensions].sort(
     (a, b) => a.displayOrder - b.displayOrder,
   );
   return (
     <Panel title="v12.abilityProfile" variant="analysis">
-      <p>
-        {t("v.overallScore")}: {data.overallScore} / 100 · {t("v.weakest")}:{" "}
-        {t(`data.dimension.${data.weakestDimension}`)}
-      </p>
+      <div className="flex min-w-0 flex-wrap items-end justify-between gap-5 border-b border-insight/15 pb-5">
+        <div className="min-w-0">
+          <p className="mb-2 flex items-center gap-2 text-sm font-medium text-insight">
+            <FingerprintIcon className="size-4" aria-hidden="true" />
+            {t("v.overallScore")}
+          </p>
+          <p className="font-mono text-4xl font-semibold tracking-tight tabular-nums text-insight sm:text-5xl">
+            {formatNumber(data.overallScore, locale, 2)}
+            <span className="ml-2 text-base font-normal text-muted-foreground">
+              / 100
+            </span>
+          </p>
+        </div>
+        <Badge wrap variant="insight">
+          <TargetIcon aria-hidden="true" />
+          {t("v.weakest")} · {t(`data.dimension.${data.weakestDimension}`)}
+        </Badge>
+      </div>
       {data.stale && <p>{t("v12.staleNote")}</p>}
-      <Chart
-        label={t("v.dimensions")}
-        palette="ability"
-        size="ability"
-        option={radarOption(
-          dimensions.map((item) => ({
-            name: t(`data.dimension.${item.code}`),
-            score: item.score,
-          })),
-          t("v.overallScore"),
-        )}
-      />
-      <dl className="grid gap-2 sm:grid-cols-2">
-        {dimensions.map((item) => (
-          <div key={item.code} className="flex flex-wrap justify-between gap-2">
-            <dt>{t(`data.dimension.${item.code}`)}</dt>
-            <dd>{item.score} / 100</dd>
-          </div>
-        ))}
-      </dl>
+      <div className="grid min-w-0 items-center gap-5 lg:grid-cols-2">
+        <Chart
+          label={t("v.dimensions")}
+          palette="ability"
+          size="ability"
+          option={radarOption(
+            dimensions.map((item) => ({
+              name: t(`data.dimension.${item.code}`),
+              score: item.score,
+            })),
+            t("v.overallScore"),
+          )}
+        />
+        <dl className="analysis-dimension-list">
+          {dimensions.map((item) => (
+            <div
+              key={item.code}
+              className="analysis-dimension-row grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto]"
+              data-weakest={item.code === data.weakestDimension}
+            >
+              <dt>
+                {t(`data.dimension.${item.code}`)}
+                {item.code === data.weakestDimension && (
+                  <Badge wrap variant="outline">
+                    {t("v.weakest")}
+                  </Badge>
+                )}
+              </dt>
+              <dd>{formatNumber(item.score, locale, 2)} / 100</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
     </Panel>
   );
 }
@@ -411,10 +448,10 @@ function MemberData({
           {t("v.retry")}
         </Button>
       )}
-      {view === "basicTraining" && training.data && (
+      {view === "basicTraining" && training.data !== undefined && (
         <SharedTrainingView data={training.data} />
       )}{" "}
-      {view === "abilityProfile" && profile.data && (
+      {view === "abilityProfile" && profile.data !== undefined && (
         <SharedProfileView data={profile.data} />
       )}{" "}
       {view === "detailedSubmissions" && (

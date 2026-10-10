@@ -26,6 +26,7 @@ import {
   PopoverDescription,
 } from "@/components/ui/popover";
 import { previewProfile, previewProblems } from "@/lib/demo/preview";
+import { cn } from "@/lib/utils";
 
 export function ProductPreview() {
   const { t } = useLocale();
@@ -46,8 +47,8 @@ export function ProductPreview() {
         const x = (event.clientX - rect.left) / rect.width;
         const y = (event.clientY - rect.top) / rect.height;
         const style = event.currentTarget.style;
-        style.setProperty("--tilt-x", `${(0.5 - y) * 10}deg`);
-        style.setProperty("--tilt-y", `${(x - 0.5) * 10}deg`);
+        style.setProperty("--tilt-x", `${(0.5 - y) * 5}deg`);
+        style.setProperty("--tilt-y", `${(x - 0.5) * 5}deg`);
         style.setProperty("--spot-x", `${x * 100}%`);
         style.setProperty("--spot-y", `${y * 100}%`);
       }}
@@ -57,6 +58,14 @@ export function ProductPreview() {
       }}
     >
       <div className="preview-grid" aria-hidden="true" />
+      <div
+        className="pointer-events-none absolute top-10 right-2 size-64 rounded-full border border-info/15 bg-info-soft/35 sm:size-80"
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute right-10 bottom-8 size-40 rounded-full border border-support/20 bg-support-soft/40"
+        aria-hidden="true"
+      />
       <svg
         className="preview-orbit"
         viewBox="0 0 600 520"
@@ -82,10 +91,15 @@ export function ProductPreview() {
         <circle cx="502" cy="157" r="5" />
       </svg>
       <div className="preview-cards">
-        <Card className="preview-profile" interaction="lift">
+        <Card
+          className="preview-profile"
+          variant="metric"
+          tone="info"
+          interaction="lift"
+        >
           <CardHeader>
             <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <span className="flex size-10 items-center justify-center rounded-xl bg-info-soft text-info">
                 <ActivityIcon className="size-4" aria-hidden="true" />
               </span>
               <Badge variant="outline" wrap>
@@ -97,7 +111,7 @@ export function ProductPreview() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-baseline gap-3">
-              <strong className="text-4xl font-semibold tabular-nums tracking-tighter">
+              <strong className="text-5xl font-semibold tabular-nums tracking-tighter">
                 {previewProfile.solved}
               </strong>
               <span className="text-xs text-muted-foreground">
@@ -107,7 +121,11 @@ export function ProductPreview() {
             <div className="sample-bars mt-6" aria-hidden="true">
               {[28, 43, 35, 65, 49, 72, 60, 86, 72, 100, 83, 114].map(
                 (height, i) => (
-                  <span key={i} style={{ height }} />
+                  <span
+                    key={i}
+                    className={cn("bg-info/20", i > 8 && "bg-info")}
+                    style={{ height }}
+                  />
                 ),
               )}
             </div>
@@ -123,7 +141,11 @@ export function ProductPreview() {
             <CheckCheckIcon className="size-4 text-link" aria-hidden="true" />
           </CardFooter>
         </Card>
-        <Card className="preview-problem" interaction="lift">
+        <Card
+          className="preview-problem"
+          variant="recommendation"
+          interaction="lift"
+        >
           <CardHeader>
             <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
               <CodeXmlIcon className="size-4" aria-hidden="true" />

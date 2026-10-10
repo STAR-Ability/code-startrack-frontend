@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { getLocale, localizedMetadata } from "@/lib/i18n/server";
 import { LocaleProvider } from "@/components/layout/locale-provider";
+import { GeometricBackground } from "@/components/layout/geometric-background";
 
 import { TrainingQueryProvider } from "@/components/training/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -27,9 +28,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <GeometricBackground />
         <LocaleProvider initialLocale={locale}>
           <TooltipProvider delay={350}>
-            <Toaster limit={3}>
+            <Toaster>
               <TrainingQueryProvider>{children}</TrainingQueryProvider>
             </Toaster>
           </TooltipProvider>

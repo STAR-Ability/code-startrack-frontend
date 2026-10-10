@@ -29,7 +29,7 @@ function Card({
             : undefined)
       }
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-surface-reading py-(--card-spacing) text-sm text-card-foreground ring-1 ring-surface-border data-[variant=metric]:bg-surface-panel data-[variant=recommendation]:ring-info/20 data-[variant=supporting]:bg-surface-supporting data-[variant=supporting]:shadow-none [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card relative isolate flex min-w-0 flex-col gap-(--card-spacing) overflow-hidden rounded-2xl bg-surface-reading py-(--card-spacing) text-sm text-card-foreground ring-1 ring-surface-border data-[variant=metric]:bg-surface-panel data-[variant=recommendation]:ring-info/20 data-[variant=supporting]:bg-surface-supporting [--card-spacing:--spacing(5)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-2xl *:[img:last-child]:rounded-b-2xl",
         "shadow-surface transition-[box-shadow,translate,transform,background-color,outline-color] duration-200 ease-out data-[interaction=surface]:hover:shadow-raised data-[interaction=surface]:hover:ring-foreground/20 data-[interaction=lift]:hover:shadow-raised data-[interaction=lift]:hover:ring-foreground/20 motion-safe:data-[interaction=lift]:hover:-translate-y-1 focus-within:ring-ring/50 focus-within:shadow-md motion-reduce:transition-none",
         size === "lg" &&
           "rounded-2xl [--card-spacing:--spacing(6)] sm:[--card-spacing:--spacing(8)]",
@@ -58,7 +58,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-title"
       className={cn(
-        "font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
+        "font-heading text-base leading-snug font-semibold tracking-tight",
         className,
       )}
       {...props}
@@ -70,7 +70,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-sm leading-relaxed text-muted-foreground", className)}
       {...props}
     />
   );
@@ -104,7 +104,7 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-footer"
       className={cn(
-        "flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing)",
+        "flex items-center rounded-b-2xl border-t bg-muted/60 p-(--card-spacing)",
         className,
       )}
       {...props}

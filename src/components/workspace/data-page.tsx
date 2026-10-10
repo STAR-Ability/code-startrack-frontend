@@ -206,7 +206,11 @@ function Problems() {
                 )}
               </Badge>
             </div>
-            <Button variant="outline" onClick={() => setProblem(item.problem)}>
+            <Button
+              variant="outline"
+              wrap
+              onClick={() => setProblem(item.problem)}
+            >
               {t("v.problemSubmissions")}
             </Button>
           </div>
@@ -439,6 +443,7 @@ function Ratings() {
                 chronological.map((item) => date(item.occurredAt)),
                 [
                   {
+                    id: "rating",
                     name: t("v.rating"),
                     values: chronological.map((item) => item.newRating),
                   },

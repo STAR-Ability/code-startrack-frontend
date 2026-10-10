@@ -1,4 +1,17 @@
 "use client";
+import {
+  ActivityIcon,
+  CheckCheckIcon,
+  CircleCheckIcon,
+  Clock3Icon,
+  CodeXmlIcon,
+  FingerprintIcon,
+  FlameIcon,
+  LayersIcon,
+  TrophyIcon,
+  UsersIcon,
+  type LucideIcon,
+} from "lucide-react";
 import type { CopyKey } from "@/lib/i18n/messages";
 import { useLocale } from "@/components/layout/locale-provider";
 import {
@@ -11,6 +24,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 const metricTones: Partial<Record<CopyKey, string>> = {
+  "v.attempted": "info",
+  "v.submissions": "support",
   "v.solved": "success",
   "v.accepted": "success",
   "v.failed": "danger",
@@ -27,6 +42,28 @@ const metricTones: Partial<Record<CopyKey, string>> = {
   "v12.included": "support",
   "v12.trainingMembers": "support",
   "v12.levelMembers": "info",
+  "v02.warnings": "warning",
+  "v02.errors": "danger",
+  "v02.analyzedSubmissions": "insight",
+  "v02.codeAnalyses": "insight",
+  "v02.platformSubmissions": "info",
+  "v02.externalSubmissions": "support",
+};
+const metricIcons: Partial<Record<CopyKey, LucideIcon>> = {
+  "v.solved": CircleCheckIcon,
+  "v.accepted": CheckCheckIcon,
+  "v.attempted": CodeXmlIcon,
+  "v.submissions": LayersIcon,
+  "v.activeDays": FlameIcon,
+  "v.overallScore": FingerprintIcon,
+  "v.rating": TrophyIcon,
+  "v.maxRating": TrophyIcon,
+  "v12.highestRating": TrophyIcon,
+  "v12.highestMaxRating": TrophyIcon,
+  "v.pendingCount": Clock3Icon,
+  "v12.sources": LayersIcon,
+  "v12.managedTeams": UsersIcon,
+  "v12.activeMembers": UsersIcon,
 };
 const panelTones: Partial<Record<CopyKey, "info" | "insight" | "support">> = {
   "metrics.ability": "insight",
@@ -64,24 +101,33 @@ export function MetricPanel({
       interaction="none"
       data-metric-panel
     >
-      <CardHeader>
+      <CardHeader className="metric-panel-heading">
         <CardTitle>
           <h2>{t(title)}</h2>
         </CardTitle>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <dl className="metric-strip">
-          {metrics.map(([label, v]) => (
-            <div
-              key={label}
-              data-tone={v === null ? undefined : metricTones[label]}
-              data-value-type={v === null ? "unknown" : typeof v}
-            >
-              <dt>{t(label)}</dt>
-              <dd>{loading ? <Skeleton className="h-7 w-12" /> : value(v)}</dd>
-            </div>
-          ))}
+        <dl className="metric-strip" data-metric-count={metrics.length}>
+          {metrics.map(([label, v], index) => {
+            const Icon = metricIcons[label] ?? ActivityIcon;
+            return (
+              <div
+                key={label}
+                data-tone={v === null ? undefined : metricTones[label]}
+                data-value-type={v === null ? "unknown" : typeof v}
+                data-metric-priority={index === 0 ? "primary" : undefined}
+              >
+                <dt className="metric-label-row">
+                  {t(label)}
+                  <Icon className="size-4 shrink-0" aria-hidden="true" />
+                </dt>
+                <dd className="metric-value">
+                  {loading ? <Skeleton className="h-10 w-20" /> : value(v)}
+                </dd>
+              </div>
+            );
+          })}
         </dl>
         {!!secondary.length && (
           <dl className="metric-details">

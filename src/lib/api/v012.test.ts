@@ -7,7 +7,7 @@ import {
   v012Teams,
   v012Job,
 } from "../demo/v012-fixtures";
-import { fixtureUuid, demoSubmissions } from "../demo/fixtures";
+import { fixtureUuid, demoSubmissions, demoUser } from "../demo/fixtures";
 import {
   personalReportSchema,
   sharedProfileSchema,
@@ -15,6 +15,7 @@ import {
   teamAnalysisSchema,
   userAnalysisSchema,
   aiJobSchema,
+  teamDetailSchema,
 } from "./v012-schemas";
 import { aiPollDelay } from "@/components/workspace/use-ai-job";
 import { keys } from "../query/keys";
@@ -133,6 +134,117 @@ describe("V0.12 public contract", () => {
     expect(read.mock.calls[0][0]).toBe(
       `/api/v1/teams/${team.teamId}/members/${profile.publicId}/training/overview`,
     );
+  });
+  it("accepts absent member snapshots and validates explicitly requested windows", async () => {
+    const teamId = v012Teams[0].teamId;
+    const publicId = v012Analysis().publicId;
+    const empty = response(null);
+    expect(await v012.memberTraining(teamId, publicId)).toBeNull();
+    expect(empty.mock.calls[0][0]).toBe(
+      `/api/v1/teams/${teamId}/members/${publicId}/training/overview`,
+    );
+    response(null);
+    expect(await v012.memberProfile(teamId, publicId)).toBeNull();
+
+    const training = sharedTrainingSchema.parse(v012Analysis("7D"));
+    const read = response(training);
+    expect(
+      await v012.memberTraining(teamId, publicId, undefined, "7D"),
+    ).toEqual(training);
+    expect(read.mock.calls[0][0]).toBe(
+      `/api/v1/teams/${teamId}/members/${publicId}/training/overview?window=7D`,
+    );
+    response(sharedProfileSchema.parse(v012Analysis("30D")));
+    await expect(
+      v012.memberProfile(teamId, publicId, undefined, "7D"),
+    ).rejects.toMatchObject({ code: "INVALID_RESPONSE" });
+  });
+  it("preserves additive team detail counts without rejecting V0.12 DTOs", () => {
+    const legacy = v012Teams[0];
+    expect(teamDetailSchema.parse(legacy)).toEqual(legacy);
+    expect(
+      teamDetailSchema.parse({ ...legacy, activeMemberCount: 0 }),
+    ).toHaveProperty("activeMemberCount", 0);
+    expect(
+      teamDetailSchema.safeParse({ ...legacy, activeMemberCount: -1 }).success,
+    ).toBe(false);
+  });
+  it("forwards documented shared filters and member status without changing defaults", async () => {
+    const teamId = v012Teams[0].teamId;
+    const publicId = v012Analysis().publicId;
+    const fetch = vi.fn().mockImplementation(
+      () =>
+        new Response(
+          JSON.stringify({
+            data: [],
+            meta: { page: 1, pageSize: 20, total: 0, hasNext: false },
+            requestId: fixtureUuid(9999),
+          }),
+        ),
+    );
+    vi.stubGlobal("fetch", fetch);
+    await v012.memberSubmissions(teamId, publicId, {
+      page: 1,
+      verdict: "ACCEPTED",
+      problemId: "9007199254740993",
+      from: "2026-10-01T00:00:00Z",
+      to: "2026-10-02T00:00:00Z",
+    });
+    const submitted = new URL(
+      fetch.mock.calls[0][0],
+      "https://frontend.invalid",
+    );
+    expect(Object.fromEntries(submitted.searchParams)).toEqual({
+      page: "1",
+      verdict: "ACCEPTED",
+      problemId: "9007199254740993",
+      from: "2026-10-01T00:00:00Z",
+      to: "2026-10-02T00:00:00Z",
+    });
+    await v012.members(teamId, { status: "LEFT" });
+    expect(fetch.mock.calls[1][0]).toBe(
+      `/api/v1/teams/${teamId}/members?status=LEFT`,
+    );
+  });
+  it("validates and unwraps deployed coach and notification mutation responses", async () => {
+    response({ user: demoUser });
+    expect(await v012.redeemCoachCode("synthetic-code")).toEqual({
+      user: demoUser,
+    });
+    response({ count: 2 });
+    await expect(v012.readAllNotifications()).rejects.toMatchObject({
+      code: "INVALID_RESPONSE",
+    });
+    response({ updated: 2 });
+    expect(await v012.readAllNotifications()).toEqual({ updated: 2 });
+    const notification = { ...v012Notifications[0], read: true };
+    response(notification);
+    expect(await v012.readNotification(notification.notificationId)).toEqual(
+      notification,
+    );
+    response(notification);
+    await expect(v012.readNotification(fixtureUuid(999))).rejects.toMatchObject(
+      {
+        code: "INVALID_RESPONSE",
+      },
+    );
+  });
+  it("uses no-content membership responses and preserves an optional removal reason", async () => {
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(new Response(null, { status: 204 }));
+    vi.stubGlobal("fetch", fetch);
+    const teamId = v012Teams[0].teamId;
+    await expect(
+      v012.removeMember(teamId, fixtureUuid(1101), "Synthetic reason"),
+    ).resolves.toBeUndefined();
+    expect(fetch.mock.calls[0][1]).toMatchObject({ method: "DELETE" });
+    expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+      reason: "Synthetic reason",
+    });
+    await expect(v012.leaveTeam(teamId)).resolves.toBeUndefined();
+    expect(fetch.mock.calls[1][1]).toMatchObject({ method: "POST" });
+    expect(fetch.mock.calls[1][1]).not.toHaveProperty("body");
   });
   it("uses PATCH for independent privacy scopes and preserves PRIVATE", async () => {
     const fetch = response({

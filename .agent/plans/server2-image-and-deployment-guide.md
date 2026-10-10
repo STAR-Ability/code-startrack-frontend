@@ -28,8 +28,8 @@ The user explicitly stopped all further development, visual reviews and addition
 
 ## Acceptance Criteria
 
-- [ ] Completed work and deployment-guide draft committed and pushed to dev.
-- [ ] PR #42 merged with required checks successful on its final head.
+- [x] Completed work and deployment-guide draft committed and pushed to dev.
+- [x] PR #42 merged with required checks successful on its final head.
 - [ ] Existing release workflow completes successfully on the intended main source.
 - [ ] Published production image has actual tag, immutable SHA256 digest and linux/amd64 evidence.
 - [ ] Chinese guide includes Compose, registry login, environment, proxy/HTTPS, backend 8081, deployment, updates, rollback and troubleshooting.
@@ -48,7 +48,7 @@ Push dev, refresh PR #42 to the final scope, mark ready, await required GitHub C
 
 ### Stage 3 - Existing workflow publication
 
-Dispatch `release.yml` on main only after mandatory main CI succeeds. Observe the workflow's mandatory checks, container acceptance and GHCR pushes. Record only successful terminal results and actual registry data.
+Dispatch `release.yml` on the accepted main commit after the required PR checks succeed. Main push CI and the existing release workflow run concurrently; both must complete successfully for this preparation to be reported successful. The release workflow repeats its own mandatory checks before GHCR pushes. Record only successful terminal results and actual registry data.
 
 ### Stage 4 - Publication receipt
 
@@ -72,11 +72,15 @@ No server changes occur. Preserve existing immutable GHCR tags; use the guide's 
 ## Progress
 
 - [x] Read repository instructions, release workflow, runtime configuration and main ruleset.
-- [ ] Stage 1
-- [ ] Stage 2
+- [x] Stage 1
+- [x] Stage 2
 - [ ] Stage 3
 - [ ] Stage 4
 
 ## Decisions / Deviations
 
 The Chinese guide is explicitly requested by the user and takes precedence over the default English engineering-documentation convention. Existing unfinished-task instructions to continue visual correction or deploy are superseded by this request. The post-publication documentation merge does not rebuild or overwrite the versioned image.
+
+The prepared guide and completed ledger were pushed in `5fa45ebcd53c47f5dfdfda27d9b21604cfdb9d82`. PR CI `38015463913` and dev push CI `38015461852` both completed successfully. PR #42 was merged normally at `2026-10-10T02:18:24Z` as `c281f215c06319820324b185b0e16b4db3cf2a8d`. No protection bypass was used. Release run `38016497390` was dispatched on that exact main SHA; main CI run `38016479185` runs concurrently, without weakening either workflow. The other narrow-readability worktree's unfinished source and tests remain untouched.
+
+Main CI `38016479185` completed successfully. Release run `38016497390` failed at `2026-10-10T02:44:46Z` during exact-image container acceptance. `tests/container/browser-check.mjs:233` still expects automatic navigation to `/submissions/detail` after submission; the completed editor feature intentionally remains on `/problems/detail` with inline results. Docker built local runner tags, but the container failure occurred before every `docker push`; no new published tag or registry digest exists from this run. Do not substitute the local image ID for a published digest. A narrowly scoped request to synchronize the container acceptance was sent to the user because their stop-development instruction prohibits silently changing tests. No test or application change is made without that exception.

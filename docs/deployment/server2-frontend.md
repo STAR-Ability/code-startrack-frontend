@@ -4,24 +4,32 @@
 
 本次按用户指令停止功能开发、视觉审查和额外本地测试。GitHub 分支保护要求的 CI 以及现有发布工作流自身的构建、测试仍须完成；不得删除检查、使用管理员绕过保护或将旧检查结果当作本次发布结果。
 
-**发布前草稿：预期版本为 `v0.14.0`，尚待本次受保护合并与发布成功。`__IMAGE_BUILD_SHA__`、`__IMAGE_DIGEST__`、`__RELEASE_RUN_URL__` 是待补实值，不可原样用于部署。** 镜像平台目标为 `linux/amd64`，实际发布后须以该次 Actions 构建和发布回执为准；本文当前不声称已取得新镜像或完成 registry 平台查验。
+**发布状态：BLOCKED。PR #42 已通过必需 CI 并合并，但 2026-10-10 的发布工作流在容器验收阶段失败，尚未推送任何本次镜像。预期版本 `v0.14.0` 尚未由本次工作流发布，真实 registry digest 不存在。`__IMAGE_DIGEST__`、`__PUBLISHED_VERSION__` 仍是后续成功发布后才能填写的占位，不能原样执行部署命令。** 本次没有为绕过验收而直接推送，也没有擅自修改测试。
 
 ## 1. 发布回执与适用范围
 
-| 项目 | 本次记录 |
-| --- | --- |
-| 仓库 | `STAR-Ability/code-startrack-frontend` |
-| 合并 PR | [PR #42](https://github.com/STAR-Ability/code-startrack-frontend/pull/42)（待合并） |
-| 镜像构建所用 main 提交 | `__IMAGE_BUILD_SHA__` |
-| 发布工作流 | [Publish production image](../../.github/workflows/release.yml)，仅允许从 `main` 手动触发 |
-| 本次 Actions 运行 | __RELEASE_RUN_URL__ |
-| 镜像仓库 | `ghcr.io/star-ability/code-startrack-frontend` |
-| 实际版本标签 | 待发布，预期 `v0.14.0` |
-| 实际提交标签 | `sha-__IMAGE_BUILD_SHA__` |
-| 镜像平台 | `linux/amd64` |
-| 不可变 SHA256 digest | `__IMAGE_DIGEST__` |
-| 推荐部署引用 | `ghcr.io/star-ability/code-startrack-frontend@__IMAGE_DIGEST__` |
-| server2 部署 | **NOT RUN：本次明确不部署** |
+| 项目                     | 本次记录                                                                                                                    |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| 仓库                     | `STAR-Ability/code-startrack-frontend`                                                                                      |
+| 合并 PR                  | [PR #42](https://github.com/STAR-Ability/code-startrack-frontend/pull/42)（已合并，必需检查通过）                           |
+| 本次失败构建的 main 提交 | `c281f215c06319820324b185b0e16b4db3cf2a8d`                                                                                  |
+| 发布工作流               | [Publish production image](../../.github/workflows/release.yml)，仅允许从 `main` 手动触发                                   |
+| 本次 Actions 运行        | [38016497390](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38016497390)：FAIL，容器验收阻塞，未推送 |
+| 镜像仓库                 | `ghcr.io/star-ability/code-startrack-frontend`                                                                              |
+| 实际版本标签             | 待发布，预期 `v0.14.0`                                                                                                      |
+| 提交标签                 | 未推送；该次拟发布 `sha-c281f215c06319820324b185b0e16b4db3cf2a8d`                                                           |
+| 镜像平台                 | 目标 `linux/amd64`；未取得本次已发布清单                                                                                    |
+| 不可变 SHA256 digest     | **不存在：本次未推送，不可用本地镜像 ID 替代**                                                                              |
+| 推荐部署引用             | 待成功发布后填写 `ghcr.io/star-ability/code-startrack-frontend@sha256:…`                                                    |
+| server2 部署             | **NOT RUN：本次明确不部署**                                                                                                 |
+
+### 本次发布阻塞的准确证据
+
+- **PASS：** dev 提交 `5fa45ebcd53c47f5dfdfda27d9b21604cfdb9d82` 的 [PR CI 38015463913](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38015463913) 和 [push CI 38015461852](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38015461852)；main 合并提交的 [CI 38016479185](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38016479185)。
+- **PASS：** 发布运行中的 `pnpm check`、生产/Storybook 构建、E2E、Storybook，以及 runner 内 Docker 镜像构建。
+- **FAIL：** `pnpm test:container` 在 `tests/container/browser-check.mjs:233` 要求提交后自动跳转 `/submissions/detail?submissionId=…`，实际页面仍在 `/problems/detail`。已合并功能是编辑器内显示提交结果，并由显式链接进入提交详情；该旧验收断言未同步。
+- **NOT RUN：** 此失败发生在全部 `docker push` 之前，版本、SHA 和 latest 标签均未从这次运行发布。runner 本地 tag 和 image ID 不代表 GHCR 已发布镜像。
+- **待授权：** 用户要求停止进一步开发，因此没有修改验收脚本或绕过它。继续发布需要允许最小验收同步，再通过原 CI 和发布工作流；单纯重复当前确定失败的断言不会解决阻塞。
 
 生产部署应固定 `@sha256:…`。版本标签便于识别；`latest` 会变化，不作为部署或回滚依据。Digest 是仓库镜像清单的摘要，不是 Git 提交 SHA，也不是本地镜像 ID。若镜像发布后的文档回执单独合并，镜像仍对应上表的构建提交，不要把后续文档提交误记为镜像来源。
 
@@ -33,13 +41,13 @@
 
 根据 [2026-10-09 的 server2 检查记录](../development/server2-frontend-release-2026-10-09.md)，当时后端 `startrack-app` 使用宿主机网络并在 `8081` 提供服务；未发现已配置的前端容器或前端域名反向代理。该记录不是本次重新检查的结果。
 
-| 状态 | 限制或待确认事项 |
-| --- | --- |
+| 状态    | 限制或待确认事项                                                                                                                                            |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | BLOCKED | 已登录请求 `/api/v1/platform-problems` 和 `/api/v1/judge-languages` 返回后端 HTTP 500 `INTERNAL_ERROR`。本次不修复后端，也不把它们伪装成成功或切换为 Mock。 |
-| NOT RUN | 完整真实题目到提交评测闭环、学习画像重建、推荐生成及完整有数据响应的业务验收未完成。成功健康检查或空数据 GET 不能证明这些功能已经可用。 |
-| 未完成 | 广泛页面视觉覆盖未完成，已有公开页窄屏问题及教练页窄屏徽标裁切记录；准备的视觉修改未应用，本次停止继续修复和审查。 |
-| 待确认 | server2 的真实前端域名、DNS、80/443 入口归属、OpenResty/Nginx 的运行位置、证书管理方式和专用部署目录。 |
-| 待确认 | 容器到宿主机 `8081` 的网络可达性、后端 `PUBLIC_ORIGIN` 与实际 HTTPS 前端 Origin 的匹配。 |
+| NOT RUN | 完整真实题目到提交评测闭环、学习画像重建、推荐生成及完整有数据响应的业务验收未完成。成功健康检查或空数据 GET 不能证明这些功能已经可用。                     |
+| 未完成  | 广泛页面视觉覆盖未完成，已有公开页窄屏问题及教练页窄屏徽标裁切记录；准备的视觉修改未纳入已合并版本，本次停止继续修复和审查。                                          |
+| 待确认  | server2 的真实前端域名、DNS、80/443 入口归属、OpenResty/Nginx 的运行位置、证书管理方式和专用部署目录。                                                      |
+| 待确认  | 容器到宿主机 `8081` 的网络可达性、后端 `PUBLIC_ORIGIN` 与实际 HTTPS 前端 Origin 的匹配。                                                                    |
 
 部署负责人开始操作前应确认：
 
@@ -131,14 +139,14 @@ services:
     platform: linux/amd64
     environment:
       BACKEND_BASE_URL: ${BACKEND_BASE_URL:?Set the verified backend origin}
-      FRONTEND_COOKIE_SECURE: 'true'
+      FRONTEND_COOKIE_SECURE: "true"
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
-      - '127.0.0.1:3000:80'
+      - "127.0.0.1:3000:80"
     restart: unless-stopped
     healthcheck:
-      test: [CMD, wget, -q, -O, /dev/null, 'http://127.0.0.1/healthz']
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1/healthz"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -154,12 +162,12 @@ FRONTEND_IMAGE=ghcr.io/star-ability/code-startrack-frontend@__IMAGE_DIGEST__
 BACKEND_BASE_URL=http://host.docker.internal:8081
 ```
 
-| 配置 | 用途 |
-| --- | --- |
-| `FRONTEND_IMAGE` | Compose 拉取的精确镜像引用；更新/回滚只选择经过确认的 digest。 |
-| `BACKEND_BASE_URL` | 容器内部的后端 origin；由镜像 Nginx 模板在启动时展开，不是浏览器地址。 |
-| `FRONTEND_COOKIE_SECURE` | Compose 固定为 `true`，保证 HTTPS Session cookie 的安全标志。 |
-| `127.0.0.1:3000:80` | 宿主机回环 3000 转发到容器 80，外层入口负责公网 HTTPS。 |
+| 配置                     | 用途                                                                   |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `FRONTEND_IMAGE`         | Compose 拉取的精确镜像引用；更新/回滚只选择经过确认的 digest。         |
+| `BACKEND_BASE_URL`       | 容器内部的后端 origin；由镜像 Nginx 模板在启动时展开，不是浏览器地址。 |
+| `FRONTEND_COOKIE_SECURE` | Compose 固定为 `true`，保证 HTTPS Session cookie 的安全标志。          |
+| `127.0.0.1:3000:80`      | 宿主机回环 3000 转发到容器 80，外层入口负责公网 HTTPS。                |
 
 Compose 的 `.env` 用于变量替换，并通过 `environment` 注入容器；Next.js 的开发 `.env.local` 不作为这里的输入。shell 中同名变量可能优先于 `--env-file`，操作前清除非预期的导出变量，检查生效镜像，不打印敏感环境。[Docker Compose 变量规则](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/)
 
@@ -342,21 +350,21 @@ curl --noproxy '*' -fsS http://127.0.0.1:3000/healthz
 
 ## 9. 故障排查
 
-| 现象 | 判断与处理 |
-| --- | --- |
-| GHCR `unauthorized` / `denied` | 确认 package 读取权限、classic PAT 的 `read:packages`、组织 SSO，以及登录和 Docker 操作是否使用同一身份。不要把 token 贴到日志或提升为写权限。 |
-| `no matching manifest` / `exec format error` | 对照发布回执和平台；本镜像面向 `linux/amd64`。ARM 主机不能被当作原生 amd64 部署。 |
-| 3000 已占用 | 检查监听者和现有 Compose 项目归属；不要杀死无关进程。确认前端专用绑定后再协调端口和上游配置。 |
-| `/healthz` 200，但 API 502 | 查看前端日志、`BACKEND_BASE_URL`、host-gateway 与后端实际监听/网络。宿主机回环可达不等于容器可达；不要开放公网 8081 作为补救。 |
-| API 401 | 未登录时是预期状态；有 Session 时核对 HTTPS cookie、域名/Path、过期和转发链，不关闭鉴权。 |
-| Origin 403 或登录后 Session 丢失 | 核对浏览器实际 Origin、外层 HTTPS 转发和后端 `PUBLIC_ORIGIN`；检查 `Set-Cookie` 的 Domain/Path/Secure。保持 Origin 和 cookie 保护，由后端负责人处理其配置。 |
-| 题库/语言接口 500 `INTERNAL_ERROR` | 已知后端限制。记录路径、时间、request ID 给后端负责人；本次不修复、不隐藏失败、不启用生产 Mock，也不要求镜像重新构建解决后端错误。 |
-| API 返回 HTML 或路径 404 | 确认浏览器使用 `/api/v1/**`；外层代理不能截掉 `/api/v1`，非当前 API 前缀按镜像规则返回 404。 |
-| 页面/静态资源 404 | 查实际请求路径、入口上游、发布 digest 和 Nginx 日志。镜像支持已导出的深链接；未知页面/缺失资源返回 404。`/healthz` 成功不能替代页面验收。 |
-| TLS 证书错误或签发失败 | 核对 DNS A/AAAA、80/443 真正入口、挑战目录、证书域名/完整链/权限及续期。不要用 `curl -k` 把证书错误写成成功。 |
-| 容器化 OpenResty 连接 `127.0.0.1:3000` 失败 | 容器回环并非宿主机回环；按第 3 节确认批准的共享网络或现有宿主机入口，不改成公网端口绕过。 |
-| 公网被 WAF/上层访问控制拦截 | 保留现有策略并按该入口正规验证流程处理；单独区分前端回环状态、上游状态和边缘拦截，不能声称已通过公网验收。 |
-| 更新后仍旧镜像 | 查看 `config --images`、shell 同名变量和实际服务镜像；更新需要 `pull` 与 `up`，单独 `restart` 不会更换镜像。 |
+| 现象                                         | 判断与处理                                                                                                                                                  |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GHCR `unauthorized` / `denied`               | 确认 package 读取权限、classic PAT 的 `read:packages`、组织 SSO，以及登录和 Docker 操作是否使用同一身份。不要把 token 贴到日志或提升为写权限。              |
+| `no matching manifest` / `exec format error` | 对照发布回执和平台；本镜像面向 `linux/amd64`。ARM 主机不能被当作原生 amd64 部署。                                                                           |
+| 3000 已占用                                  | 检查监听者和现有 Compose 项目归属；不要杀死无关进程。确认前端专用绑定后再协调端口和上游配置。                                                               |
+| `/healthz` 200，但 API 502                   | 查看前端日志、`BACKEND_BASE_URL`、host-gateway 与后端实际监听/网络。宿主机回环可达不等于容器可达；不要开放公网 8081 作为补救。                              |
+| API 401                                      | 未登录时是预期状态；有 Session 时核对 HTTPS cookie、域名/Path、过期和转发链，不关闭鉴权。                                                                   |
+| Origin 403 或登录后 Session 丢失             | 核对浏览器实际 Origin、外层 HTTPS 转发和后端 `PUBLIC_ORIGIN`；检查 `Set-Cookie` 的 Domain/Path/Secure。保持 Origin 和 cookie 保护，由后端负责人处理其配置。 |
+| 题库/语言接口 500 `INTERNAL_ERROR`           | 已知后端限制。记录路径、时间、request ID 给后端负责人；本次不修复、不隐藏失败、不启用生产 Mock，也不要求镜像重新构建解决后端错误。                          |
+| API 返回 HTML 或路径 404                     | 确认浏览器使用 `/api/v1/**`；外层代理不能截掉 `/api/v1`，非当前 API 前缀按镜像规则返回 404。                                                                |
+| 页面/静态资源 404                            | 查实际请求路径、入口上游、发布 digest 和 Nginx 日志。镜像支持已导出的深链接；未知页面/缺失资源返回 404。`/healthz` 成功不能替代页面验收。                   |
+| TLS 证书错误或签发失败                       | 核对 DNS A/AAAA、80/443 真正入口、挑战目录、证书域名/完整链/权限及续期。不要用 `curl -k` 把证书错误写成成功。                                               |
+| 容器化 OpenResty 连接 `127.0.0.1:3000` 失败  | 容器回环并非宿主机回环；按第 3 节确认批准的共享网络或现有宿主机入口，不改成公网端口绕过。                                                                   |
+| 公网被 WAF/上层访问控制拦截                  | 保留现有策略并按该入口正规验证流程处理；单独区分前端回环状态、上游状态和边缘拦截，不能声称已通过公网验收。                                                  |
+| 更新后仍旧镜像                               | 查看 `config --images`、shell 同名变量和实际服务镜像；更新需要 `pull` 与 `up`，单独 `restart` 不会更换镜像。                                                |
 
 必要时运维可在前端容器内进行后端只读健康探测，用已经确认的后端 origin（示例仅适用于 host-gateway 拓扑）：
 

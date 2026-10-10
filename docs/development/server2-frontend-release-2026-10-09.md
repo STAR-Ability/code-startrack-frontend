@@ -1082,6 +1082,14 @@ acceptance is claimed. The continuation must finish the supported frontend
 work, freeze/build/review it, verify its new exact-head CI, and retain the actual
 integration and production-destination gates before proceeding to release.
 
+## 10 October image-preparation result
+
+The user's new scope stops development and visual reviews, and authorizes image/documentation preparation only. Completed ledger and the Chinese deployment guide were committed and pushed as `5fa45ebcd53c47f5dfdfda27d9b21604cfdb9d82`. Both exact-head CI runs `38015463913` and `38015461852` passed. Existing PR #42 merged normally into main as `c281f215c06319820324b185b0e16b4db3cf2a8d`; main CI `38016479185` also passed, without branch-protection bypasses.
+
+The existing release run [38016497390](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38016497390) passed its quality, build, E2E and Storybook stages but failed exact-image container acceptance at `tests/container/browser-check.mjs:233`. The script still expects automatic submission-detail navigation; the completed editor feature remains on the problem page and displays inline results. Docker built runner-local tags, but no `docker push` executed. No actual new GHCR tag or immutable digest is claimed. The user was asked whether to authorize only synchronizing that acceptance because the stop-development instruction prohibits silent test changes. No test fix, backend fix, server2 access or deployment was performed.
+
+The [Chinese deployment guide](../deployment/server2-frontend.md) records the real blocker, operational configuration and future operator commands. Existing backend HTTP 500 failures and incomplete business/visual acceptance remain known limitations.
+
 ## Evidence and unresolved gates
 
 Ignored local receipts are under `test-results/server2-release-20261009/`:

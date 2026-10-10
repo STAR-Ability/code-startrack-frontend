@@ -21,7 +21,7 @@ The user explicitly stopped all further development, visual reviews and addition
 
 ### Out of Scope
 
-- Application changes, visual reviews or additional local test execution.
+- Application changes, visual reviews or additional local test execution. The user subsequently authorized only the minimum container-acceptance synchronization described below.
 - Applying prepared visual correction snapshots.
 - SSH, deployment, ingress changes, backend changes or HTTP 500 fixes.
 - Workflow changes, weakened CI, branch-rule bypasses, secrets or unrelated files.
@@ -30,11 +30,11 @@ The user explicitly stopped all further development, visual reviews and addition
 
 - [x] Completed work and deployment-guide draft committed and pushed to dev.
 - [x] PR #42 merged with required checks successful on its final head.
-- [ ] Existing release workflow completes successfully on the intended main source.
-- [ ] Published production image has actual tag, immutable SHA256 digest and linux/amd64 evidence.
-- [ ] Chinese guide includes Compose, registry login, environment, proxy/HTTPS, backend 8081, deployment, updates, rollback and troubleshooting.
+- [x] Existing release workflow completes successfully on the intended main source.
+- [x] Published production image has actual tag, immutable SHA256 digest and linux/amd64 evidence.
+- [x] Chinese guide includes Compose, registry login, environment, proxy/HTTPS, backend 8081, deployment, updates, rollback and troubleshooting.
 - [ ] Final publication receipt committed and present on dev and main through normal PR checks.
-- [ ] No server2 deployment, backend fixes or unrelated infrastructure changes performed.
+- [x] No server2 deployment, backend fixes or unrelated infrastructure changes performed.
 
 ## Implementation Stages
 
@@ -74,15 +74,17 @@ No server changes occur. Preserve existing immutable GHCR tags; use the guide's 
 - [x] Read repository instructions, release workflow, runtime configuration and main ruleset.
 - [x] Stage 1
 - [x] Stage 2
-- [ ] Stage 3
-- [ ] Stage 4
+- [x] Stage 3
+- [ ] Stage 4 - actual receipt prepared; protected documentation integration remains required.
 
 ## Decisions / Deviations
 
 The Chinese guide is explicitly requested by the user and takes precedence over the default English engineering-documentation convention. Existing unfinished-task instructions to continue visual correction or deploy are superseded by this request. The post-publication documentation merge does not rebuild or overwrite the versioned image.
 
-The prepared guide and completed ledger were pushed in `5fa45ebcd53c47f5dfdfda27d9b21604cfdb9d82`. PR CI `38015463913` and dev push CI `38015461852` both completed successfully. PR #42 was merged normally at `2026-10-10T02:18:24Z` as `c281f215c06319820324b185b0e16b4db3cf2a8d`. No protection bypass was used. Release run `38016497390` was dispatched on that exact main SHA; main CI run `38016479185` runs concurrently, without weakening either workflow. The other narrow-readability worktree's unfinished source and tests remain untouched.
+The prepared guide and completed ledger were pushed in `5fa45ebcd53c47f5dfdfda27d9b21604cfdb9d82`. PR CI `38015463913` and dev push CI `38015461852` both completed successfully. PR #42 was merged normally at `2026-10-10T02:18:24Z` as `c281f215c06319820324b185b0e16b4db3cf2a8d`. No protection bypass was used. Release run `38016497390` was dispatched on that exact main SHA; main CI run `38016479185` ran concurrently, without weakening either workflow. The other narrow-readability worktree's unfinished source and tests remain untouched.
 
 Main CI `38016479185` completed successfully. Release run `38016497390` failed at `2026-10-10T02:44:46Z` during exact-image container acceptance. `tests/container/browser-check.mjs:233` still expects automatic navigation to `/submissions/detail` after submission; the completed editor feature intentionally remains on `/problems/detail` with inline results. Docker built local runner tags, but the container failure occurred before every `docker push`; no new published tag or registry digest exists from this run. Do not substitute the local image ID for a published digest. A narrowly scoped request to synchronize the container acceptance was sent to the user because their stop-development instruction prohibits silently changing tests. No test or application change is made without that exception.
 
-The user explicitly authorized the minimum container-acceptance synchronization. Only `tests/container/browser-check.mjs` changes: assert the retained problem URL and inline AC result, click the existing View submission link, then retain all original acceptance checks. No application/workflow/backend/infrastructure changes or additional local suites are introduced. PR #43 carries this scoped synchronization and the actual failed-run documentation; its new head must receive fresh required CI before merging and retrying publication.
+The user explicitly authorized the minimum container-acceptance synchronization. The only test change is in `tests/container/browser-check.mjs`: assert the retained problem URL and inline AC result, click the existing View submission link, then retain all original acceptance checks. No application/workflow/backend/infrastructure changes or additional local suites are introduced. PR #43 carried this scoped synchronization and the actual failed-run documentation. Its final head `35c7ca01b1a4bc7e12c49fb80fee0b48e3342fda` received successful PR CI `38018564962` and dev CI `38018562759` before normal merge.
+
+PR #43 merged normally at `2026-10-10T03:07:59Z` as `3a62bf2bdcae12a2056ae6a0595a861b6ff30032`. Its main CI `38019484350` passed. Existing release run [38019498747](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38019498747) completed successfully at `2026-10-10T03:30:58Z`, including unchanged mandatory quality/E2E/Storybook gates and the exact-image container acceptance with the authorized synchronization. The native x64 runner built and ran the production linux/amd64 image. All three push receipts (version `v0.14.0`, `sha-3a62bf2bdcae12a2056ae6a0595a861b6ff30032` and `latest`) report `sha256:c7182c1fda335dbfb52710f41bc8c989bd5d656d2d91ad3c72b0724b7046bdca`. The guide now uses this actual immutable reference in operational examples. A protected documentation follow-up is still required to land this receipt; its later merge SHA is distinct from the image source above. No server2 access or additional local suites occurred.

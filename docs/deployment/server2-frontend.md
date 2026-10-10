@@ -4,32 +4,37 @@
 
 本次按用户指令停止功能开发、视觉审查和额外本地测试。GitHub 分支保护要求的 CI 以及现有发布工作流自身的构建、测试仍须完成；不得删除检查、使用管理员绕过保护或将旧检查结果当作本次发布结果。
 
-**发布状态：BLOCKED。PR #42 已通过必需 CI 并合并，但 2026-10-10 的发布工作流在容器验收阶段失败，尚未推送任何本次镜像。预期版本 `v0.14.0` 尚未由本次工作流发布，真实 registry digest 不存在。`__IMAGE_DIGEST__`、`__PUBLISHED_VERSION__` 仍是后续成功发布后才能填写的占位，不能原样执行部署命令。** 本次没有为绕过验收而直接推送。用户随后明确允许最小验收同步：验证编辑器内结果后点击现有“查看提交”链接，再保留原详情及代理验收；该变更正在重新通过必需 CI，发布尚未成功。
+**发布状态：PASS。现有发布工作流已于 2026-10-10 03:30:58 UTC 成功完成，从 main 提交 `3a62bf2bdcae12a2056ae6a0595a861b6ff30032` 构建并推送生产 `linux/amd64` 镜像。实际版本是 `v0.14.0`，不可变摘要是 `sha256:c7182c1fda335dbfb52710f41bc8c989bd5d656d2d91ad3c72b0724b7046bdca`。** 用户授权的最小容器验收同步已通过受保护 PR #43 合并；全部既有发布检查及容器验收通过后才推送镜像。首轮失败记录保留如下，不作为当前发布结果。
 
 ## 1. 发布回执与适用范围
 
-| 项目                     | 本次记录                                                                                                                    |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| 仓库                     | `STAR-Ability/code-startrack-frontend`                                                                                      |
-| 合并 PR                  | [PR #42](https://github.com/STAR-Ability/code-startrack-frontend/pull/42)（已合并，必需检查通过）                           |
-| 本次失败构建的 main 提交 | `c281f215c06319820324b185b0e16b4db3cf2a8d`                                                                                  |
-| 发布工作流               | [Publish production image](../../.github/workflows/release.yml)，仅允许从 `main` 手动触发                                   |
-| 本次 Actions 运行        | [38016497390](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38016497390)：FAIL，容器验收阻塞，未推送 |
-| 镜像仓库                 | `ghcr.io/star-ability/code-startrack-frontend`                                                                              |
-| 实际版本标签             | 待发布，预期 `v0.14.0`                                                                                                      |
-| 提交标签                 | 未推送；该次拟发布 `sha-c281f215c06319820324b185b0e16b4db3cf2a8d`                                                           |
-| 镜像平台                 | 目标 `linux/amd64`；未取得本次已发布清单                                                                                    |
-| 不可变 SHA256 digest     | **不存在：本次未推送，不可用本地镜像 ID 替代**                                                                              |
-| 推荐部署引用             | 待成功发布后填写 `ghcr.io/star-ability/code-startrack-frontend@sha256:…`                                                    |
-| server2 部署             | **NOT RUN：本次明确不部署**                                                                                                 |
+| 项目                 | 本次记录                                                                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 仓库                 | `STAR-Ability/code-startrack-frontend`                                                                                               |
+| 完成工作合并 PR      | [PR #42](https://github.com/STAR-Ability/code-startrack-frontend/pull/42)（已合并，必需检查通过）                                    |
+| 最小验收同步 PR      | [PR #43](https://github.com/STAR-Ability/code-startrack-frontend/pull/43)（已合并，必需检查通过）                                    |
+| 镜像构建的 main 提交 | `3a62bf2bdcae12a2056ae6a0595a861b6ff30032`                                                                                           |
+| 发布工作流           | [Publish production image](../../.github/workflows/release.yml)，仅允许从 `main` 手动触发                                            |
+| 成功 Actions 运行    | [38019498747](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38019498747)：PASS，完成于 `2026-10-10T03:30:58Z` |
+| 镜像仓库             | `ghcr.io/star-ability/code-startrack-frontend`                                                                                       |
+| 实际版本标签         | `ghcr.io/star-ability/code-startrack-frontend:v0.14.0`                                                                               |
+| 提交标签             | `ghcr.io/star-ability/code-startrack-frontend:sha-3a62bf2bdcae12a2056ae6a0595a861b6ff30032`                                          |
+| 镜像平台             | `linux/amd64`；现有 `ubuntu-latest` x64 runner 原生构建及该镜像容器验收通过                                                          |
+| 不可变 SHA256 digest | `sha256:c7182c1fda335dbfb52710f41bc8c989bd5d656d2d91ad3c72b0724b7046bdca`                                                            |
+| 推荐部署引用         | `ghcr.io/star-ability/code-startrack-frontend@sha256:c7182c1fda335dbfb52710f41bc8c989bd5d656d2d91ad3c72b0724b7046bdca`               |
+| server2 部署         | **NOT RUN：本次明确不部署**                                                                                                          |
 
-### 本次发布阻塞的准确证据
+### 成功发布的证据
 
-- **PASS：** dev 提交 `5fa45ebcd53c47f5dfdfda27d9b21604cfdb9d82` 的 [PR CI 38015463913](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38015463913) 和 [push CI 38015461852](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38015461852)；main 合并提交的 [CI 38016479185](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38016479185)。
-- **PASS：** 发布运行中的 `pnpm check`、生产/Storybook 构建、E2E、Storybook，以及 runner 内 Docker 镜像构建。
-- **FAIL：** `pnpm test:container` 在 `tests/container/browser-check.mjs:233` 要求提交后自动跳转 `/submissions/detail?submissionId=…`，实际页面仍在 `/problems/detail`。已合并功能是编辑器内显示提交结果，并由显式链接进入提交详情；该旧验收断言未同步。
-- **NOT RUN：** 此失败发生在全部 `docker push` 之前，版本、SHA 和 latest 标签均未从这次运行发布。runner 本地 tag 和 image ID 不代表 GHCR 已发布镜像。
-- **已授权的最小修正：** 用户明确允许同步这项验收。脚本增加留在问题页、编辑器内最终结果和显式“查看提交”链接的验证，保留原后续详情、私有源码、训练及代理检查；应用、后端和工作流未修改。继续发布仍须该提交的原 CI 和原发布工作流成功。
+- **PASS：** 最小同步提交 `35c7ca01b1a4bc7e12c49fb80fee0b48e3342fda` 的 [PR CI 38018564962](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38018564962) 和 [dev push CI 38018562759](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38018562759) 均通过；PR #43 于 `2026-10-10T03:07:59Z` 正常合并。该 main 构建提交的 [CI 38019484350](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38019484350) 也通过。
+- **PASS：** [成功发布运行 38019498747](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38019498747) 完成 `pnpm check`、生产/Storybook 构建、E2E、Storybook、Docker 构建，以及实际待发布镜像的 `pnpm test:container`。容器日志在 `03:30:33Z` 输出 `V0.12/V0.2 nginx/static-export/browser acceptance passed.`。
+- **PASS：** 工作流分别在 `03:30:49Z`、`03:30:51Z`、`03:30:53Z` 推送提交标签、`v0.14.0` 和 `latest`，三个 `docker push` 回执均记录上表同一 registry digest；随后工作流的 registry manifest 读取及摘要记录步骤成功。摘要来自实际推送回执，不是本地 image ID。`latest` 仅记录此次推送结果，后续可能变化。
+- **平台依据：** 工作流在标准 x64 `ubuntu-latest` runner 上原生构建并运行该镜像，没有跨架构覆盖；Docker 构建日志包含 `linux-x64-musl` / `linuxmusl-x64` 依赖。runner 架构标签见 [GitHub 官方 runner 说明](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)。本次没有在 server2 验证架构或拉取镜像。
+
+### 首轮失败与获授权修正
+
+- 首轮 [发布运行 38016497390](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/38016497390) 的源提交为 `c281f215c06319820324b185b0e16b4db3cf2a8d`。其质量、构建、E2E、Storybook 成功，容器验收失败：旧脚本要求提交后自动跳转 `/submissions/detail`，而已合并功能在 `/problems/detail` 的编辑器内显示结果，并提供显式“查看提交”链接。该轮没有执行任何 `docker push`。
+- 用户随后明确允许最小验收同步。PR #43 仅增加留在问题页、编辑器内最终 AC 结果及点击现有详情链接的验证，保留原后续详情、私有源码、训练及代理检查。应用、后端、工作流和分支保护未修改；没有绕过失败检查直接推送。
 
 生产部署应固定 `@sha256:…`。版本标签便于识别；`latest` 会变化，不作为部署或回滚依据。Digest 是仓库镜像清单的摘要，不是 Git 提交 SHA，也不是本地镜像 ID。若镜像发布后的文档回执单独合并，镜像仍对应上表的构建提交，不要把后续文档提交误记为镜像来源。
 
@@ -121,7 +126,7 @@ printf '%s' "$GHCR_READ_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password
 unset GHCR_READ_TOKEN
 
 docker pull --platform linux/amd64 \
-  ghcr.io/star-ability/code-startrack-frontend@__IMAGE_DIGEST__
+  ghcr.io/star-ability/code-startrack-frontend@sha256:c7182c1fda335dbfb52710f41bc8c989bd5d656d2d91ad3c72b0724b7046bdca
 ```
 
 使用现有 credential helper 或限制 Docker 凭据目录权限；不要公开 Docker config、把 token 写进 Compose/.env 或提交到 Git。Registry 登录与 GitHub CLI 登录是不同凭据用途。
@@ -158,7 +163,7 @@ services:
 保存为 `.env`：
 
 ```dotenv
-FRONTEND_IMAGE=ghcr.io/star-ability/code-startrack-frontend@__IMAGE_DIGEST__
+FRONTEND_IMAGE=ghcr.io/star-ability/code-startrack-frontend@sha256:c7182c1fda335dbfb52710f41bc8c989bd5d656d2d91ad3c72b0724b7046bdca
 BACKEND_BASE_URL=http://host.docker.internal:8081
 ```
 

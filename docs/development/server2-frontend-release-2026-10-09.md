@@ -1,47 +1,57 @@
 # server2 frontend release inspection — 9 October 2026
 
+> **Scope update, 10 October 2026:** The user stopped further development,
+> visual reviews and additional testing. The new authorized task is to preserve
+> completed work, merge existing PR #42 through mandatory CI, publish the
+> production image through the existing workflow, and prepare the Chinese
+> [server2 deployment guide](../deployment/server2-frontend.md). No server2
+> deployment or backend HTTP 500 fixes are authorized. The unfinished visual
+> and live-integration stages below retain their historical status; they are
+> not prerequisites to this newly requested image/documentation preparation.
+> Current execution is tracked in
+> [the release-preparation plan](../../.agent/plans/server2-image-and-deployment-guide.md).
+
 This task authorizes backend integration and frontend deployment only on
 `ssh server2`. The previous server was not contacted. This report records fresh
 inspection and browser evidence acquired on 2026-10-09 from approximately
 08:30 UTC onward;
 historical receipts from other hosts do not establish server2 acceptance.
 
-**Task: INCOMPLETE and active. The f411 checkpoint passes required CI;
-new bottom submission results and the complete authorized route review remain
-under implementation and verification. Real judge-flow integration and production
+**Task: INCOMPLETE and active. The first inline submission-results milestone
+is committed, pushed and passes both exact-head CI runs at 944e. Complete
+current-task route/image acceptance and the next narrow-screen correction
+milestone remain unfinished. Real judge-flow integration and production
 release remain BLOCKED.**
 
-The continuation below is a **precommit / pre-CI snapshot**. The next
-implementation milestone has not been committed or validated by new exact-head
-CI. Both complete local suites and final frozen source/export inventory pass;
-broad capture/image acceptance remains pending with a confirmed coach-page defect.
+Exact commit `944e20b0dbdac8bbf1e3ecbc4706aecdbeab0f9e` is remotely verified.
+PR run `37950018078` and push run `37950011049` both pass: each has 537 units
+in 61 files, 368 E2E and 494 Storybook cases, with no failure, flaky, skipped
+or retry markers in the complete logs. The committed implementation source
+matches the final frozen followup inputs. These checks accept this head only;
+they cannot validate later visual source or regression changes.
 
-Exact commit `f411559bf0b9f386437ea2bc0b24ee352e59c2fb` passes both PR run
-`37933436222` and push run `37933430503`: each has 522 units in 60 files,
-356 E2E and 494 Storybook cases, with zero failed, flaky, skipped or retried
-cases. Current uncommitted bottom-results code supersedes that source; it does
-not inherit those results. The corrected thirteenth `pnpm check` exits zero:
-lint, formatting, types, 537 units in 61 files and production build pass. The
-initial check exits 2 because four ignored raw evidence copies were included
-by the existing TypeScript glob; renaming those copies preserves their bytes
-and hashes, without changing production code or strict configuration.
-The confirmed twelfth English Results tab clipping at 320px/200% is corrected:
-focused regression finishes 4 PASS / 0 FAIL, and independent default-scroll
-geometry/images verify both locales. Thirteenth full Storybook is terminal
-494 PASS / 0 FAIL, exit 0, in 11.2 minutes. Full E2E is terminal 368 PASS / 0 FAIL,
-exit 0, in 18.1 minutes. Final combined source/export/suite inventory validation
-passes on the unchanged frozen followup source; neither log has failure, flaky,
-skipped or retry markers. Frozen 14-cell Results capture and agent
-image inspection pass within the Results area. A scoped bilingual editor probe
-also passes: ordinary focus reveals source code before and after Results; the
-earlier crops are explained by internal workspace scrolling. The 332-cell
-authorized-route capture is running without terminal acceptance. Actual pixel
-review confirms a clipped unread badge on the English coach page at 320px/200%;
-Stage 5 correction remains pending after the frozen capture. Older failures
-retain their candidate scope.
-Required checks on
-[PR #42](https://github.com/STAR-Ability/code-startrack-frontend/pull/42)
-must cover the next frozen, pushed source.
+The thirteenth local `pnpm check`, complete suites and final frozen
+365-source/225-production/295-export inventory also pass in their recorded
+scope. Scoped 14-cell Results capture and actual agent image review pass;
+bilingual source-focus checks resolve the earlier editor crop observation.
+Historical f411 CI, activation/geometry errors, raw-snapshot typecheck failure
+and source-drift receipts below retain their original artifact scope.
+
+Broad capture remains incomplete: the original run exits 1 at recorded cell
+129 because its response assertion uses an outdated `/users/.../training/overview`
+path. The corrected helper expects the actual `/me/training/overview`; its
+continuation stops at recorded cell 145 on the obsolete `.problem-workspace`
+selector, while the rendered editor uses `.coding-workspace`. These harness
+failures and end provenance are retained, without relabeling them as product
+failures or complete 332-cell acceptance.
+
+Actual pixel review separately records defects in eight public narrow cases
+and two coach cases, including the clipped coach unread badge. Five public
+TSX correction candidates exist only as ignored `.tsx.snapshot.txt` files in
+`narrow-showcase-prepared/`, status **PREPARED_NOT_APPLIED**. Actual source and
+export remain frozen; new source application, regressions, build/browser
+acceptance and the next exact-head CI are pending. This is an interim record,
+not overall visual or release acceptance.
 
 Fresh server2 health at 13:29 UTC is HTTP 200 and Docker healthy, on the unchanged
 backend revision. The f411 frontend's ordinary login at 13:45 UTC succeeds with
@@ -680,41 +690,70 @@ original objective rather than treating successful CI as task completion. It
 identifies concrete unfinished frontend work: supported aggregate judge results
 were shown after navigation to the submission-detail page, but not in the
 requested bottom Results console. It also identifies missing current-task
-authorized coach content and route/locale/state coverage. These remain
-actionable frontend work; the overall task is incomplete and active.
+authorized coach content and route/locale/state coverage. The first committed inline-results milestone addresses the result placement.
+Authorized route review and confirmed narrow visual corrections remain
+actionable; the overall task is incomplete and active.
 
-### Exact f411 CI checkpoint
+### Artifact-scoped CI and local checkpoints
 
-| Checkpoint                             | Status  | Scoped result                                                                                                                          |
-| -------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| PR run `37933436222`                   | PASS    | Exact f411: lint, formatting, types, build, 522 units/60 files, 356 E2E and 494 Storybook; zero failures, flakes, skips or retries     |
-| Push run `37933430503`                 | PASS    | Same exact f411 counts and terminal success, independently checked from complete logs                                                  |
-| Twelfth inline-results `pnpm check`    | PASS    | Candidate source only: lint, formatting, types, 537 units/61 files and production build; exit 0, zero end-source mismatches            |
-| Twelfth inline-results Storybook build | PASS    | Candidate static build exits zero; complete current-source suite remains pending                                                       |
-| Twelfth initial focused E2E            | FAIL    | Terminal 42 PASS / 6 FAIL, 5.1m; all six failures assume automatic rather than installed manual keyboard activation                    |
-| Twelfth corrected Results E2E          | PASS    | Terminal 12 PASS / 0 FAIL, 1.9m; changed test input, unchanged production source/export; excludes tab-label containment acceptance     |
-| Twelfth independent tab-label review   | FAIL    | Historical real English 320px/200% clipping; valid before-fix regression 2 PASS / 2 FAIL, 40.3s                                        |
-| Thirteenth initial `pnpm check`        | FAIL    | Exit 2: four ignored raw `.ts` evidence copies included by tsconfig; byte-preserving archive rename, strict settings unchanged         |
-| Thirteenth corrected `pnpm check`      | PASS    | Lint, formatting, types, 537 units/61 files in 79.47s and production build; zero end-source mismatches                                 |
-| Thirteenth focused tab-label E2E       | PASS    | Terminal 4 PASS / 0 FAIL, 41.5s; ordinary focus before full bounds, no horizontal ancestor scrolling; production/export unchanged      |
-| Thirteenth default-scroll tab review   | PASS    | Both locales 2/2, 320px/200%; complete labels fit, geometry/images inspected; scope is the two tab labels                              |
-| Thirteenth Storybook build             | PASS    | Static build exit 0                                                                                                                    |
-| Thirteenth full Storybook suite        | PASS    | Terminal 494 PASS / 0 FAIL, exit 0, 11.2m; frozen final source/export/suite inventory PASS                                             |
-| Thirteenth full E2E suite              | PASS    | Terminal 368 PASS / 0 FAIL, exit 0, 18.1m; both complete suite logs have no failure/flaky/skipped/retry markers                        |
-| Final frozen suite inventory           | PASS    | All 365 source / 225 production / 295 export files unchanged; zero added/removed/hash source/export mismatches                         |
-| Frozen Results capture/image review    | PASS    | 14/14 capture/geometry cells, stable source/export and agent pixel review; no irreversible Results clipping in the scoped evidence     |
-| Scoped bilingual editor probe          | PASS    | 320px/200% source focus usable before/after Results and resizer End; stable 120px canvas, root English images inspected                |
-| Current exact-head CI                  | PENDING | Frozen local complete suites PASS; implementation milestone is precommit and has no new exact-head CI yet                              |
-| Complete authorized route review       | PENDING | 332-cell frozen capture running; actual coach English 320px/200% unread-badge clipping confirmed, Stage 5 correction pending           |
-| Protected merge/image/deployment       | BLOCKED | Successful f411 CI does not resolve current-source verification, actual catalog/language failures or the absent production destination |
+| Checkpoint                             | Status  | Scoped result                                                                                                                                          |
+| -------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PR run `37933436222`                   | PASS    | Exact f411: lint, formatting, types, build, 522 units/60 files, 356 E2E and 494 Storybook; zero failures, flakes, skips or retries                     |
+| Push run `37933430503`                 | PASS    | Same exact f411 counts and terminal success, independently checked from complete logs                                                                  |
+| Twelfth inline-results `pnpm check`    | PASS    | Candidate source only: lint, formatting, types, 537 units/61 files and production build; exit 0, zero end-source mismatches                            |
+| Twelfth inline-results Storybook build | PASS    | Candidate static build exits zero; complete current-source suite remains pending                                                                       |
+| Twelfth initial focused E2E            | FAIL    | Terminal 42 PASS / 6 FAIL, 5.1m; all six failures assume automatic rather than installed manual keyboard activation                                    |
+| Twelfth corrected Results E2E          | PASS    | Terminal 12 PASS / 0 FAIL, 1.9m; changed test input, unchanged production source/export; excludes tab-label containment acceptance                     |
+| Twelfth independent tab-label review   | FAIL    | Historical real English 320px/200% clipping; valid before-fix regression 2 PASS / 2 FAIL, 40.3s                                                        |
+| Thirteenth initial `pnpm check`        | FAIL    | Exit 2: four ignored raw `.ts` evidence copies included by tsconfig; byte-preserving archive rename, strict settings unchanged                         |
+| Thirteenth corrected `pnpm check`      | PASS    | Lint, formatting, types, 537 units/61 files in 79.47s and production build; zero end-source mismatches                                                 |
+| Thirteenth focused tab-label E2E       | PASS    | Terminal 4 PASS / 0 FAIL, 41.5s; ordinary focus before full bounds, no horizontal ancestor scrolling; production/export unchanged                      |
+| Thirteenth default-scroll tab review   | PASS    | Both locales 2/2, 320px/200%; complete labels fit, geometry/images inspected; scope is the two tab labels                                              |
+| Thirteenth Storybook build             | PASS    | Static build exit 0                                                                                                                                    |
+| Thirteenth full Storybook suite        | PASS    | Terminal 494 PASS / 0 FAIL, exit 0, 11.2m; frozen final source/export/suite inventory PASS                                                             |
+| Thirteenth full E2E suite              | PASS    | Terminal 368 PASS / 0 FAIL, exit 0, 18.1m; both complete suite logs have no failure/flaky/skipped/retry markers                                        |
+| Final frozen suite inventory           | PASS    | All 365 source / 225 production / 295 export files unchanged; zero added/removed/hash source/export mismatches                                         |
+| Frozen Results capture/image review    | PASS    | 14/14 capture/geometry cells, stable source/export and agent pixel review; no irreversible Results clipping in the scoped evidence                     |
+| Scoped bilingual editor probe          | PASS    | 320px/200% source focus usable before/after Results and resizer End; stable 120px canvas, root English images inspected                                |
+| Current exact-head CI                  | PASS    | Remote verified 944e: PR 37950018078 and push 37950011049 each 537 units/61 files, 368 E2E, 494 Storybook; no failure/flaky/skipped/retry markers      |
+| Next narrow visual correction          | NOT RUN | Five public TSX candidates PREPARED_NOT_APPLIED; actual source/export frozen, new build/browser/regressions/CI pending                                 |
+| Complete authorized route review       | PENDING | Broad helper stops at 129/145 on outdated endpoint/selector; actual 8 public narrow + 2 coach defect cases, remaining capture/image acceptance pending |
+| Protected merge/image/deployment       | BLOCKED | Successful 944e CI does not resolve broad visual acceptance, actual catalog/language failures or the absent production destination                     |
 
 The terminal evidence is
 `test-results/visual-upgrade-20261009/ci-f411559/verification-summary.json`,
 with [PR CI](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37933436222)
 and [push CI](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37933430503).
-The required checks succeed at f411; PR #42 remains draft. The earlier eleventh
-snapshot's pending CI rows are historical preparation records, superseded by
-these terminal f411 results. They do not validate the newer uncommitted source.
+The required checks succeeded at f411; PR #42 was draft at that checkpoint.
+The earlier eleventh snapshot's pending CI rows are historical preparation
+records, superseded within that source scope by terminal f411 results.
+The inline-results implementation receives its own committed 944e CI below.
+
+### First completed inline-results milestone at 944e
+
+The root task commits and pushes
+`944e20b0dbdac8bbf1e3ecbc4706aecdbeab0f9e` and verifies the remote head. The
+milestone implementation bytes match the final frozen test-followup source
+recorded in `thirteenth-test-followup-manifest.json`; production/export remain
+bound to the completed thirteenth receipts.
+
+`test-results/visual-upgrade-20261009/944e-ci-terminal-review.json` records both
+terminal exact-head runs, each with successful quality and Storybook jobs,
+**537 units / 61 files, 368 E2E and 494 Storybook**:
+
+- [PR run 37950018078](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37950018078):
+  **PASS**; E2E 9.7 minutes, Storybook 5.7 minutes. Complete log SHA256
+  `3c5b5fe223652253d351a9506c37b6b9c85072e915a37432800db543b9741205`.
+- [Push run 37950011049](https://github.com/STAR-Ability/code-startrack-frontend/actions/runs/37950011049):
+  **PASS**; E2E 10.8 minutes, Storybook 7.7 minutes. Complete log SHA256
+  `fd49c8b14498a3184a8a11ccbb1a108793ca81b18dc91d53fca41882ddb9ce7c`.
+
+Both complete logs contain zero failure, flaky, skipped or retry markers.
+This completes the first implementation/CI milestone, not the overall original
+objective. The next narrow visual corrections are still prepared rather than
+applied, and broad rendered acceptance, actual server2 catalog/language
+integration and production ingress remain unresolved. No protected merge,
+production image or deployment is claimed.
 
 ### Supported bottom Results implementation
 
@@ -910,10 +949,12 @@ the card clips the badge. Root independently opens
 the defect. The frozen capture must retain this failure; separate Stage 5
 source correction and new artifact-bound regression/image acceptance remain
 pending. Complete local suites and scoped Results passes do not resolve that
-visual defect. No new commit, protected merge, production image or deployment
-is claimed by this precommit snapshot.
+visual defect. The local acceptance above was recorded before the subsequent
+944e implementation commit and exact-head CI; no protected merge, production
+image or deployment is claimed. Current broad capture and prepared corrections
+are described below.
 
-### Planned route and state acceptance
+### Authorized route capture and pending visual corrections
 
 `test-results/visual-upgrade-20261009/completion-audit/next-visual-route-map.json`
 maps all 37 routes to components, real fixture IDs, appropriate anonymous/student/
@@ -922,8 +963,8 @@ both `zh-CN` and `en` at 1440, 1280, 768 and 390px. Affected 320px/200% text,
 keyboard, reduced-motion, loading/error/empty and ownership/privacy cases add
 targeted inspection to that baseline. The next frozen-artifact execution targets
 332 authorized route cells after the separate 14-cell Results review. Results
-capture and bounded image inspection are recorded above; broad capture is
-running without terminal acceptance. Authorized coach pages must show actual
+capture and bounded image inspection are recorded above; both broad attempts
+stop before full acceptance as recorded below. Authorized coach pages must show actual
 owned-team/dashboard/form content; a localized heading on a denial screen is
 insufficient.
 
@@ -937,7 +978,8 @@ current source. The new review must bind each cell to frozen source/export and
 actual served HTML/CSS, verify identity and populated route landmarks, preserve
 failures/canceled requests, and close its owned contexts/services. The isolated
 synthetic fixture supplies these states; it cannot establish real server2
-business acceptance. This section records preparation, not completed captures.
+business acceptance. Preparation and partial captures do not establish completed
+broad acceptance.
 
 `completion-audit/final-broad-helper-independent-review.json` is **PASS for
 read-only source review of its exact helper hashes**. It verifies 296 baseline
@@ -947,6 +989,47 @@ failed-evidence retention, and owned context/service cleanup. It authorizes the
 already scoped isolated synthetic capture to proceed; the reviewer ran no
 tests, build, browser or servers. Helper review does not establish execution,
 rendered visual quality, chart correctness or original-objective completion.
+
+### Preserved broad harness failures and prepared next milestone
+
+The original frozen broad capture is terminal **FAIL**, exit 1, with
+129 recorded cells. Its last `/dashboard` Chinese desktop cell expects the
+outdated `/api/v1/users/<fixture-user-id>/training/overview` response. The
+actual data-access path is `/api/v1/me/training/overview`; correcting the helper
+assertion does not change application source. The original `results.json`,
+`fatal.json` and failure-end provenance remain under
+`thirteenth-systematic-route-review/`, recording stable source digest
+`208dc6fdb0531fc35849691db8f99272166a0deed22246bc5cd059ec203a933a`
+and export digest
+`6e28e5e9f357b56e9a9eee759f93b61e6a462f18709403587c596f7c285a07d5`,
+with 25 owned contexts closed.
+
+The continuation in `thirteenth-systematic-route-continuation-1/` stops at
+145 recorded cells on `/problems/detail` Chinese desktop. Its assertion checks
+`main .problem-workspace`, but the rendered application uses
+`.coding-workspace`. The continuation's failed row, fatal receipt and stable
+source/export end provenance remain preserved, with five owned contexts
+closed. The 129 and 145 receipts are successive partial-run records, not
+additional accepted matrices. Remaining frozen capture and complete actual
+pixel review are pending. These endpoint/selector failures concern the capture
+helper; independent visual defects retain separate product evidence.
+
+Actual image review records defects in **eight public narrow cases and two
+coach cases**. Root's coach crop confirms the unread badge clipped by its card;
+the remaining next-milestone correction cannot inherit the 944e CI pass.
+`narrow-showcase-prepared/preparation-receipt-v3.json` records
+**PREPARED_NOT_APPLIED**, with five public TSX snapshots ending in
+`.tsx.snapshot.txt` and candidate patch SHA256
+`1e3f0083fc533586b6dc299dcef41f3f24e5aa2c85eb56f1d0c721baa79e3894`.
+The candidates cover landing previews, product-index features, public profile,
+recommendations and About; actual source/export are unchanged. Candidate
+formatting via standard input passes, while visual geometry,
+typecheck/build/E2E and application remain **NOT RUN**. Coach correction and
+root-owned meaningful regression changes remain pending. Current source must
+stay frozen until the remaining capture ends; subsequent source application
+requires a new build, scoped rendered/regression acceptance and its own next
+milestone exact-head CI. This interim record does not complete Stage 5,
+overall visual acceptance or release.
 
 ### Refreshed actual server2 evidence at f411
 
@@ -1020,7 +1103,7 @@ authenticated customer data.
   bilingual desktop/mobile empty/error rendering, current-session logout and
   local testing-process cleanup.
 - **PASS:** Exact f411 PR and push CI, each with 522 units, 356 E2E and 494
-  Storybook cases; this checkpoint excludes current uncommitted inline results.
+  Storybook cases; this historical checkpoint excludes the later inline-results source.
 - **PASS:** Twelfth candidate inline-results `pnpm check`, including lint, formatting,
   types, 537 units/61 files and production build; static Storybook build also exits zero.
   Corrected Results E2E finishes 12 PASS / 0 FAIL on recorded changed test input
@@ -1047,8 +1130,17 @@ authenticated customer data.
 - **FAIL:** Actual English coach-page unread badge is clipped by its card at
   320px/200%, independently confirmed in root pixel inspection. Stage 5 source
   correction and new regression/image acceptance remain pending after the frozen capture.
-- **PENDING:** 332-cell authorized route capture/image acceptance and next
-  exact-head CI for the implementation milestone. Earlier Results
+- **PASS:** Committed/pushed 944e inline-results milestone and both exact-head
+  CI runs, each 537 units/61 files, 368 E2E and 494 Storybook, with no
+  failed/flaky/skipped/retry log markers. Future source changes do not inherit
+  this acceptance.
+- **FAIL:** Original broad helper attempt exits 1 at 129 recorded cells on an
+  outdated user-specific training path; continuation stops at 145 on an obsolete
+  editor selector. Failures and stable end provenance are preserved.
+- **PENDING:** Remaining 332-cell authorized capture/actual pixel acceptance,
+  eight public narrow and two coach defect corrections, and the next applied
+  milestone's build/regressions/exact-head CI. Five public TSX candidates are
+  PREPARED_NOT_APPLIED; source/export are still frozen. Earlier Results
   geometry passes do not overcome their preserved fatal end-source drift.
 - **NOT RUN:** Other real role/ownership combinations,
   submission/profile/recommendation business POSTs, populated learning-payload
@@ -1057,8 +1149,9 @@ authenticated customer data.
   problem-to-submission acceptance, plus an
   established server2 production frontend destination.
 
-Historical eleventh local acceptance and later exact f411 complete CI pass in
-their stated scopes. The task remains incomplete, with concrete bottom-results
-implementation and authorized route review active. Current source and future
-release must obtain their own verification; successful earlier CI does not
-remove these frontend requirements or resolve the real integration/ingress gates.
+Historical eleventh local acceptance and exact f411/944e complete CI pass in
+their stated scopes. The first bottom-results implementation milestone is
+complete; the task remains incomplete with authorized route capture and
+confirmed narrow corrections active. The next source changes and future
+release require their own verification; successful earlier CI does not resolve
+these visual requirements or the real integration/ingress gates.
